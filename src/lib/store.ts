@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Medication, DoseHistory, UserProfile, DoseStatus } from './types';
 import { addDays, format, parseISO, isBefore, isAfter, startOfDay, endOfDay, addMinutes } from 'date-fns';
 import { 
@@ -29,6 +29,19 @@ export function useMediMind() {
 
   const { data: profileData, isLoading: isProfileLoading } = useDoc<UserProfile>(profileRef);
 
+  // Initialize profile if it doesn't exist
+  useEffect(() => {
+    if (user && profileRef && !isProfileLoading && !profileData) {
+      setDocumentNonBlocking(profileRef, {
+        id: user.uid,
+        name: user.displayName || 'User',
+        language: 'en',
+        theme: 'light',
+        notificationsEnabled: true
+      }, { merge: true });
+    }
+  }, [user, profileRef, isProfileLoading, profileData]);
+
   const profile = useMemo(() => ({
     name: profileData?.name || 'User',
     language: (profileData?.language as 'en' | 'ar') || 'en',
@@ -55,11 +68,10 @@ export function useMediMind() {
   const { data: medicationsData, isLoading: isMedsLoading } = useCollection<Medication>(medsQuery);
   const medications = medicationsData || [];
 
-  // 3. Fetch Dose History (Sync with Firestore)
-  // We use a collectionGroup query to find all 'doseLogs' subcollections that belong to this user.
-  // Security rules must specifically allow list operations on the doseLogs collection group.
+  // 3. Fetch Dose History
   const historyQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
+    // Collection group query requires specific security rules and potentially a composite index
     return query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid));
   }, [db, user]);
 
@@ -92,14 +104,13 @@ export function useMediMind() {
 
   const logDose = (medicationId: string, scheduledTime: string, status: DoseStatus) => {
     if (!user || !db) return;
-    // Log to the specific medication's subcollection
     const colRef = collection(db, 'users', user.uid, 'medicines', medicationId, 'doseLogs');
     const logData = {
       medicationId,
       scheduledTime,
       status,
       recordedAt: new Date().toISOString(),
-      userId: user.uid, // Required for security rules collection group queries
+      userId: user.uid,
     };
     
     addDocumentNonBlocking(colRef, logData);
@@ -134,14 +145,12 @@ export function useMediMind() {
         doseTime.setHours(hours, minutes, 0, 0);
 
         if (isAfter(doseTime, medStart) && (!med.endDate || isBefore(doseTime, medEnd))) {
-          // Check history for this specific dose
           const log = history.find(h => 
             h.medicationId === med.id && 
             format(parseISO(h.scheduledTime), 'HH:mm') === timeStr &&
             format(parseISO(h.scheduledTime), 'yyyy-MM-dd') === todayStr
           );
 
-          // Grace period: Dose remains "pending" for 30 minutes after scheduled time before marking "missed"
           const missedThreshold = addMinutes(doseTime, 30);
           const isPending = !log && isBefore(new Date(), missedThreshold);
 

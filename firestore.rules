@@ -5,6 +5,7 @@ service cloud.firestore {
 
     /**
      * MediMind Security Rules
+     * Optimized for mobile-first PWA with collection group support.
      */
 
     function isSignedIn() {
@@ -15,33 +16,28 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Allow collection group queries for doseLogs.
-    // This is critical for the history query in store.ts.
-    // For a collection group query to be authorized, the rules must 
-    // allow the operation based on the fields used in the query filter.
+    // Collection Group rules for 'doseLogs'
+    // This is required for query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid))
     match /{path=**}/doseLogs/{doseLogId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow write: if isSignedIn() && (
-        (request.resource != null && request.resource.data.userId == request.auth.uid) ||
-        (resource != null && resource.data.userId == request.auth.uid)
-      );
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
+    // User Profile Rules
     match /users/{userId} {
-      // User can read and write their own profile
       allow get, list: if isOwner(userId);
+      // Allow creation of profile if the user is signed in as that ID
       allow create: if isOwner(userId);
       allow update: if isOwner(userId);
       allow delete: if isOwner(userId);
 
+      // Medicine Rules
       match /medicines/{medicineId} {
-        // User can manage their own medications
-        allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isOwner(userId) && request.resource.data.userId == resource.data.userId;
-        allow delete: if isOwner(userId);
+        allow read, write: if isOwner(userId);
 
-        // Subcollection rules for direct document access
+        // Nested DoseLog Rules (for direct document access)
         match /doseLogs/{doseLogId} {
           allow read, write: if isOwner(userId);
         }
