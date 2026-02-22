@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { Metadata, Viewport } from 'next';
@@ -7,9 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { useMediMind } from '@/lib/store';
 import { useEffect, useState } from 'react';
-
-// Note: Metadata and Viewport are handled separately in Next.js 15 for Client Components
-// but since this is a root layout, we'll keep the visual structure here.
+import { NotificationManager } from '@/components/notifications/NotificationManager';
 
 function AppWrapper({ children }: { children: React.ReactNode }) {
   const { profile, isLoaded } = useMediMind();
@@ -32,6 +29,7 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
       <div className="flex-1 overflow-hidden">
         {children}
       </div>
+      <NotificationManager />
     </main>
   );
 }

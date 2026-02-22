@@ -1,9 +1,8 @@
-
 "use client";
 
 import { useState, useMemo } from 'react';
 import { Medication, DoseHistory, UserProfile, DoseStatus } from './types';
-import { addDays, format, parseISO, isBefore, isAfter, startOfDay, endOfDay } from 'date-fns';
+import { addDays, format, parseISO, isBefore, isAfter, startOfDay, endOfDay, addMinutes } from 'date-fns';
 import { 
   useUser, 
   useFirestore, 
@@ -124,6 +123,8 @@ export function useMediMind() {
         const doseTime = new Date(today);
         doseTime.setHours(hours, minutes, 0, 0);
 
+        // A dose is "pending" if it's within 15 minutes before or 15 minutes after its scheduled time
+        // but hasn't been logged yet. This gives a window for the countdown to hit zero and show "Due Now".
         if (isAfter(doseTime, medStart) && (!med.endDate || isBefore(doseTime, medEnd))) {
           const log = history.find(h => 
             h.medicationId === med.id && 
@@ -131,10 +132,14 @@ export function useMediMind() {
             format(parseISO(h.scheduledTime), 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')
           );
 
+          // Grace period: Dose remains "pending" for 30 minutes after scheduled time before marking "missed"
+          const missedThreshold = addMinutes(doseTime, 30);
+          const isPending = !log && isBefore(new Date(), missedThreshold);
+
           scheduled.push({
             med,
             time: doseTime.toISOString(),
-            status: log ? log.status : (isBefore(doseTime, new Date()) ? 'missed' : 'pending')
+            status: log ? log.status : (isPending ? 'pending' : 'missed')
           });
         }
       });
