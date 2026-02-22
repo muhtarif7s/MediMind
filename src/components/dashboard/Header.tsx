@@ -1,9 +1,14 @@
 
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useMediMind } from "@/lib/store";
 
 export function Header({ userName }: { userName: string }) {
+  const { t } = useMediMind();
+
   return (
     <header className="flex items-center justify-between p-6 bg-background/80 backdrop-blur-md sticky top-0 z-50">
       <div className="flex items-center gap-3">
@@ -11,8 +16,8 @@ export function Header({ userName }: { userName: string }) {
           <AvatarImage src="https://picsum.photos/seed/user1/200/200" />
           <AvatarFallback>{userName[0]}</AvatarFallback>
         </Avatar>
-        <div>
-          <p className="text-xs text-muted-foreground">Good Morning,</p>
+        <div className="text-start">
+          <p className="text-xs text-muted-foreground">{t('goodMorning')},</p>
           <h1 className="text-lg font-bold">{userName}</h1>
         </div>
       </div>

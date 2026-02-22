@@ -1,19 +1,22 @@
+
 "use client";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, ClipboardList, BarChart3, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const navItems = [
-  { icon: Home, label: 'Home', href: '/' },
-  { icon: ClipboardList, label: 'Meds', href: '/medications' },
-  { icon: BarChart3, label: 'Stats', href: '/history' },
-  { icon: Settings, label: 'Settings', href: '/settings' },
-];
+import { useMediMind } from '@/lib/store';
 
 export function NavBar() {
   const pathname = usePathname();
+  const { t } = useMediMind();
+
+  const navItems = [
+    { icon: Home, label: t('home'), href: '/' },
+    { icon: ClipboardList, label: t('meds'), href: '/medications' },
+    { icon: BarChart3, label: t('stats'), href: '/history' },
+    { icon: Settings, label: t('settings'), href: '/settings' },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-background/95 backdrop-blur-xl border-t h-[calc(4.5rem+env(safe-area-inset-bottom))] flex items-start justify-around px-4 z-50 pt-2 pb-[env(safe-area-inset-bottom)]">

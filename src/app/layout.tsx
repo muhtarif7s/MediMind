@@ -1,41 +1,40 @@
+
+"use client";
+
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { useMediMind } from '@/lib/store';
+import { useEffect, useState } from 'react';
 
-export const metadata: Metadata = {
-  title: 'MediMind',
-  description: 'Intelligent Medication Manager',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'MediMind',
-    startupImage: [
-      {
-        url: 'https://picsum.photos/seed/splash/1125/2436',
-        media: '(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)',
-      },
-    ],
-  },
-  formatDetection: {
-    telephone: false,
-  },
-  icons: {
-    apple: [
-      { url: 'https://picsum.photos/seed/icon/180/180', sizes: '180x180', type: 'image/png' },
-    ],
-  },
-};
+// Note: Metadata and Viewport are handled separately in Next.js 15 for Client Components
+// but since this is a root layout, we'll keep the visual structure here.
 
-export const viewport: Viewport = {
-  themeColor: '#bae6fd',
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: 'cover',
-};
+function AppWrapper({ children }: { children: React.ReactNode }) {
+  const { profile, isLoaded } = useMediMind();
+  const [isRTL, setIsRTL] = useState(false);
+
+  useEffect(() => {
+    if (isLoaded) {
+      const rtl = profile.language === 'ar';
+      setIsRTL(rtl);
+      document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+      document.documentElement.lang = profile.language;
+    }
+  }, [profile.language, isLoaded]);
+
+  return (
+    <main 
+      dir={isRTL ? 'rtl' : 'ltr'} 
+      className="max-w-md mx-auto relative bg-background h-full shadow-xl overflow-hidden flex flex-col border-x"
+    >
+      <div className="flex-1 overflow-hidden">
+        {children}
+      </div>
+    </main>
+  );
+}
 
 export default function RootLayout({
   children,
@@ -54,11 +53,9 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased bg-background h-full overflow-hidden">
         <FirebaseClientProvider>
-          <main className="max-w-md mx-auto relative bg-background h-full shadow-xl overflow-hidden flex flex-col border-x">
-            <div className="flex-1 overflow-hidden">
-              {children}
-            </div>
-          </main>
+          <AppWrapper>
+            {children}
+          </AppWrapper>
           <Toaster />
         </FirebaseClientProvider>
       </body>

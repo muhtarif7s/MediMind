@@ -16,7 +16,7 @@ import { Loader2 } from 'lucide-react';
 export default function Home() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
-  const { medications = [], profile, logDose, getTodayDoses, isLoaded } = useMediMind();
+  const { medications = [], profile, logDose, getTodayDoses, isLoaded, t } = useMediMind();
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -28,7 +28,7 @@ export default function Home() {
     return (
       <div className="h-full flex flex-col items-center justify-center p-6 space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm font-bold text-muted-foreground">Syncing your health data...</p>
+        <p className="text-sm font-bold text-muted-foreground">{t('syncing')}</p>
       </div>
     );
   }
@@ -53,7 +53,7 @@ export default function Home() {
             />
           ) : (
             <div className="p-6 bg-secondary rounded-2xl text-center">
-              <p className="text-sm font-bold text-muted-foreground">All doses for today completed!</p>
+              <p className="text-sm font-bold text-muted-foreground">{t('allDosesCompleted')}</p>
             </div>
           )}
 

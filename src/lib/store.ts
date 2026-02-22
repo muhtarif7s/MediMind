@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Medication, DoseHistory, UserProfile, DoseStatus } from './types';
 import { addDays, format, parseISO, isBefore, isAfter, startOfDay, endOfDay } from 'date-fns';
 import { 
@@ -14,7 +14,8 @@ import {
   addDocumentNonBlocking, 
   setDocumentNonBlocking 
 } from '@/firebase';
-import { collection, doc, query, where, orderBy } from 'firebase/firestore';
+import { collection, doc, query, where } from 'firebase/firestore';
+import { translations } from './translations';
 
 export function useMediMind() {
   const { user } = useUser();
@@ -30,10 +31,15 @@ export function useMediMind() {
 
   const profile = useMemo(() => ({
     name: profileData?.name || 'User',
-    language: profileData?.language || 'en',
+    language: (profileData?.language as 'en' | 'ar') || 'en',
     notificationsEnabled: profileData?.notificationsEnabled ?? true,
     theme: profileData?.theme || 'light',
   }), [profileData]);
+
+  // Translation helper
+  const t = (key: keyof typeof translations.en) => {
+    return translations[profile.language][key] || translations.en[key] || key;
+  };
 
   const setProfile = (updates: Partial<UserProfile>) => {
     if (!user || !db || !profileRef) return;
@@ -49,8 +55,7 @@ export function useMediMind() {
   const { data: medicationsData, isLoading: isMedsLoading } = useCollection<Medication>(medsQuery);
   const medications = medicationsData || [];
 
-  // 3. Dose History (Simplified for MVP: we track history in a flat state or fetch per med)
-  // For production, a collection group query would be used.
+  // 3. Dose History
   const [history, setHistory] = useState<DoseHistory[]>([]);
 
   const isLoaded = !isMedsLoading && !isProfileLoading && !!user;
@@ -143,6 +148,7 @@ export function useMediMind() {
     history,
     profile,
     isLoaded,
+    t,
     addMedication,
     updateMedication,
     deleteMedication,

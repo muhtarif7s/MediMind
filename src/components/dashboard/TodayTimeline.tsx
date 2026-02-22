@@ -1,9 +1,12 @@
 
+"use client";
+
 import { Medication, DoseStatus } from '@/lib/types';
 import { format, parseISO } from 'date-fns';
 import { CheckCircle2, Circle, XCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useMediMind } from '@/lib/store';
 
 interface TimelineProps {
   doses: Array<{ med: Medication; time: string; status: DoseStatus }>;
@@ -11,22 +14,28 @@ interface TimelineProps {
 }
 
 export function TodayTimeline({ doses, onAction }: TimelineProps) {
+  const { t, profile } = useMediMind();
+  const isRTL = profile.language === 'ar';
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold">Today's Timeline</h3>
+        <h3 className="text-lg font-bold">{t('todaysTimeline')}</h3>
         <span className="text-xs text-muted-foreground font-medium">{format(new Date(), 'EEEE, MMMM do')}</span>
       </div>
 
-      <div className="relative pl-8 space-y-8 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-border">
+      <div className={cn(
+        "relative space-y-8 before:absolute before:top-2 before:bottom-2 before:w-[2px] before:bg-border",
+        isRTL ? "pr-8 before:right-[11px]" : "pl-8 before:left-[11px]"
+      )}>
         {doses.map((dose, idx) => {
           const doseTime = parseISO(dose.time);
-          const isPast = dose.status !== 'pending';
           
           return (
             <div key={`${dose.med.id}-${idx}`} className="relative">
               <span className={cn(
-                "absolute left-[-30px] top-1 z-10 p-1 rounded-full bg-background border-2",
+                "absolute top-1 z-10 p-1 rounded-full bg-background border-2",
+                isRTL ? "right-[-30px]" : "left-[-30px]",
                 dose.status === 'taken' ? "border-primary text-primary" : 
                 dose.status === 'missed' ? "border-destructive text-destructive" :
                 "border-muted-foreground text-muted-foreground"
@@ -36,7 +45,7 @@ export function TodayTimeline({ doses, onAction }: TimelineProps) {
                  <Circle className="h-4 w-4" />}
               </span>
 
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 text-start">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-bold text-muted-foreground">{format(doseTime, 'hh:mm a')}</p>
                   {dose.status === 'pending' && (
@@ -47,14 +56,14 @@ export function TodayTimeline({ doses, onAction }: TimelineProps) {
                         className="h-7 px-2 text-[10px] text-destructive hover:bg-destructive/10"
                         onClick={() => onAction(dose.med.id, dose.time, 'skipped')}
                       >
-                        Skip
+                        {t('skip')}
                       </Button>
                       <Button 
                         size="sm" 
                         className="h-7 px-3 text-[10px]"
                         onClick={() => onAction(dose.med.id, dose.time, 'taken')}
                       >
-                        Taken
+                        {t('taken')}
                       </Button>
                     </div>
                   )}
