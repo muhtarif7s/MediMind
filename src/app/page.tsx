@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMediMind } from '@/lib/store';
@@ -10,13 +11,12 @@ import { NavBar } from '@/components/navigation/NavBar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUser, initiateAnonymousSignIn, useAuth } from '@/firebase';
 import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
 export default function Home() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
-  const { medications, profile, logDose, getTodayDoses, isLoaded } = useMediMind();
+  const { medications = [], profile, logDose, getTodayDoses, isLoaded } = useMediMind();
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -33,9 +33,9 @@ export default function Home() {
     );
   }
 
-  const todayDoses = getTodayDoses();
+  const todayDoses = getTodayDoses() || [];
   const nextDose = todayDoses.find(d => d.status === 'pending');
-  const lowStockMeds = medications.filter(m => m.remainingQuantity <= m.refillThreshold);
+  const lowStockMeds = (medications || []).filter(m => m.remainingQuantity <= m.refillThreshold);
 
   return (
     <div className="flex flex-col h-screen pb-[calc(4.5rem+env(safe-area-inset-bottom))]">
@@ -73,7 +73,7 @@ export default function Home() {
           />
 
           {/* Active Medications List */}
-          <MedicationList medications={medications} />
+          <MedicationList medications={medications || []} />
         </div>
       </ScrollArea>
 

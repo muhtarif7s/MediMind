@@ -12,12 +12,14 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 export default function MedicationsPage() {
-  const { medications, isLoaded } = useMediMind();
+  const { medications = [], isLoaded } = useMediMind();
   const [search, setSearch] = useState('');
 
   if (!isLoaded) return null;
 
-  const filtered = medications.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = (medications || []).filter(m => 
+    m.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="flex flex-col h-screen pb-20">

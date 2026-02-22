@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -11,11 +12,6 @@ export function useMediMind() {
   const db = useFirestore();
 
   // 1. Fetch User Profile
-  const profileDocRef = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return doc(db, 'users', user.uid);
-  }, [db, user]);
-  // Note: For simplicity, we'll keep profile local for now or use useDoc for real sync
   const [profile, setProfile] = useState<UserProfile>({
     name: 'User',
     language: 'en',
@@ -28,19 +24,13 @@ export function useMediMind() {
     if (!db || !user) return null;
     return query(collection(db, 'users', user.uid, 'medicines'), where('isActive', '==', true));
   }, [db, user]);
-  const { data: medications = [], isLoading: isMedsLoading } = useCollection<Medication>(medsQuery);
+  
+  const { data: medicationsData, isLoading: isMedsLoading } = useCollection<Medication>(medsQuery);
+  const medications = medicationsData || [];
 
-  // 3. Fetch History (Recent 100 logs)
-  const historyQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    // We'd need to loop through meds to get subcollections, but rules/paths are complex.
-    // For MVP released as a "mobile app", we might just flat map or query collection group if allowed.
-    // However, let's keep it simple: we only show logs for the medicines currently loaded.
-    return null; // Placeholder for logic below
-  }, [db, user]);
-
-  // For a robust releasing app, we'll handle history slightly differently
-  // Since subcollections are nested under medicines, we'll maintain a local state for today's logs for immediate speed
+  // 3. Dose History Logic
+  // For the MVP release, we maintain a local history state that is updated when doses are logged.
+  // In a full production app, this would also be synced with a subcollection listener.
   const [history, setHistory] = useState<DoseHistory[]>([]);
 
   const isLoaded = !isMedsLoading && !!user;
@@ -64,7 +54,7 @@ export function useMediMind() {
   const deleteMedication = (id: string) => {
     if (!user || !db) return;
     const docRef = doc(db, 'users', user.uid, 'medicines', id);
-    // Soft delete
+    // Soft delete to preserve history if needed
     updateDocumentNonBlocking(docRef, { isActive: false });
   };
 
@@ -80,10 +70,10 @@ export function useMediMind() {
     };
     
     addDocumentNonBlocking(colRef, logData);
-    setHistory(prev => [...prev, logData as any]); // Optimistic update for UI
+    setHistory(prev => [...prev, logData as any]); 
 
     if (status === 'taken') {
-      const med = medications?.find(m => m.id === medicationId);
+      const med = medications.find(m => m.id === medicationId);
       if (med) {
         updateMedication(medicationId, {
           remainingQuantity: Math.max(0, med.remainingQuantity - med.dosageAmount)
@@ -99,7 +89,7 @@ export function useMediMind() {
     
     let scheduled: Array<{ med: Medication; time: string; status: DoseStatus }> = [];
 
-    medications?.forEach(med => {
+    medications.forEach(med => {
       const medStart = parseISO(med.startDate);
       const medEnd = med.endDate ? parseISO(med.endDate) : addDays(today, 1);
       
