@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -17,7 +16,7 @@ export function NavBar() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-background/95 backdrop-blur-xl border-t h-[calc(5rem+env(safe-area-inset-bottom))] flex items-start justify-around px-4 z-50 pt-2 pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-background/95 backdrop-blur-xl border-t h-[calc(4.5rem+env(safe-area-inset-bottom))] flex items-start justify-around px-4 z-50 pt-2 pb-[env(safe-area-inset-bottom)]">
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         const Icon = item.icon;
@@ -27,7 +26,7 @@ export function NavBar() {
             key={item.href} 
             href={item.href}
             className={cn(
-              "flex flex-col items-center gap-1 transition-all flex-1",
+              "flex flex-col items-center gap-1 transition-all flex-1 h-full pt-1",
               isActive ? "text-primary scale-105" : "text-muted-foreground active:scale-95"
             )}
           >

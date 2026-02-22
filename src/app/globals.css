@@ -62,13 +62,19 @@
   }
   
   body {
-    @apply bg-background text-foreground font-body select-none;
+    @apply bg-background text-foreground font-body;
     touch-action: manipulation;
     overscroll-behavior-y: none;
     position: fixed;
     width: 100%;
-    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    height: 100dvh; 
     overflow: hidden;
+    user-select: none;
+  }
+
+  /* Allow text selection in inputs and specific content */
+  input, textarea, [contenteditable="true"], .selectable {
+    user-select: text;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -87,4 +93,10 @@
 
 .page-transition {
   @apply animate-in fade-in duration-300;
+}
+
+/* Momentum scrolling for iOS */
+.scroll-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }

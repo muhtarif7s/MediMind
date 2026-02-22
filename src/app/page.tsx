@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMediMind } from '@/lib/store';
@@ -9,7 +8,6 @@ import { MedicationList } from '@/components/medications/MedicationList';
 import { InventoryAlert } from '@/components/dashboard/InventoryAlert';
 import { NavBar } from '@/components/navigation/NavBar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { parseISO, isAfter } from 'date-fns';
 
 export default function Home() {
   const { medications, profile, logDose, getTodayDoses, isLoaded } = useMediMind();
@@ -21,11 +19,13 @@ export default function Home() {
   const lowStockMeds = medications.filter(m => m.remainingQuantity <= m.refillThreshold);
 
   return (
-    <div className="flex flex-col h-screen pb-20">
-      <Header userName={profile.name} />
+    <div className="flex flex-col h-screen pb-[calc(4.5rem+env(safe-area-inset-bottom))]">
+      <div className="pt-[env(safe-area-inset-top)] bg-background/80 backdrop-blur-md sticky top-0 z-50">
+        <Header userName={profile.name} />
+      </div>
       
       <ScrollArea className="flex-1 px-6 pb-6">
-        <div className="space-y-8 py-2">
+        <div className="space-y-8 py-4">
           {/* Next Dose Highlight */}
           {nextDose ? (
             <NextDoseCountdown 

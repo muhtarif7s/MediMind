@@ -7,6 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Intelligent medication manager with AI refill alerts.',
     start_url: '/',
     display: 'standalone',
+    display_override: ['window-controls-overlay', 'standalone', 'minimal-ui'],
     orientation: 'portrait',
     background_color: '#f0f9ff',
     theme_color: '#bae6fd',
