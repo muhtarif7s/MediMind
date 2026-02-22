@@ -17,21 +17,21 @@ service cloud.firestore {
     }
 
     // Collection Group rules for 'doseLogs'
-    // This is required for query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid))
-    match /{path=**}/doseLogs/{doseLogId} {
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+    // This is required for query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
+    match /{prefix=**}/doseLogs/{doseLogId} {
+      // Allow list/get if the document belongs to the user (via userId field or path)
+      allow list, get: if isSignedIn() && (
+        (resource != null && resource.data.userId == request.auth.uid) ||
+        (prefix.size() >= 2 && prefix[1] == request.auth.uid)
+      );
+      // Allow mutations only if the user owns the record
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
     // User Profile Rules
     match /users/{userId} {
-      allow get, list: if isOwner(userId);
-      // Allow creation of profile if the user is signed in as that ID
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow get, list, create, update, delete: if isOwner(userId);
 
       // Medicine Rules
       match /medicines/{medicineId} {

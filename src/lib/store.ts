@@ -51,12 +51,14 @@ export function useMediMind() {
 
   // Translation helper
   const t = (key: keyof typeof translations.en) => {
-    return translations[profile.language][key] || translations.en[key] || key;
+    const lang = profile.language as keyof typeof translations;
+    const dict = translations[lang] || translations.en;
+    return (dict as any)[key] || (translations.en as any)[key] || key;
   };
 
   const setProfile = (updates: Partial<UserProfile>) => {
     if (!user || !db || !profileRef) return;
-    setDocumentNonBlocking(profileRef, { ...profile, ...updates, id: user.uid }, { merge: true });
+    setDocumentNonBlocking(profileRef, updates, { merge: true });
   };
 
   // 2. Fetch Medications
@@ -71,7 +73,7 @@ export function useMediMind() {
   // 3. Fetch Dose History
   const historyQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
-    // Collection group query requires specific security rules and potentially a composite index
+    // Collection group query requires specific security rules and an index (managed by Studio)
     return query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid));
   }, [db, user]);
 
@@ -144,6 +146,7 @@ export function useMediMind() {
         const doseTime = new Date(today);
         doseTime.setHours(hours, minutes, 0, 0);
 
+        // Check if doseTime is after the medication start date
         if (isAfter(doseTime, medStart) && (!med.endDate || isBefore(doseTime, medEnd))) {
           const log = history.find(h => 
             h.medicationId === med.id && 
