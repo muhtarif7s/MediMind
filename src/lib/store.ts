@@ -4,20 +4,41 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Medication, DoseHistory, UserProfile, DoseStatus } from './types';
 import { addDays, format, parseISO, isBefore, isAfter, startOfDay, endOfDay } from 'date-fns';
-import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { 
+  useUser, 
+  useFirestore, 
+  useCollection, 
+  useDoc,
+  useMemoFirebase, 
+  updateDocumentNonBlocking, 
+  addDocumentNonBlocking, 
+  setDocumentNonBlocking 
+} from '@/firebase';
 import { collection, doc, query, where, orderBy } from 'firebase/firestore';
 
 export function useMediMind() {
   const { user } = useUser();
   const db = useFirestore();
 
-  // 1. Fetch User Profile
-  const [profile, setProfile] = useState<UserProfile>({
-    name: 'User',
-    language: 'en',
-    notificationsEnabled: true,
-    theme: 'light',
-  });
+  // 1. Fetch User Profile from Firestore
+  const profileRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user]);
+
+  const { data: profileData, isLoading: isProfileLoading } = useDoc<UserProfile>(profileRef);
+
+  const profile = useMemo(() => ({
+    name: profileData?.name || 'User',
+    language: profileData?.language || 'en',
+    notificationsEnabled: profileData?.notificationsEnabled ?? true,
+    theme: profileData?.theme || 'light',
+  }), [profileData]);
+
+  const setProfile = (updates: Partial<UserProfile>) => {
+    if (!user || !db || !profileRef) return;
+    setDocumentNonBlocking(profileRef, { ...profile, ...updates, id: user.uid }, { merge: true });
+  };
 
   // 2. Fetch Medications
   const medsQuery = useMemoFirebase(() => {
@@ -28,12 +49,11 @@ export function useMediMind() {
   const { data: medicationsData, isLoading: isMedsLoading } = useCollection<Medication>(medsQuery);
   const medications = medicationsData || [];
 
-  // 3. Dose History Logic
-  // For the MVP release, we maintain a local history state that is updated when doses are logged.
-  // In a full production app, this would also be synced with a subcollection listener.
+  // 3. Dose History (Simplified for MVP: we track history in a flat state or fetch per med)
+  // For production, a collection group query would be used.
   const [history, setHistory] = useState<DoseHistory[]>([]);
 
-  const isLoaded = !isMedsLoading && !!user;
+  const isLoaded = !isMedsLoading && !isProfileLoading && !!user;
 
   const addMedication = (med: Omit<Medication, 'id'>) => {
     if (!user || !db) return;
@@ -54,7 +74,6 @@ export function useMediMind() {
   const deleteMedication = (id: string) => {
     if (!user || !db) return;
     const docRef = doc(db, 'users', user.uid, 'medicines', id);
-    // Soft delete to preserve history if needed
     updateDocumentNonBlocking(docRef, { isActive: false });
   };
 
