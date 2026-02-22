@@ -3,21 +3,30 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { initiateEmailSignIn, initiateEmailSignUp } from '@/firebase/non-blocking-login';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { translations } from '@/lib/translations';
-import { Pill } from 'lucide-react';
+import { Pill, Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 
 export default function LoginPage() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/');
+    }
+  }, [user, isUserLoading, router]);
 
   // Simple language detection for auth page
   const t = (key: keyof typeof translations.en) => translations.en[key];
@@ -31,6 +40,14 @@ export default function LoginPage() {
     }
   };
 
+  if (isUserLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-screen bg-background items-center justify-center p-6">
       <div className="mb-8 flex flex-col items-center gap-2">
@@ -43,7 +60,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm border-none shadow-none bg-transparent">
         <CardHeader className="text-center px-0">
           <CardTitle className="text-2xl font-bold">{isRegistering ? t('register') : t('login')}</CardTitle>
-          <CardDescription>{t('authSubtitle')}</CardDescription>
+          <CardDescription>{isRegistering ? t('authSubtitle') : t('authWelcome')}</CardDescription>
         </CardHeader>
         <CardContent className="px-0">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -79,7 +96,7 @@ export default function LoginPage() {
             <Button 
               variant="ghost" 
               onClick={() => setIsRegistering(!isRegistering)}
-              className="text-muted-foreground hover:text-primary transition-colors"
+              className="text-muted-foreground hover:text-primary transition-colors h-auto py-2"
             >
               {isRegistering ? t('hasAccount') : t('noAccount')}
             </Button>

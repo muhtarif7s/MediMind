@@ -17,18 +17,22 @@ service cloud.firestore {
     }
 
     // Collection Group rules for 'doseLogs'
-    // This allows query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
+    // Essential for: query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{doseLogId} {
-      allow list, get: if isSignedIn() && (
+      allow read: if isSignedIn() && (
         resource == null || resource.data.userId == request.auth.uid
       );
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid
+      );
+      allow update, delete: if isSignedIn() && (
+        resource.data.userId == request.auth.uid
+      );
     }
 
-    // User Profile Rules
+    // User Profile & Hierarchical Rules
     match /users/{userId} {
-      allow get, list, create, update, delete: if isOwner(userId);
+      allow read, write: if isOwner(userId);
 
       // Medicine Rules
       match /medicines/{medicineId} {
