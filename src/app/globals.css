@@ -29,7 +29,7 @@
     --chart-3: 199 89% 48%;
     --chart-4: 190 90% 70%;
     --chart-5: 200 80% 85%;
-    --radius: 1rem;
+    --radius: 1.25rem;
   }
 
   .dark {
@@ -58,11 +58,29 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
   }
+  
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground font-body select-none;
+    touch-action: manipulation;
   }
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline;
   }
+
+  /* Hide scrollbars for a cleaner app look */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Transitions for a native feel */
+.page-transition {
+  @apply animate-in fade-in duration-300;
 }
