@@ -56,7 +56,8 @@ export function useMediMind() {
   const medications = medicationsData || [];
 
   // 3. Fetch Dose History (Sync with Firestore)
-  // We use a collectionGroup query to find all 'doseLogs' subcollections that belong to this user
+  // We use a collectionGroup query to find all 'doseLogs' subcollections that belong to this user.
+  // Security rules must specifically allow list operations on the doseLogs collection group.
   const historyQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid));
@@ -98,7 +99,7 @@ export function useMediMind() {
       scheduledTime,
       status,
       recordedAt: new Date().toISOString(),
-      userId: user.uid,
+      userId: user.uid, // Required for security rules collection group queries
     };
     
     addDocumentNonBlocking(colRef, logData);

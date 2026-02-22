@@ -17,26 +17,25 @@ service cloud.firestore {
 
     // Allow collection group queries for doseLogs.
     // This is critical for the history query in store.ts.
-    // We check both the denormalized userId field and the path segments.
-    match /{allPaths=**}/doseLogs/{doseLogId} {
-      allow read: if isSignedIn() && (
-        resource.data.userId == request.auth.uid ||
-        (allPaths.size() >= 2 && allPaths[0] == 'users' && allPaths[1] == request.auth.uid)
-      );
+    // For a collection group query to be authorized, the rules must 
+    // allow the operation based on the fields used in the query filter.
+    match /{path=**}/doseLogs/{doseLogId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow write: if isSignedIn() && (
         (request.resource != null && request.resource.data.userId == request.auth.uid) ||
-        (resource != null && resource.data.userId == request.auth.uid) ||
-        (allPaths.size() >= 2 && allPaths[0] == 'users' && allPaths[1] == request.auth.uid)
+        (resource != null && resource.data.userId == request.auth.uid)
       );
     }
 
     match /users/{userId} {
+      // User can read and write their own profile
       allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isOwner(userId) && request.resource.data.id == resource.data.id;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
       allow delete: if isOwner(userId);
 
       match /medicines/{medicineId} {
+        // User can manage their own medications
         allow get, list: if isOwner(userId);
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
         allow update: if isOwner(userId) && request.resource.data.userId == resource.data.userId;
