@@ -15,45 +15,36 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
-    }
-
     // Allow collection group queries for doseLogs.
-    // We check both the denormalized userId field and the path segments for maximum reliability.
-    match /{path=**}/doseLogs/{doseLogId} {
+    // This is critical for the history query in store.ts.
+    // We check both the denormalized userId field and the path segments.
+    match /{allPaths=**}/doseLogs/{doseLogId} {
       allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        (allPaths.size() >= 2 && allPaths[0] == 'users' && allPaths[1] == request.auth.uid)
+      );
+      allow write: if isSignedIn() && (
+        (request.resource != null && request.resource.data.userId == request.auth.uid) ||
         (resource != null && resource.data.userId == request.auth.uid) ||
-        (path.size() >= 2 && path[1] == request.auth.uid)
+        (allPaths.size() >= 2 && allPaths[0] == 'users' && allPaths[1] == request.auth.uid)
       );
     }
 
     match /users/{userId} {
       allow get, list: if isOwner(userId);
       allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
+      allow update: if isOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isOwner(userId);
 
       match /medicines/{medicineId} {
         allow get, list: if isOwner(userId);
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-        allow delete: if isExistingOwner(userId);
+        allow update: if isOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isOwner(userId);
 
-        match /schedules/{scheduleId} {
-          allow get, list: if isOwner(userId);
-          allow create: if isOwner(userId) && request.resource.data.userId == userId;
-          allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-          allow delete: if isExistingOwner(userId);
-        }
-
+        // Subcollection rules for direct document access
         match /doseLogs/{doseLogId} {
-          // Read access is primarily handled by the collection group rule above,
-          // but we keep specific path rules for direct document operations.
-          allow read: if isOwner(userId);
-          allow create: if isOwner(userId) && request.resource.data.userId == userId;
-          allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-          allow delete: if isExistingOwner(userId);
+          allow read, write: if isOwner(userId);
         }
       }
     }
