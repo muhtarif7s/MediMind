@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
-import { AlertCircle, LogOut, RefreshCcw } from 'lucide-react';
+import { AlertCircle, LogOut, RefreshCcw, UserPlus } from 'lucide-react';
 
 export default function Error({
   error,
@@ -19,8 +19,7 @@ export default function Error({
   const auth = useAuth();
 
   useEffect(() => {
-    // Log the error for debugging
-    console.error('App Error:', error);
+    console.error('App Error Boundary caught:', error);
   }, [error]);
 
   const handleLogout = async () => {
@@ -28,7 +27,6 @@ export default function Error({
       await signOut(auth);
       router.push('/login');
     } catch (e) {
-      console.error('Logout failed', e);
       router.push('/login');
     }
   };
@@ -42,7 +40,7 @@ export default function Error({
       <div className="space-y-2 mb-8">
         <h2 className="text-2xl font-bold tracking-tight">Sync Issue Detected</h2>
         <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-          We encountered a permission error while syncing your data. This often happens if your session has expired or your account needs re-authentication.
+          We encountered a permission error while syncing your data. This can usually be fixed by refreshing your session or logging in again.
         </p>
       </div>
       
@@ -60,7 +58,7 @@ export default function Error({
           className="rounded-2xl h-14 font-bold text-lg border-2 active:scale-95 transition-transform"
         >
           <LogOut className="h-5 w-5 mr-2" />
-          Go to Login
+          Sign Out & Re-login
         </Button>
       </div>
       

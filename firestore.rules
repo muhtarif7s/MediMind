@@ -5,8 +5,7 @@ service cloud.firestore {
 
     /**
      * MediMind Security Rules
-     * Optimized for mobile-first PWA with collection group support.
-     * Updated to fix collection group permission errors for dose history.
+     * Optimized for collection group queries and hierarchical user data.
      */
 
     function isSignedIn() {
@@ -14,21 +13,23 @@ service cloud.firestore {
     }
 
     // Collection Group rules for 'doseLogs'
-    // Essential for: query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
+    // This allows: query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{doseLogId} {
-      // Allow list and get if the user owns the document
-      // We check both the denormalized field and the path hierarchy for robustness
-      allow read: if isSignedIn() && (
-        (resource != null && resource.data.userId == request.auth.uid) ||
-        (path.size() >= 2 && path[1] == request.auth.uid)
+      // For queries (list), the rule must be statically verifiable by the query filters.
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      // For single document access (get), we can check both the data and the path.
+      allow get: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        (path.size() >= 4 && path[1] == request.auth.uid)
       );
       
-      // For creating a new dose log
+      // Allow creation if the data identifies the current user.
       allow create: if isSignedIn() && (
         request.resource.data.userId == request.auth.uid
       );
       
-      // For updating or deleting an existing dose log
+      // Allow updates/deletes if the existing document belongs to the user.
       allow update, delete: if isSignedIn() && (
         resource.data.userId == request.auth.uid
       );
@@ -42,7 +43,7 @@ service cloud.firestore {
       match /medicines/{medicineId} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
 
-        // Nested DoseLog Rules (direct access)
+        // Nested DoseLog Rules (direct subcollection access)
         match /doseLogs/{doseLogId} {
           allow read, write: if isSignedIn() && request.auth.uid == userId;
         }

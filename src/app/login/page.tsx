@@ -10,39 +10,54 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { translations } from '@/lib/translations';
-import { Pill, Loader2 } from 'lucide-react';
+import { Pill, Loader2, AlertCircle } from 'lucide-react';
 import { useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user, isUserLoading } = useUser();
+  const { toast } = useToast();
   const auth = useAuth();
   const router = useRouter();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (!isUserLoading && user) {
       router.push('/');
     }
   }, [user, isUserLoading, router]);
 
-  // Simple language detection for auth page
   const t = (key: keyof typeof translations.en) => translations.en[key];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
+    const callbacks = {
+      onError: (err: any) => {
+        setIsSubmitting(false);
+        console.error('Auth error:', err);
+        toast({
+          variant: "destructive",
+          title: "Authentication Failed",
+          description: err.message || "Please check your credentials and try again.",
+        });
+      }
+    };
+
     if (isRegistering) {
-      initiateEmailSignUp(auth, email, password);
+      initiateEmailSignUp(auth, email, password, callbacks);
     } else {
-      initiateEmailSignIn(auth, email, password);
+      initiateEmailSignIn(auth, email, password, callbacks);
     }
   };
 
   if (isUserLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -73,7 +88,8 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-12 rounded-2xl bg-card border-none shadow-sm"
+                disabled={isSubmitting}
+                className="h-12 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary"
               />
             </div>
             <div className="space-y-2">
@@ -84,11 +100,20 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="h-12 rounded-2xl bg-card border-none shadow-sm"
+                disabled={isSubmitting}
+                className="h-12 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary"
               />
             </div>
-            <Button type="submit" className="w-full h-14 rounded-2xl text-lg font-bold mt-6 shadow-lg shadow-primary/20">
-              {isRegistering ? t('register') : t('login')}
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="w-full h-14 rounded-2xl text-lg font-bold mt-6 shadow-lg shadow-primary/20"
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                isRegistering ? t('register') : t('login')
+              )}
             </Button>
           </form>
 
@@ -99,6 +124,7 @@ export default function LoginPage() {
             <Button 
               variant="link" 
               onClick={() => setIsRegistering(!isRegistering)}
+              disabled={isSubmitting}
               className="text-primary font-bold h-auto p-0"
             >
               {isRegistering ? t('login') : t('register')}
