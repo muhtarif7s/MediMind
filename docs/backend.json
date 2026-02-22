@@ -1,0 +1,317 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents the user's local profile and application settings within MediMind. Authentication data is assumed to be handled by an external system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's display name or nickname."
+        },
+        "language": {
+          "type": "string",
+          "description": "The preferred language for the application user interface (e.g., 'en' for English, 'ar' for Arabic).",
+          "format": "language"
+        },
+        "themePreference": {
+          "type": "string",
+          "description": "The user's preference for the app's visual theme ('light' or 'dark').",
+          "format": "enum",
+          "items": {
+            "type": "string"
+          }
+        },
+        "biometricLockEnabled": {
+          "type": "boolean",
+          "description": "Indicates whether biometric authentication (fingerprint/face ID) is enabled to protect access to the app."
+        },
+        "defaultNotificationSound": {
+          "type": "string",
+          "description": "The identifier or path to the default sound file to be used for notifications, if set by the user."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "language",
+        "themePreference",
+        "biometricLockEnabled"
+      ]
+    },
+    "Medicine": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Medicine",
+      "type": "object",
+      "description": "Represents a specific medication that the user is managing, including its dosage, status, and inventory tracking details.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Medicine entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile entity who owns this medicine. (Relationship: UserProfile 1:N Medicine)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The commercial or generic name of the medicine."
+        },
+        "dosageAmount": {
+          "type": "number",
+          "description": "The numerical amount of the medicine to be taken per dose."
+        },
+        "dosageUnit": {
+          "type": "string",
+          "description": "The unit of measurement for the dosage (e.g., 'mg', 'ml', 'pill', 'spray', 'capsule')."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional free-text notes or instructions related to the medicine or its usage."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates whether the medicine is currently active and its doses should be scheduled and tracked."
+        },
+        "currentQuantity": {
+          "type": "number",
+          "description": "The current remaining quantity of the medicine in the user's inventory. Automatically decreases when a dose is marked as taken."
+        },
+        "refillThreshold": {
+          "type": "number",
+          "description": "The quantity level at which the user should be alerted that the medicine is running low and needs a refill."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "dosageAmount",
+        "dosageUnit",
+        "isActive",
+        "currentQuantity",
+        "refillThreshold"
+      ]
+    },
+    "Schedule": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Schedule",
+      "type": "object",
+      "description": "Defines a specific recurring pattern or set of times for a medicine to be taken, allowing for complex scheduling.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Schedule entity."
+        },
+        "medicineId": {
+          "type": "string",
+          "description": "Reference to the Medicine entity this schedule belongs to. (Relationship: Medicine 1:N Schedule)"
+        },
+        "scheduleType": {
+          "type": "string",
+          "description": "The type of scheduling pattern (e.g., 'daily', 'specificWeekdays', 'everyXHours', 'customDates').",
+          "format": "enum",
+          "items": {
+            "type": "string"
+          }
+        },
+        "timeOfDay": {
+          "type": "array",
+          "description": "An array of specific times of day (e.g., '10:00', '22:30') for doses. Used for 'daily' and 'specificWeekdays' schedule types, allowing multiple dose times per day per schedule rule.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "intervalHours": {
+          "type": "number",
+          "description": "The number of hours between doses, specifically used for the 'everyXHours' schedule type."
+        },
+        "weekdays": {
+          "type": "array",
+          "description": "An array of specific weekdays (e.g., ['Monday', 'Wednesday', 'Friday']) when doses should be scheduled. Used for 'specificWeekdays' type.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The date from which this schedule becomes active.",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The optional end date when this schedule ceases to be active. If null, the schedule continues indefinitely.",
+          "format": "date"
+        },
+        "notificationChannelId": {
+          "type": "string",
+          "description": "The identifier for the notification channel to use for doses generated by this schedule, allowing for customized notification behavior."
+        },
+        "notificationSound": {
+          "type": "string",
+          "description": "The sound file or identifier for notifications for doses from this schedule, overriding the user's default setting."
+        }
+      },
+      "required": [
+        "id",
+        "medicineId",
+        "scheduleType",
+        "startDate",
+        "notificationChannelId"
+      ]
+    },
+    "DoseLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DoseLog",
+      "type": "object",
+      "description": "Records the history of a single scheduled dose, including its original schedule, actual status, and timing, for adherence tracking and analytics.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the DoseLog entity."
+        },
+        "medicineId": {
+          "type": "string",
+          "description": "Reference to the Medicine entity related to this dose. (Relationship: Medicine 1:N DoseLog)"
+        },
+        "scheduleId": {
+          "type": "string",
+          "description": "Reference to the Schedule entity that generated this specific dose instance. (Relationship: Schedule 1:N DoseLog)"
+        },
+        "scheduledTime": {
+          "type": "string",
+          "description": "The exact date and time the dose was originally scheduled to be taken.",
+          "format": "date-time"
+        },
+        "actualTime": {
+          "type": "string",
+          "description": "The exact date and time the dose was actually taken, skipped, or when a 'remind me later' action was performed.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the dose ('scheduled', 'taken', 'skipped', 'missed', 'reminded_later'). 'Missed' implies it passed scheduled time without action.",
+          "format": "enum",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes related to this specific dose event (e.g., reason for skipping, side effects)."
+        },
+        "systemNotificationId": {
+          "type": "number",
+          "description": "The ID assigned by the local notification system (e.g., Flutter local notifications plugin) for the notification associated with this dose. Useful for cancellation or updates."
+        }
+      },
+      "required": [
+        "id",
+        "medicineId",
+        "scheduleId",
+        "scheduledTime",
+        "status"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores individual user profiles and application settings. The document ID `{userId}` corresponds to the authenticated user's UID. Ownership is implicitly tied to the path and the 'id' field within the document.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the authenticated user (Firebase Authentication UID)."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/medicines/{medicineId}",
+        "definition": {
+          "entityName": "Medicine",
+          "schema": {
+            "$ref": "#/backend/entities/Medicine"
+          },
+          "description": "Contains details for each medicine a user is tracking. Includes denormalized 'userId' field for authorization independence, matching the parent path's user ID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the authenticated user who owns this medicine."
+            },
+            {
+              "name": "medicineId",
+              "description": "The unique ID of the medicine document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/medicines/{medicineId}/schedules/{scheduleId}",
+        "definition": {
+          "entityName": "Schedule",
+          "schema": {
+            "$ref": "#/backend/entities/Schedule"
+          },
+          "description": "Defines the recurring patterns and times for taking a specific medicine. Includes denormalized 'userId' for authorization independence (must be added to the entity schema in practice).",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the authenticated user who owns the parent medicine and this schedule."
+            },
+            {
+              "name": "medicineId",
+              "description": "The unique ID of the parent medicine."
+            },
+            {
+              "name": "scheduleId",
+              "description": "The unique ID of the schedule document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/medicines/{medicineId}/doseLogs/{doseLogId}",
+        "definition": {
+          "entityName": "DoseLog",
+          "schema": {
+            "$ref": "#/backend/entities/DoseLog"
+          },
+          "description": "Records the history and status of individual scheduled doses. Includes denormalized 'userId' for authorization independence (must be added to the entity schema in practice).",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the authenticated user who owns the parent medicine and this dose log."
+            },
+            {
+              "name": "medicineId",
+              "description": "The unique ID of the parent medicine."
+            },
+            {
+              "name": "doseLogId",
+              "description": "The unique ID of the dose log entry."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure for MediMind prioritizes secure, scalable, and debuggable authorization by strictly following Authorization Independence and Structural Segregation principles. All user-specific data is nested under `/users/{userId}`, creating a private data silo for each user. This path-based ownership (`/users/{userId}/...`) ensures that all data within a user's hierarchy is inherently owned by and accessible only to that specific user (`request.auth.uid == userId`).\n\n**Authorization Independence (CRITICAL):**\nTo guarantee authorization independence and avoid inefficient and insecure `get()` calls in security rules, the `userId` field is explicitly denormalized into every subcollection document that logically belongs to a user. Specifically:\n\n*   **UserProfile:** Located at `/users/{userId}`, its `id` field matches the `userId` wildcard, and implicitly `request.auth.uid`. No further denormalization needed.\n*   **Medicine:** Located at `/users/{userId}/medicines/{medicineId}`, its schema already includes `userId`, aligning perfectly with the path and `request.auth.uid` for direct ownership verification (`resource.data.userId == request.auth.uid`).\n*   **Schedule:** Located at `/users/{userId}/medicines/{medicineId}/schedules/{scheduleId}`. Although nested, for strict Authorization Independence, the `userId` of the owning user MUST be denormalized and stored within each `schedule` document. This allows security rules to check `resource.data.userId == request.auth.uid` directly on the `schedule` document without performing a `get()` operation on its parent `medicine` or `user` document.\n*   **DoseLog:** Located at `/users/{userId}/medicines/{medicineId}/doseLogs/{doseLogId}`. Similarly, the `userId` of the owning user MUST be denormalized and stored within each `doseLog` document. This enables direct ownership verification `resource.data.userId == request.auth.uid` on the `doseLog` document, preventing reliance on parent document lookups.\n\nThis denormalization ensures that any security rule applied to `Schedule` or `DoseLog` documents can verify ownership solely based on the document's own data, enabling atomic writes and reads, simplifying rule logic, and improving performance.\n\n**QAPs (Query Access Patterns) Support:**\nThis structure inherently supports secure and efficient Query Access Patterns (QAPs) through the use of strong hierarchical paths and structural segregation:\n\n*   **User Profile Access:** `get('/users/' + request.auth.uid)` directly accesses the user's profile. No `list` operations are expected for user profiles by other users.\n*   **Medicine Listing:** `list` operations on `/users/{userId}/medicines` are secure because the `{userId}` wildcard in the path must match `request.auth.uid`. This naturally filters results to only the current user's medicines.\n*   **Schedule Listing:** `list` operations on `/users/{userId}/medicines/{medicineId}/schedules` are secure, as they are implicitly filtered by `userId` (matching `request.auth.uid`) and `medicineId`. The denormalized `userId` within each `schedule` document reinforces this.\n*   **DoseLog Listing/Analytics:** `list` operations on `/users/{userId}/medicines/{medicineId}/doseLogs` allow for fetching dose history for a specific medicine, securely filtered by `userId` and `medicineId`. Further queries for analytics across all medicines for a user (e.g., all dose logs for `request.auth.uid` for a given time range) could be facilitated by querying the `doseLogs` collection group, which would still be secured by `resource.data.userId == request.auth.uid` on each document.\n\n**Structural Segregation:** Each collection (`users`, `medicines`, `schedules`, `doseLogs`) has a homogeneous security posture: all documents within these collections are owned by and exclusively accessible to the user identified by the `{userId}` in their path (and by the `userId` field denormalized within the document data). There's no mixing of public/private or different roles within the same collection, simplifying rule writing immensely. This design creates clear boundaries and makes the application's data access highly predictable and manageable."
+  }
+}
