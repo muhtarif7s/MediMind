@@ -16,14 +16,18 @@ service cloud.firestore {
     // Collection Group rules for 'doseLogs'
     // Essential for: query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{doseLogId} {
-      // Standard rule for collection group queries (list) and individual reads (get)
+      // Allow list and get if the user owns the document
+      // We check both the denormalized field and the path hierarchy for robustness
       allow read: if isSignedIn() && (
-        resource == null || resource.data.userId == request.auth.uid
+        (resource != null && resource.data.userId == request.auth.uid) ||
+        (path.size() >= 2 && path[1] == request.auth.uid)
       );
+      
       // For creating a new dose log
       allow create: if isSignedIn() && (
         request.resource.data.userId == request.auth.uid
       );
+      
       // For updating or deleting an existing dose log
       allow update, delete: if isSignedIn() && (
         resource.data.userId == request.auth.uid

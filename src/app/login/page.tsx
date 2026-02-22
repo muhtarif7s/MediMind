@@ -92,13 +92,16 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-8 text-center">
-            <Button 
-              variant="ghost" 
-              onClick={() => setIsRegistering(!isRegistering)}
-              className="text-muted-foreground hover:text-primary transition-colors h-auto py-2"
-            >
+          <div className="mt-8 flex flex-col items-center gap-2">
+            <p className="text-sm text-muted-foreground">
               {isRegistering ? t('hasAccount') : t('noAccount')}
+            </p>
+            <Button 
+              variant="link" 
+              onClick={() => setIsRegistering(!isRegistering)}
+              className="text-primary font-bold h-auto p-0"
+            >
+              {isRegistering ? t('login') : t('register')}
             </Button>
           </div>
         </CardContent>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Metadata, Viewport } from 'next';
@@ -7,10 +8,13 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { useMediMind } from '@/lib/store';
 import { useEffect, useState } from 'react';
 import { NotificationManager } from '@/components/notifications/NotificationManager';
+import { usePathname } from 'next/navigation';
 
 function AppWrapper({ children }: { children: React.ReactNode }) {
   const { profile, isLoaded } = useMediMind();
   const [isRTL, setIsRTL] = useState(false);
+  const pathname = usePathname();
+  const isAuthPage = pathname === '/login';
 
   useEffect(() => {
     if (isLoaded) {
@@ -29,7 +33,7 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
       <div className="flex-1 overflow-hidden">
         {children}
       </div>
-      <NotificationManager />
+      {!isAuthPage && <NotificationManager />}
     </main>
   );
 }
