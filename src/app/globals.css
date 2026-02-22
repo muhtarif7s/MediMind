@@ -58,15 +58,16 @@
   * {
     @apply border-border;
     -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
   }
   
   body {
     @apply bg-background text-foreground font-body select-none;
     touch-action: manipulation;
-    overscroll-behavior-y: none; /* Prevents pull-to-refresh in PWA mode */
+    overscroll-behavior-y: none;
     position: fixed;
     width: 100%;
-    height: 100%;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
     overflow: hidden;
   }
 
@@ -84,7 +85,6 @@
   }
 }
 
-/* Transitions for a native feel */
 .page-transition {
   @apply animate-in fade-in duration-300;
 }

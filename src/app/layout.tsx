@@ -1,4 +1,3 @@
-
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
@@ -9,11 +8,16 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'MediMind',
   },
   formatDetection: {
     telephone: false,
+  },
+  icons: {
+    apple: [
+      { url: 'https://picsum.photos/seed/icon/180/180', sizes: '180x180', type: 'image/png' },
+    ],
   },
 };
 
@@ -41,7 +45,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="font-body antialiased bg-background h-full overflow-hidden">
-        <main className="max-w-md mx-auto relative bg-background h-full shadow-xl overflow-hidden flex flex-col border-x">
+        <main className="max-w-md mx-auto relative bg-background h-full shadow-xl overflow-hidden flex flex-col border-x pt-[env(safe-area-inset-top)]">
           <div className="flex-1 overflow-hidden">
             {children}
           </div>
