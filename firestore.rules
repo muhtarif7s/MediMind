@@ -20,8 +20,9 @@ service cloud.firestore {
     }
 
     // Allow collection group queries for doseLogs if the user owns the data
+    // This rule is critical for the history query used in analytics.
     match /{path=**}/doseLogs/{doseLogId} {
-      allow list: if isOwner(resource.data.userId);
+      allow read: if isSignedIn() && request.auth.uid == resource.data.userId;
     }
 
     match /users/{userId} {
