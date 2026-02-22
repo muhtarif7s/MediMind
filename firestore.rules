@@ -17,14 +17,11 @@ service cloud.firestore {
     }
 
     // Collection Group rules for 'doseLogs'
-    // This is required for query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
-    match /{prefix=**}/doseLogs/{doseLogId} {
-      // Allow list/get if the document belongs to the user (via userId field or path)
+    // This allows query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
+    match /{path=**}/doseLogs/{doseLogId} {
       allow list, get: if isSignedIn() && (
-        (resource != null && resource.data.userId == request.auth.uid) ||
-        (prefix.size() >= 2 && prefix[1] == request.auth.uid)
+        resource == null || resource.data.userId == request.auth.uid
       );
-      // Allow mutations only if the user owns the record
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
@@ -37,7 +34,7 @@ service cloud.firestore {
       match /medicines/{medicineId} {
         allow read, write: if isOwner(userId);
 
-        // Nested DoseLog Rules (for direct document access)
+        // Nested DoseLog Rules (direct access)
         match /doseLogs/{doseLogId} {
           allow read, write: if isOwner(userId);
         }

@@ -7,17 +7,31 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronRight, Bell, Moon, Globe, ShieldCheck, Info, Smartphone, Download } from 'lucide-react';
+import { 
+  Bell, 
+  Moon, 
+  Globe, 
+  ShieldCheck, 
+  Info, 
+  Smartphone, 
+  Download,
+  LogOut 
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
   const { profile, setProfile, isLoaded, t } = useMediMind();
   const { toast } = useToast();
+  const auth = useAuth();
+  const router = useRouter();
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState(profile.name);
 
@@ -34,6 +48,11 @@ export default function SettingsPage() {
 
   const handleLanguageChange = (val: 'en' | 'ar') => {
     setProfile({ language: val });
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/login');
   };
 
   return (
@@ -154,18 +173,16 @@ export default function SettingsPage() {
         </section>
 
         <section className="space-y-4">
-          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('security')}</h3>
-          <Card className="border-none shadow-sm">
-            <CardContent className="p-0 divide-y">
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-100 rounded-lg text-green-600"><ShieldCheck className="h-4 w-4" /></div>
-                  <span className="text-sm font-medium">{t('biometricLock')}</span>
-                </div>
-                <Switch id="biometric" />
-              </div>
-            </CardContent>
-          </Card>
+          <Button 
+            variant="ghost" 
+            className="w-full h-12 justify-between px-4 text-destructive hover:bg-destructive/10 hover:text-destructive rounded-2xl border border-destructive/20"
+            onClick={handleLogout}
+          >
+            <div className="flex items-center gap-3">
+              <LogOut className="h-4 w-4" />
+              <span className="text-sm font-bold">{t('logout')}</span>
+            </div>
+          </Button>
         </section>
 
         <section className="space-y-4 pb-10">
@@ -177,7 +194,7 @@ export default function SettingsPage() {
                   <div className="p-2 bg-muted rounded-lg"><Info className="h-4 w-4 text-muted-foreground" /></div>
                   <span className="text-sm font-medium">{t('version')}</span>
                 </div>
-                <span className="text-xs text-muted-foreground">1.0.5 (PWA)</span>
+                <span className="text-xs text-muted-foreground">1.1.0 (Auth)</span>
               </div>
             </CardContent>
           </Card>

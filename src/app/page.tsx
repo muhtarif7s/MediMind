@@ -9,20 +9,21 @@ import { MedicationList } from '@/components/medications/MedicationList';
 import { InventoryAlert } from '@/components/dashboard/InventoryAlert';
 import { NavBar } from '@/components/navigation/NavBar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useUser, initiateAnonymousSignIn, useAuth } from '@/firebase';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
 export default function Home() {
   const { user, isUserLoading } = useUser();
-  const auth = useAuth();
   const { medications = [], profile, logDose, getTodayDoses, isLoaded, t } = useMediMind();
+  const router = useRouter();
 
   useEffect(() => {
     if (!isUserLoading && !user) {
-      initiateAnonymousSignIn(auth);
+      router.push('/login');
     }
-  }, [user, isUserLoading, auth]);
+  }, [user, isUserLoading, router]);
 
   if (isUserLoading || !isLoaded || !user) {
     return (
