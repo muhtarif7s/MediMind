@@ -6,25 +6,25 @@ service cloud.firestore {
     /**
      * MediMind Security Rules
      * Optimized for mobile-first PWA with collection group support.
+     * Updated to fix collection group permission errors for dose history.
      */
 
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
     // Collection Group rules for 'doseLogs'
     // Essential for: query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{doseLogId} {
+      // Standard rule for collection group queries (list) and individual reads (get)
       allow read: if isSignedIn() && (
         resource == null || resource.data.userId == request.auth.uid
       );
+      // For creating a new dose log
       allow create: if isSignedIn() && (
         request.resource.data.userId == request.auth.uid
       );
+      // For updating or deleting an existing dose log
       allow update, delete: if isSignedIn() && (
         resource.data.userId == request.auth.uid
       );
@@ -32,15 +32,15 @@ service cloud.firestore {
 
     // User Profile & Hierarchical Rules
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
 
       // Medicine Rules
       match /medicines/{medicineId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
 
         // Nested DoseLog Rules (direct access)
         match /doseLogs/{doseLogId} {
-          allow read, write: if isOwner(userId);
+          allow read, write: if isSignedIn() && request.auth.uid == userId;
         }
       }
     }
