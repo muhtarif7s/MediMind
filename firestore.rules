@@ -19,10 +19,13 @@ service cloud.firestore {
       return resource != null && isOwner(userId);
     }
 
-    // Allow collection group queries for doseLogs if the user owns the data
-    // This rule is critical for the history query used in analytics.
+    // Allow collection group queries for doseLogs.
+    // We check both the denormalized userId field and the path segments for maximum reliability.
     match /{path=**}/doseLogs/{doseLogId} {
-      allow read: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow read: if isSignedIn() && (
+        (resource != null && resource.data.userId == request.auth.uid) ||
+        (path.size() >= 2 && path[1] == request.auth.uid)
+      );
     }
 
     match /users/{userId} {
@@ -45,7 +48,9 @@ service cloud.firestore {
         }
 
         match /doseLogs/{doseLogId} {
-          allow get, list: if isOwner(userId);
+          // Read access is primarily handled by the collection group rule above,
+          // but we keep specific path rules for direct document operations.
+          allow read: if isOwner(userId);
           allow create: if isOwner(userId) && request.resource.data.userId == userId;
           allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
           allow delete: if isExistingOwner(userId);
