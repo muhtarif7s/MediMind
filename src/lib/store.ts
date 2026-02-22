@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -13,7 +14,7 @@ import {
   addDocumentNonBlocking, 
   setDocumentNonBlocking 
 } from '@/firebase';
-import { collection, doc, query, where } from 'firebase/firestore';
+import { collection, doc, query, where, collectionGroup } from 'firebase/firestore';
 import { translations } from './translations';
 
 export function useMediMind() {
@@ -54,10 +55,17 @@ export function useMediMind() {
   const { data: medicationsData, isLoading: isMedsLoading } = useCollection<Medication>(medsQuery);
   const medications = medicationsData || [];
 
-  // 3. Dose History
-  const [history, setHistory] = useState<DoseHistory[]>([]);
+  // 3. Fetch Dose History (Sync with Firestore)
+  // We use a collectionGroup query to find all 'doseLogs' subcollections that belong to this user
+  const historyQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid));
+  }, [db, user]);
 
-  const isLoaded = !isMedsLoading && !isProfileLoading && !!user;
+  const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseHistory>(historyQuery);
+  const history = historyData || [];
+
+  const isLoaded = !isMedsLoading && !isProfileLoading && !isHistoryLoading && !!user;
 
   const addMedication = (med: Omit<Medication, 'id'>) => {
     if (!user || !db) return;
@@ -83,6 +91,7 @@ export function useMediMind() {
 
   const logDose = (medicationId: string, scheduledTime: string, status: DoseStatus) => {
     if (!user || !db) return;
+    // Log to the specific medication's subcollection
     const colRef = collection(db, 'users', user.uid, 'medicines', medicationId, 'doseLogs');
     const logData = {
       medicationId,
@@ -93,7 +102,6 @@ export function useMediMind() {
     };
     
     addDocumentNonBlocking(colRef, logData);
-    setHistory(prev => [...prev, logData as any]); 
 
     if (status === 'taken') {
       const med = medications.find(m => m.id === medicationId);
@@ -109,6 +117,7 @@ export function useMediMind() {
     const today = new Date();
     const todayStart = startOfDay(today);
     const todayEnd = endOfDay(today);
+    const todayStr = format(today, 'yyyy-MM-dd');
     
     let scheduled: Array<{ med: Medication; time: string; status: DoseStatus }> = [];
 
@@ -123,13 +132,12 @@ export function useMediMind() {
         const doseTime = new Date(today);
         doseTime.setHours(hours, minutes, 0, 0);
 
-        // A dose is "pending" if it's within 15 minutes before or 15 minutes after its scheduled time
-        // but hasn't been logged yet. This gives a window for the countdown to hit zero and show "Due Now".
         if (isAfter(doseTime, medStart) && (!med.endDate || isBefore(doseTime, medEnd))) {
+          // Check history for this specific dose
           const log = history.find(h => 
             h.medicationId === med.id && 
             format(parseISO(h.scheduledTime), 'HH:mm') === timeStr &&
-            format(parseISO(h.scheduledTime), 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')
+            format(parseISO(h.scheduledTime), 'yyyy-MM-dd') === todayStr
           );
 
           // Grace period: Dose remains "pending" for 30 minutes after scheduled time before marking "missed"

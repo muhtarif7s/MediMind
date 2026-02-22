@@ -1,86 +1,41 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
      * MediMind Security Rules
-     *
-     * CORE PHILOSOPHY:
-     * This ruleset enforces a strict User-Ownership model. Access to any data is gated by the 
-     * authenticated user's ID, ensuring a private data silo for every individual.
-     *
-     * DATA STRUCTURE:
-     * The database is organized hierarchically under /users/{userId}. 
-     * All related entities (Medicines, Schedules, DoseLogs) are nested subcollections 
-     * of the specific user who owns them.
-     *
-     * KEY SECURITY DECISIONS:
-     * - Authorization Independence: To optimize performance and avoid costly get() lookups, 
-     *   the 'userId' is required to be denormalized (copied) into every document.
-     * - Strict Path Matching: Rules verify that the {userId} in the URL path matches the 
-     *   authenticated user's UID and the 'userId' field inside the document data.
-     * - Prototyping Flexibility: While ownership and relational integrity are strictly 
-     *   enforced, the specific schema of content fields (like 'notes' or 'status') 
-     *   is not validated to allow for rapid frontend iteration.
-     *
-     * DENORMALIZATION FOR AUTHORIZATION:
-     * - Every Medicine, Schedule, and DoseLog document MUST contain a 'userId' field 
-     *   that matches the owner's Firebase UID. This allows the rules to perform 
-     *   fast, direct ownership checks without cross-document lookups.
      */
 
-    // --- Helper Functions ---
-
-    /** @description Checks if the request is from an authenticated user. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** @description Checks if the authenticated user's UID matches the provided userId. */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** @description Checks if a document exists and the current user is the owner. */
     function isExistingOwner(userId) {
       return resource != null && isOwner(userId);
     }
 
-    // --- Collection Rules ---
+    // Allow collection group queries for doseLogs if the user owns the data
+    match /{path=**}/doseLogs/{doseLogId} {
+      allow list: if isOwner(resource.data.userId);
+    }
 
-    /**
-     * @description Rules for UserProfile documents. 
-     * @path /users/{userId}
-     * @allow (create) if auth.uid == 'user123' and data.id == 'user123'
-     * @deny (create) if auth.uid == 'user123' but data.id == 'user456'
-     * @principle Self-creation and strict path-to-field consistency.
-     */
     match /users/{userId} {
       allow get, list: if isOwner(userId);
       allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(userId);
 
-      /**
-       * @description Rules for Medicine documents owned by a user.
-       * @path /users/{userId}/medicines/{medicineId}
-       * @allow (list) if auth.uid == userId
-       * @deny (update) if the 'userId' field is being changed.
-       * @principle Ownership-based access with immutable relational links.
-       */
       match /medicines/{medicineId} {
         allow get, list: if isOwner(userId);
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
         allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
         allow delete: if isExistingOwner(userId);
 
-        /**
-         * @description Rules for Schedule patterns belonging to a specific medicine.
-         * @path /users/{userId}/medicines/{medicineId}/schedules/{scheduleId}
-         * @allow (create) if auth.uid == userId and denormalized userId field is present.
-         * @deny (get) if requested by a different authenticated user.
-         * @principle Authorization Independence via denormalized owner ID.
-         */
         match /schedules/{scheduleId} {
           allow get, list: if isOwner(userId);
           allow create: if isOwner(userId) && request.resource.data.userId == userId;
@@ -88,13 +43,6 @@ service cloud.firestore {
           allow delete: if isExistingOwner(userId);
         }
 
-        /**
-         * @description Rules for DoseLog history entries.
-         * @path /users/{userId}/medicines/{medicineId}/doseLogs/{doseLogId}
-         * @allow (create) if authenticated user matches the path's userId.
-         * @deny (delete) if the document does not exist or user is not the owner.
-         * @principle Robustness for state-changing operations and owner-only access.
-         */
         match /doseLogs/{doseLogId} {
           allow get, list: if isOwner(userId);
           allow create: if isOwner(userId) && request.resource.data.userId == userId;
