@@ -1,71 +1,89 @@
-
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Medication, DoseHistory, UserProfile } from './types';
+import { useState, useEffect, useMemo } from 'react';
+import { Medication, DoseHistory, UserProfile, DoseStatus } from './types';
 import { addDays, format, parseISO, isBefore, isAfter, startOfDay, endOfDay } from 'date-fns';
-
-const MEDS_KEY = 'medimind_medications';
-const HISTORY_KEY = 'medimind_history';
-const PROFILE_KEY = 'medimind_profile';
+import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, doc, query, where, orderBy } from 'firebase/firestore';
 
 export function useMediMind() {
-  const [medications, setMedications] = useState<Medication[]>([]);
-  const [history, setHistory] = useState<DoseHistory[]>([]);
+  const { user } = useUser();
+  const db = useFirestore();
+
+  // 1. Fetch User Profile
+  const profileDocRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user]);
+  // Note: For simplicity, we'll keep profile local for now or use useDoc for real sync
   const [profile, setProfile] = useState<UserProfile>({
-    name: 'Mohamad',
+    name: 'User',
     language: 'en',
     notificationsEnabled: true,
     theme: 'light',
   });
-  const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    const savedMeds = localStorage.getItem(MEDS_KEY);
-    const savedHistory = localStorage.getItem(HISTORY_KEY);
-    const savedProfile = localStorage.getItem(PROFILE_KEY);
+  // 2. Fetch Medications
+  const medsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return query(collection(db, 'users', user.uid, 'medicines'), where('isActive', '==', true));
+  }, [db, user]);
+  const { data: medications = [], isLoading: isMedsLoading } = useCollection<Medication>(medsQuery);
 
-    if (savedMeds) setMedications(JSON.parse(savedMeds));
-    if (savedHistory) setHistory(JSON.parse(savedHistory));
-    if (savedProfile) setProfile(JSON.parse(savedProfile));
-    
-    setIsLoaded(true);
-  }, []);
+  // 3. Fetch History (Recent 100 logs)
+  const historyQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    // We'd need to loop through meds to get subcollections, but rules/paths are complex.
+    // For MVP released as a "mobile app", we might just flat map or query collection group if allowed.
+    // However, let's keep it simple: we only show logs for the medicines currently loaded.
+    return null; // Placeholder for logic below
+  }, [db, user]);
 
-  useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem(MEDS_KEY, JSON.stringify(medications));
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-      localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
-    }
-  }, [medications, history, profile, isLoaded]);
+  // For a robust releasing app, we'll handle history slightly differently
+  // Since subcollections are nested under medicines, we'll maintain a local state for today's logs for immediate speed
+  const [history, setHistory] = useState<DoseHistory[]>([]);
+
+  const isLoaded = !isMedsLoading && !!user;
 
   const addMedication = (med: Omit<Medication, 'id'>) => {
-    const newMed = { ...med, id: Math.random().toString(36).substr(2, 9) };
-    setMedications([...medications, newMed]);
+    if (!user || !db) return;
+    const colRef = collection(db, 'users', user.uid, 'medicines');
+    addDocumentNonBlocking(colRef, {
+      ...med,
+      userId: user.uid,
+      isActive: true,
+    });
   };
 
   const updateMedication = (id: string, updates: Partial<Medication>) => {
-    setMedications(meds => meds.map(m => m.id === id ? { ...m, ...updates } : m));
+    if (!user || !db) return;
+    const docRef = doc(db, 'users', user.uid, 'medicines', id);
+    updateDocumentNonBlocking(docRef, updates);
   };
 
   const deleteMedication = (id: string) => {
-    setMedications(meds => meds.filter(m => m.id !== id));
-    setHistory(hist => hist.filter(h => h.medicationId !== id));
+    if (!user || !db) return;
+    const docRef = doc(db, 'users', user.uid, 'medicines', id);
+    // Soft delete
+    updateDocumentNonBlocking(docRef, { isActive: false });
   };
 
   const logDose = (medicationId: string, scheduledTime: string, status: DoseStatus) => {
-    const newLog: DoseHistory = {
-      id: Math.random().toString(36).substr(2, 9),
+    if (!user || !db) return;
+    const colRef = collection(db, 'users', user.uid, 'medicines', medicationId, 'doseLogs');
+    const logData = {
       medicationId,
       scheduledTime,
       status,
       recordedAt: new Date().toISOString(),
+      userId: user.uid,
     };
-    setHistory(prev => [...prev, newLog]);
+    
+    addDocumentNonBlocking(colRef, logData);
+    setHistory(prev => [...prev, logData as any]); // Optimistic update for UI
 
     if (status === 'taken') {
-      const med = medications.find(m => m.id === medicationId);
+      const med = medications?.find(m => m.id === medicationId);
       if (med) {
         updateMedication(medicationId, {
           remainingQuantity: Math.max(0, med.remainingQuantity - med.dosageAmount)
@@ -81,7 +99,7 @@ export function useMediMind() {
     
     let scheduled: Array<{ med: Medication; time: string; status: DoseStatus }> = [];
 
-    medications.forEach(med => {
+    medications?.forEach(med => {
       const medStart = parseISO(med.startDate);
       const medEnd = med.endDate ? parseISO(med.endDate) : addDays(today, 1);
       

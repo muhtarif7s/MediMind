@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
   title: 'MediMind',
@@ -52,12 +53,14 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className="font-body antialiased bg-background h-full overflow-hidden">
-        <main className="max-w-md mx-auto relative bg-background h-full shadow-xl overflow-hidden flex flex-col border-x">
-          <div className="flex-1 overflow-hidden">
-            {children}
-          </div>
-        </main>
-        <Toaster />
+        <FirebaseClientProvider>
+          <main className="max-w-md mx-auto relative bg-background h-full shadow-xl overflow-hidden flex flex-col border-x">
+            <div className="flex-1 overflow-hidden">
+              {children}
+            </div>
+          </main>
+          <Toaster />
+        </FirebaseClientProvider>
       </body>
     </html>
   );

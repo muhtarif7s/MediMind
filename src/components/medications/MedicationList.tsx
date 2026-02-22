@@ -1,8 +1,7 @@
-
 import { Medication } from '@/lib/types';
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Pill, Droplet, Plus } from 'lucide-react';
+import { Pill, Droplet, Plus, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -18,32 +17,37 @@ export function MedicationList({ medications }: { medications: Medication[] }) {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-3">
         {medications.map(med => {
           const progress = (med.remainingQuantity / med.totalQuantity) * 100;
           
           return (
-            <Card key={med.id} className="border-none shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="p-2 rounded-lg bg-primary/10 w-fit mb-3">
-                  {med.dosageUnit === 'ml' || med.dosageUnit === 'drop' ? 
-                    <Droplet className="h-4 w-4 text-primary" /> : 
-                    <Pill className="h-4 w-4 text-primary" />
-                  }
-                </div>
-                <h4 className="font-bold text-sm mb-1 truncate">{med.name}</h4>
-                <p className="text-[10px] text-muted-foreground mb-3">
-                  {med.times.length} times / day
-                </p>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[9px] font-bold">
-                    <span>Stock</span>
-                    <span className={progress < 20 ? "text-destructive" : ""}>{med.remainingQuantity} left</span>
+            <Link key={med.id} href={`/medications/${med.id}`}>
+              <Card className="border-none shadow-sm overflow-hidden group hover:shadow-md transition-all active:scale-[0.98]">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="p-3 rounded-2xl bg-primary/10 w-fit shrink-0">
+                    {med.dosageUnit === 'ml' || med.dosageUnit === 'drop' ? 
+                      <Droplet className="h-5 w-5 text-primary" /> : 
+                      <Pill className="h-5 w-5 text-primary" />
+                    }
                   </div>
-                  <Progress value={progress} className="h-1" />
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-sm mb-1 truncate">{med.name}</h4>
+                    <p className="text-[10px] text-muted-foreground">
+                      {med.dosageAmount} {med.dosageUnit} • {med.times.length}x daily
+                    </p>
+                    <div className="mt-2 space-y-1">
+                      <div className="flex justify-between text-[9px] font-bold">
+                        <span>Supply</span>
+                        <span className={progress < 20 ? "text-destructive" : ""}>{med.remainingQuantity} left</span>
+                      </div>
+                      <Progress value={progress} className="h-1" />
+                    </div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted shrink-0" />
+                </CardContent>
+              </Card>
+            </Link>
           );
         })}
       </div>

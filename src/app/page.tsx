@@ -8,11 +8,30 @@ import { MedicationList } from '@/components/medications/MedicationList';
 import { InventoryAlert } from '@/components/dashboard/InventoryAlert';
 import { NavBar } from '@/components/navigation/NavBar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useUser, initiateAnonymousSignIn, useAuth } from '@/firebase';
+import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 export default function Home() {
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
   const { medications, profile, logDose, getTodayDoses, isLoaded } = useMediMind();
 
-  if (!isLoaded) return null;
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [user, isUserLoading, auth]);
+
+  if (isUserLoading || !isLoaded || !user) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-6 space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm font-bold text-muted-foreground">Syncing your health data...</p>
+      </div>
+    );
+  }
 
   const todayDoses = getTodayDoses();
   const nextDose = todayDoses.find(d => d.status === 'pending');
