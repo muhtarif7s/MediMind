@@ -2,49 +2,56 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
+    
     // --- Global Helper Functions ---
 
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    // --- Collection Group Rules ---
-    match /{path=**}/doseLogs/{doseLogId} {
-      allow read, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create, update: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+    /**
+     * Checks if the authenticated user's UID matches the provided ID.
+     * This is the primary security check for owner-based data isolation.
+     */
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
     }
 
     // --- User Scoped Rules ---
+    // Protects the user profile and ALL nested subcollections (medicines, patients, appointments, doseLogs)
     match /users/{userId} {
+      // Permission for the user document itself
       allow read, write: if isOwner(userId);
 
-      match /medicines/{medicineId} {
-        allow read, write: if isOwner(userId);
-
-        match /doseLogs/{doseLogId} {
-          allow read, write: if isOwner(userId);
-        }
-      }
-
-      match /patients/{patientId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /appointments/{appointmentId} {
+      // Recursive match for all subcollections and nested documents.
+      // This ensures that any path under /users/{userId}/... is strictly owner-only.
+      match /{allPaths=**} {
         allow read, write: if isOwner(userId);
       }
     }
 
-    // --- Clinic Scoped Rules (Settings) ---
+    // --- Collection Group Rules ---
+    // Specifically for collectionGroup('doseLogs') queries used in adherence analytics.
+    // This allows the app to query dose history across all medications for the signed-in user.
+    match /{path=**}/doseLogs/{doseLogId} {
+      // For list operations (queries), the rule must match the query filters.
+      // The query uses: where('userId', '==', user.uid)
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      // Write permissions are already covered by the user-scoped recursive rules above,
+      // but we include them here for global consistency.
+      allow write: if isSignedIn() && (
+        (request.resource != null && request.resource.data.userId == request.auth.uid) ||
+        (resource != null && resource.data.userId == request.auth.uid)
+      );
+    }
+
+    // --- Clinic Scoped Rules ---
+    // Protects clinic-specific settings and configurations.
     match /clinics/{clinicId} {
       allow read, write: if isOwner(clinicId);
     }
 
-    // Default deny
+    // Default deny for all other paths
   }
 }
