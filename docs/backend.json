@@ -96,6 +96,54 @@
         "refillThreshold",
         "frequency"
       ]
+    },
+    "DoseLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DoseLog",
+      "type": "object",
+      "description": "Records an instance of a medication dose being taken, missed, or skipped.",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The unique identifier of the user who took the dose."
+        },
+        "medicationId": {
+          "type": "string",
+          "description": "The ID of the medication this log refers to."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the medication at the time of the log."
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the dose (e.g., 'taken', 'missed').",
+          "enum": ["taken", "missed", "skipped", "pending"]
+        },
+        "scheduledTime": {
+          "type": "string",
+          "description": "The original time the dose was scheduled for.",
+          "format": "date-time"
+        },
+        "recordedAt": {
+          "type": "string",
+          "description": "The time the status was recorded.",
+          "format": "date-time"
+        },
+        "takenAt": {
+          "type": "string",
+          "description": "The actual time the medication was taken (if applicable).",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "userId",
+        "medicationId",
+        "name",
+        "status",
+        "scheduledTime",
+        "recordedAt"
+      ]
     }
   },
   "auth": {
@@ -141,8 +189,32 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{userId}/medicines/{medicineId}/doseLogs/{doseLogId}",
+        "definition": {
+          "entityName": "DoseLog",
+          "schema": {
+            "$ref": "#/backend/entities/DoseLog"
+          },
+          "description": "Stores logs for each dose of a medication.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user owner."
+            },
+            {
+              "name": "medicineId",
+              "description": "The unique identifier of the parent medication."
+            },
+            {
+              "name": "doseLogId",
+              "description": "The unique identifier of the log entry."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The 'medicines' subcollection is nested under the user document to enforce ownership and simplify data isolation per user."
+    "reasoning": "The 'doseLogs' subcollection is nested under the medicine document to maintain clear ownership and parent-child relationship, while allowing collectionGroup queries for global history tracking."
   }
 }

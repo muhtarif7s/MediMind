@@ -1,125 +1,66 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * Core Philosophy: 
-     * This ruleset enforces a strict User-Ownership model. All medication data, schedules, 
-     * and logs are hierarchically organized under a specific user's root document.
-     *
-     * Data Structure:
-     * All application data is nested under `/users/{userId}`. This establishes a clear 
-     * security boundary where a user's UID in the Firebase Authentication context must 
-     * match the {userId} wildcard in the document path.
-     *
-     * Key Security Decisions:
-     * 1. Authorization Independence: The system relies on denormalized 'userId' fields 
-     *    within documents to perform fast, stateless ownership checks without 
-     *    performing cross-document 'get()' lookups.
-     * 2. Strict Ownership: Access is restricted to the document owner. There are 
-     *    no public read or write permissions for any collection in this application.
-     * 3. Structural Segregation: By rooting all data under /users/{userId}, we 
-     *    ensure that list operations are inherently scoped to the authenticated user.
-     * 4. Prototyping Flexibility: While ownership is strictly enforced, the schema 
-     *    of content fields (names, notes, amounts) is not validated to allow for 
-     *    rapid UI and feature iteration.
-     */
-
     // --- Global Helper Functions ---
 
-    /** 
-     * @description Checks if the request is made by an authenticated user.
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** 
-     * @description Checks if the authenticated user's UID matches the provided userId.
-     */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** 
-     * @description Ensures the document exists and the requester is the owner. 
-     * Used for update and delete operations.
-     */
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
+    function isDataOwner() {
+      return isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
     }
 
-    // --- Collection Rules ---
+    // --- Collection Group Rules ---
 
     /**
-     * @description Rules for individual user profiles and settings.
-     * @path /users/{userId}
-     * @allow (create) if auth.uid matches 'user_123' and data.id is 'user_123'.
-     * @deny (read) if auth.uid 'user_456' tries to access /users/user_123.
-     * @principle Enforces self-creation and strict ownership for user profiles.
+     * @description Rules for querying dose logs across all medications using collectionGroup.
+     * Required for history and adherence tracking.
      */
+    match /{path=**}/doseLogs/{doseLogId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // --- User Scoped Rules ---
+
     match /users/{userId} {
       allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
 
-      /**
-       * @description Rules for medicines owned by a user.
-       * @path /users/{userId}/medicines/{medicineId}
-       * @allow (create) if userId in path and userId in document body match auth.uid.
-       * @deny (update) if user tries to change the medicine's userId field.
-       * @principle Validates relational integrity by matching path variables to internal data.
-       */
+      match /patients/{patientId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /appointments/{appointmentId} {
+        allow read, write: if isOwner(userId);
+      }
+
       match /medicines/{medicineId} {
-        allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-        allow delete: if isExistingOwner(userId);
+        allow read, write: if isOwner(userId);
 
-        /**
-         * @description Rules for recurring schedules of a specific medicine.
-         * @path /users/{userId}/medicines/{medicineId}/schedules/{scheduleId}
-         * @allow (get) if the requester is the owner of the parent user path.
-         * @deny (create) if 'userId' is missing from the document body.
-         * @principle Restricts access to the owner while requiring denormalized link fields.
-         */
-        match /schedules/{scheduleId} {
-          allow get, list: if isOwner(userId);
-          // CRITICAL: Cannot fully validate relational integrity. The 'MedicineSchedule' entity is missing a 'userId' field in its schema definition.
-          allow create: if isOwner(userId); // TODO: Add request.resource.data.userId == userId once schema is updated.
-          allow update: if isExistingOwner(userId); // TODO: Add request.resource.data.userId == resource.data.userId for immutability.
-          allow delete: if isExistingOwner(userId);
+        match /doseLogs/{doseLogId} {
+          allow read, write: if isOwner(userId);
         }
       }
 
-      /**
-       * @description Rules for generated dose instances.
-       * @path /users/{userId}/doses/{doseId}
-       * @allow (list) if the user queries their own dose subcollection.
-       * @deny (delete) if the document does not exist.
-       * @principle Ensures private access to scheduled medication events.
-       */
+      // Legacy paths from previous version (if still used by older logic)
       match /doses/{doseId} {
-        allow get, list: if isOwner(userId);
-        // CRITICAL: Cannot fully validate relational integrity. The 'Dose' entity is missing a 'userId' field in its schema definition.
-        allow create: if isOwner(userId); // TODO: Add request.resource.data.userId == userId once schema is updated.
-        allow update: if isExistingOwner(userId); // TODO: Add request.resource.data.userId == resource.data.userId for immutability.
-        allow delete: if isExistingOwner(userId);
+        allow read, write: if isOwner(userId);
       }
-
-      /**
-       * @description Rules for logs recording user interactions with doses.
-       * @path /users/{userId}/doseLogs/{doseLogId}
-       * @allow (create) if the user provides their own userId in the log data.
-       * @deny (update) if requester is not the owner of the path.
-       * @principle Enforces document ownership and data consistency for audit logs.
-       */
+      
       match /doseLogs/{doseLogId} {
-        allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-        allow delete: if isExistingOwner(userId);
+        allow read, write: if isOwner(userId);
       }
     }
   }
