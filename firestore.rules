@@ -1,4 +1,3 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -18,18 +17,20 @@ service cloud.firestore {
 
     // Collection Group rules for 'doseLogs'
     // This allows query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
-    // We explicitly define 'list' and 'get' to ensure collection group queries are authorized.
+    // It must be at the top level and outside specific document paths.
     match /{path=**}/doseLogs/{doseLogId} {
+      // For collection group queries, the 'resource' variable represents documents in the query result.
+      // We authorize based on the denormalized userId field.
       allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
       
-      allow create: if isSignedIn() && (
-        request.resource.data.userId == request.auth.uid
-      );
-      
-      allow update, delete: if isSignedIn() && (
+      // For direct gets via path
+      allow get: if isSignedIn() && (
         resource.data.userId == request.auth.uid
       );
+      
+      // Write operations
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
     // User Profile & Hierarchical Rules
@@ -42,7 +43,7 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
 
         match /doseLogs/{doseLogId} {
-          // Redundant but safe: allows direct access via path
+          // Additional safety: allow path-based access
           allow read, write: if isOwner(userId);
         }
       }

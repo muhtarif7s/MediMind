@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -80,7 +79,7 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden">
       <ScrollArea className="flex-1">
-        <div className="p-6 flex flex-col items-center justify-center min-h-full py-8">
+        <div className="p-6 flex flex-col items-center justify-start min-h-full py-12">
           <div className="mb-8 flex flex-col items-center gap-3">
             <div className="p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/30 animate-in zoom-in duration-500">
               <Pill className="h-10 w-10 text-primary-foreground" />
@@ -145,22 +144,22 @@ export default function LoginPage() {
                   ) : (
                     <div className="flex items-center gap-2">
                       {isRegistering ? <UserPlus className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
-                      {isRegistering ? "Get Started" : "Sign In"}
+                      {isRegistering ? "Create Account" : "Sign In"}
                     </div>
                   )}
                 </Button>
               </form>
 
-              <div className="mt-6 flex flex-col items-center gap-4">
+              <div className="mt-8 flex flex-col items-center gap-4">
                 <div className="w-full flex items-center gap-2 py-2">
                   <div className="h-[1px] bg-border flex-1"></div>
                   <span className="text-[10px] uppercase font-bold text-muted-foreground/50">or</span>
                   <div className="h-[1px] bg-border flex-1"></div>
                 </div>
 
-                <div className="text-center space-y-3 w-full">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    {isRegistering ? "Already have an account?" : "Need a new account?"}
+                <div className="text-center space-y-4 w-full">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {isRegistering ? "Already have an account?" : "New to MediMind?"}
                   </p>
                   <Button 
                     variant="outline" 
@@ -168,9 +167,9 @@ export default function LoginPage() {
                       setIsRegistering(!isRegistering);
                     }}
                     disabled={isSubmitting}
-                    className="w-full h-12 rounded-2xl border-primary/20 text-primary font-bold hover:bg-primary/5 px-6 flex items-center justify-center gap-2"
+                    className="w-full h-14 rounded-2xl border-primary/20 text-primary font-bold hover:bg-primary/5 px-6 flex items-center justify-center gap-2 transition-all active:scale-95"
                   >
-                    {isRegistering ? "Log In to Existing Account" : "Create New Account"}
+                    {isRegistering ? "Sign In to your Account" : "Create New Account"}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -178,9 +177,9 @@ export default function LoginPage() {
             </CardContent>
           </Card>
           
-          <div className="mt-8 text-center">
+          <div className="mt-12 text-center pb-8">
             <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.2em]">
-              MediMind Health Assistant • v1.2.1
+              MediMind Health Assistant • v1.3.0
             </p>
           </div>
         </div>
