@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { ThemeWrapper } from '@/components/ThemeWrapper';
+import { NotificationManager } from '@/components/notifications/NotificationManager';
 
 export const metadata: Metadata = {
   title: 'طبيب الأسنان الذكي',
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body className="font-arabic antialiased bg-background text-foreground min-h-screen">
         <FirebaseClientProvider>
           <ThemeWrapper />
+          <NotificationManager />
           <div className="max-w-md mx-auto relative bg-background min-h-screen flex flex-col border-x shadow-xl pb-safe-area-inset-bottom">
             {children}
           </div>

@@ -8,7 +8,7 @@ import { useClinic } from '@/lib/store';
 
 export function NavBar() {
   const pathname = usePathname();
-  const { t, profile } = useClinic();
+  const { t } = useClinic();
 
   const navItems = [
     { icon: LayoutDashboard, label: t('dashboard'), href: '/' },
@@ -21,7 +21,7 @@ export function NavBar() {
   if (pathname === '/login') return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t h-[calc(5rem+env(safe-area-inset-bottom))] flex items-start justify-around px-2 z-50 pt-2 pb-safe-area-inset-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card/80 dark:bg-card/80 backdrop-blur-xl border-t h-[calc(5rem+env(safe-area-inset-bottom))] flex items-start justify-around px-2 z-50 pt-2 pb-safe-area-inset-bottom transition-colors">
       {navItems.map((item) => {
         const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
         const Icon = item.icon;
@@ -32,7 +32,7 @@ export function NavBar() {
             href={item.href}
             className={cn(
               "flex flex-col items-center gap-1 transition-all flex-1 py-1 active:scale-90",
-              isActive ? "text-primary" : "text-slate-400"
+              isActive ? "text-primary" : "text-muted-foreground"
             )}
           >
             <div className={cn(

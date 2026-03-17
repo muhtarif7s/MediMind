@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useClinic } from '@/lib/store';
@@ -11,10 +10,6 @@ import {
   Cell,
   ResponsiveContainer,
   Tooltip,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis
 } from 'recharts';
 import { TrendingUp, Users, Activity, Loader2 } from 'lucide-react';
 
@@ -23,7 +18,7 @@ export default function StatsPage() {
 
   if (!isLoaded) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -39,14 +34,14 @@ export default function StatsPage() {
     { name: t('attended'), value: attended, color: '#10b981' },
     { name: t('cancelled'), value: cancelled, color: '#f43f5e' },
     { name: t('noShow'), value: noShow, color: '#f59e0b' },
-    { name: t('pending'), value: total - attended - cancelled - noShow, color: '#64748b' }
+    { name: t('pending'), value: Math.max(0, total - attended - cancelled - noShow), color: '#64748b' }
   ].filter(d => d.value > 0);
 
   return (
-    <div className="flex flex-col h-screen pb-20" dir={profile.language === 'ar' ? 'rtl' : 'ltr'}>
-      <header className="p-6 bg-white border-b text-start">
-        <h1 className="text-2xl font-bold text-slate-900">{t('stats')}</h1>
-        <p className="text-xs text-slate-500">{t('monthlyGrowth')}</p>
+    <div className="flex flex-col h-screen pb-20 bg-background transition-colors" dir={profile.language === 'ar' ? 'rtl' : 'ltr'}>
+      <header className="p-6 bg-card border-b text-start">
+        <h1 className="text-2xl font-bold text-foreground">{t('stats')}</h1>
+        <p className="text-xs text-muted-foreground">{t('monthlyGrowth')}</p>
       </header>
 
       <ScrollArea className="flex-1 p-6">
@@ -56,19 +51,19 @@ export default function StatsPage() {
               <CardContent className="p-4 flex flex-col items-center text-center">
                 <Activity className="h-6 w-6 text-primary mb-2" />
                 <p className="text-2xl font-bold text-primary">{attendanceRate}%</p>
-                <p className="text-[10px] font-bold text-slate-500 uppercase">{t('attendanceRate')}</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase">{t('attendanceRate')}</p>
               </CardContent>
             </Card>
-            <Card className="border-none shadow-sm bg-emerald-50">
+            <Card className="border-none shadow-sm bg-emerald-50 dark:bg-emerald-900/10">
               <CardContent className="p-4 flex flex-col items-center text-center">
-                <Users className="h-6 w-6 text-emerald-600 mb-2" />
-                <p className="text-2xl font-bold text-emerald-600">{patients.length}</p>
-                <p className="text-[10px] font-bold text-slate-500 uppercase">{t('totalPatients')}</p>
+                <Users className="h-6 w-6 text-emerald-600 dark:text-emerald-400 mb-2" />
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{patients.length}</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase">{t('totalPatients')}</p>
               </CardContent>
             </Card>
           </div>
 
-          <Card className="border-none shadow-sm bg-white rounded-3xl">
+          <Card className="border shadow-sm bg-card rounded-3xl">
             <CardHeader className="pb-0 text-start">
               <CardTitle className="text-sm font-bold">{t('status')}</CardTitle>
             </CardHeader>
@@ -95,13 +90,13 @@ export default function StatsPage() {
                     {statusData.map(item => (
                       <div key={item.name} className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                        <span className="text-[10px] font-bold text-slate-600">{item.name}: {item.value}</span>
+                        <span className="text-[10px] font-bold text-muted-foreground">{item.name}: {item.value}</span>
                       </div>
                     ))}
                   </div>
                 </>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full text-slate-300">
+                <div className="flex flex-col items-center justify-center h-full text-muted/30">
                   <Activity className="h-10 w-10 opacity-20 mb-2" />
                   <p className="text-xs">{t('noAppointments')}</p>
                 </div>
@@ -109,7 +104,7 @@ export default function StatsPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm bg-slate-900 text-white rounded-3xl">
+          <Card className="border-none shadow-sm bg-slate-900 text-white rounded-3xl overflow-hidden">
             <CardContent className="p-6 text-start">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold flex items-center gap-2">

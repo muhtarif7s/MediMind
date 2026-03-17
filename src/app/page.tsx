@@ -48,7 +48,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen pb-20 bg-background transition-colors duration-300">
-      <header className="p-6 bg-primary text-white rounded-b-[2.5rem] shadow-xl shadow-primary/20">
+      <header className="p-6 bg-primary text-white rounded-b-[2.5rem] shadow-xl shadow-primary/20 pt-safe-area-inset-top">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-xl">
@@ -56,7 +56,7 @@ export default function Dashboard() {
             </div>
             <h1 className="text-xl font-bold">{t('appTitle')}</h1>
           </div>
-          <Button variant="ghost" size="icon" className="bg-white/10 rounded-full" onClick={() => router.push('/settings')}>
+          <Button variant="ghost" size="icon" className="bg-white/10 rounded-full overflow-hidden" onClick={() => router.push('/settings')}>
             <div className="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center font-bold">
               {(profile?.name || 'D')[0]}
             </div>
@@ -69,15 +69,15 @@ export default function Dashboard() {
       </header>
 
       <ScrollArea className="flex-1 p-6 space-y-8 no-scrollbar">
-        {/* PERSONAL HEALTH SECTION (MediMind) */}
+        {/* PERSONAL HEALTH SECTION */}
         {nextDose ? (
           <section className="space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">
+            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">
               {t('nextDose')}
             </h3>
             <NextDoseCountdown medication={nextDose.med} scheduledTime={nextDose.time} />
           </section>
-        ) : medications && medications.length > 0 && (
+        ) : (medications && medications.length > 0) && (
           <section className="space-y-4">
             <Card className="border-none shadow-sm bg-accent/10 rounded-3xl p-6 text-center">
               <Pill className="h-8 w-8 text-accent mx-auto mb-2" />
@@ -88,7 +88,7 @@ export default function Dashboard() {
 
         {/* CLINICAL QUICK ACTIONS */}
         <section className="space-y-4">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">
             {t('quickActions')}
           </h3>
           <div className="grid grid-cols-2 gap-4">
@@ -113,16 +113,16 @@ export default function Dashboard() {
 
         {/* STATS OVERVIEW */}
         <div className="grid grid-cols-2 gap-4">
-          <Card className="border-none shadow-sm bg-slate-50 dark:bg-slate-900 rounded-3xl">
+          <Card className="border-none shadow-sm bg-muted/20 rounded-3xl">
             <CardContent className="p-4 flex flex-col items-center text-center">
               <p className="text-2xl font-bold text-foreground">{todayApps.length}</p>
-              <p className="text-[10px] font-bold text-slate-500 uppercase">{t('todayAppointments')}</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase">{t('todayAppointments')}</p>
             </CardContent>
           </Card>
-          <Card className="border-none shadow-sm bg-slate-50 dark:bg-slate-900 rounded-3xl">
+          <Card className="border-none shadow-sm bg-muted/20 rounded-3xl">
             <CardContent className="p-4 flex flex-col items-center text-center">
               <p className="text-2xl font-bold text-foreground">{patients.length}</p>
-              <p className="text-[10px] font-bold text-slate-500 uppercase">{t('totalPatients')}</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase">{t('totalPatients')}</p>
             </CardContent>
           </Card>
         </div>
@@ -158,24 +158,24 @@ export default function Dashboard() {
           <div className="space-y-3">
             {todayApps.length > 0 ? (
               todayApps.map(app => (
-                <Card key={app.id} className="border-none shadow-sm bg-card rounded-3xl overflow-hidden">
+                <Card key={app.id} className="border shadow-sm bg-card rounded-3xl overflow-hidden">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-slate-50 dark:bg-slate-900 rounded-xl">
-                        <Users className="h-4 w-4 text-slate-400" />
+                      <div className="p-2 bg-muted rounded-xl">
+                        <Users className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <div className="text-start">
                         <p className="font-bold text-sm text-foreground">{app.patientName}</p>
-                        <p className="text-[10px] text-slate-500">
+                        <p className="text-[10px] text-muted-foreground">
                           {format(new Date(app.dateTime), 'hh:mm a', { locale })}
                         </p>
                       </div>
                     </div>
                     <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${
-                      app.status === 'attended' ? 'bg-emerald-100 text-emerald-700' :
-                      app.status === 'no-show' ? 'bg-amber-100 text-amber-700' :
-                      app.status === 'cancelled' ? 'bg-rose-100 text-rose-700' :
-                      'bg-slate-100 text-slate-600'
+                      app.status === 'attended' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                      app.status === 'no-show' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                      app.status === 'cancelled' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
+                      'bg-muted text-muted-foreground'
                     }`}>
                       {t(app.status as any)}
                     </div>
@@ -183,9 +183,9 @@ export default function Dashboard() {
                 </Card>
               ))
             ) : (
-              <div className="text-center py-12 bg-slate-50 dark:bg-slate-900 rounded-[2rem] border-2 border-dashed border-slate-200">
-                <Calendar className="h-10 w-10 text-slate-200 mx-auto mb-2" />
-                <p className="text-sm text-slate-400 font-medium">{t('noAppointments')}</p>
+              <div className="text-center py-12 bg-muted/20 rounded-[2rem] border-2 border-dashed border-muted/50">
+                <Calendar className="h-10 w-10 text-muted/30 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground font-medium">{t('noAppointments')}</p>
                 <Link href="/appointments">
                   <Button variant="ghost" className="text-primary text-xs font-bold mt-2">
                     {t('bookAppointment')}

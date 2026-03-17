@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 210 40% 98%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -70,4 +70,8 @@
 
 .pb-safe-area-inset-bottom {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe-area-inset-top {
+  padding-top: env(safe-area-inset-top);
 }
