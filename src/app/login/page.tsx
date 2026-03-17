@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Pill, Loader2, Mail, Lock, UserPlus, LogIn } from 'lucide-react';
+import { Pill, Loader2, Mail, Lock, UserPlus, LogIn, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -45,6 +45,7 @@ export default function LoginPage() {
           message = "Incorrect email or password. If you don't have an account, tap 'Create Account' below.";
         } else if (err.code === 'auth/email-already-in-use') {
           message = "This email is already registered. Please log in instead.";
+          setIsRegistering(false); // Auto-switch to login for better UX
         } else if (err.code === 'auth/weak-password') {
           message = "Password must be at least 6 characters.";
         } else if (err.code === 'auth/invalid-email') {
@@ -151,24 +152,33 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <div className="mt-8 flex flex-col items-center gap-3">
-                <p className="text-xs font-medium text-muted-foreground">
-                  {isRegistering ? "Already have an account?" : "Don't have an account yet?"}
-                </p>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => {
-                    setIsRegistering(!isRegistering);
-                    toast({ 
-                      title: isRegistering ? "Switched to Login" : "Switched to Register", 
-                      duration: 1000 
-                    });
-                  }}
-                  disabled={isSubmitting}
-                  className="text-primary font-bold hover:bg-primary/5 rounded-xl h-10 px-6"
-                >
-                  {isRegistering ? "Log In Instead" : "Create New Account"}
-                </Button>
+              <div className="mt-8 flex flex-col items-center gap-4">
+                <div className="w-full flex items-center gap-2 py-4">
+                  <div className="h-[1px] bg-border flex-1"></div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground/50">or</span>
+                  <div className="h-[1px] bg-border flex-1"></div>
+                </div>
+
+                <div className="text-center space-y-3">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {isRegistering ? "Already have an account?" : "Need a new account?"}
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsRegistering(!isRegistering);
+                      toast({ 
+                        title: isRegistering ? "Switched to Login" : "Switched to Register", 
+                        duration: 1000 
+                      });
+                    }}
+                    disabled={isSubmitting}
+                    className="w-full h-12 rounded-2xl border-primary/20 text-primary font-bold hover:bg-primary/5 px-6 flex items-center justify-center gap-2"
+                  >
+                    {isRegistering ? "Log In to Existing Account" : "Create New Account"}
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
