@@ -29,7 +29,7 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
       dir={isRTL ? 'rtl' : 'ltr'} 
       className="max-w-md mx-auto relative bg-background min-h-screen flex flex-col border-x shadow-2xl"
     >
-      <div className="flex-1 flex flex-col relative">
+      <div className="flex-1 flex flex-col relative overflow-y-auto overflow-x-hidden">
         {children}
       </div>
       {!isAuthPage && <NotificationManager />}
@@ -52,7 +52,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="font-body antialiased bg-background min-h-screen overflow-x-hidden selection:bg-primary/30">
+      <body className="font-body antialiased bg-background min-h-screen selection:bg-primary/30">
         <FirebaseClientProvider>
           <AppWrapper>
             {children}

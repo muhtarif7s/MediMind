@@ -3,34 +3,31 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * MediMind Security Rules
-     * Optimized for collection group queries and hierarchical user data.
+     * 1. Collection Group Rules
+     * These rules authorize queries across all 'doseLogs' subcollections globally.
+     * The userId check must match the .where('userId', '==', uid) filter in the code.
      */
-
-    // 1. Collection Group Rules (Critical for dose history sync)
-    // Allows query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{logId} {
-      // For read/update/delete, ensure the document belongs to the authenticated user via userId field.
-      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Authorize reads (get/list) for existing documents
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
       
-      // For create, ensure the incoming data userId matches the authenticated user.
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      // Authorize writes (create/update/delete)
+      allow write: if request.auth != null && 
+        (request.method == 'create' 
+          ? request.resource.data.userId == request.auth.uid 
+          : resource.data.userId == request.auth.uid);
     }
 
-    // 2. User Profile & Hierarchical Rules
-    // This allows users to access their own branch of the database (profile, medicines, etc.)
+    /**
+     * 2. Hierarchical User Rules
+     * Allows users full access to their own branch of the database.
+     */
     match /users/{userId} {
-      // Manage own profile
       allow read, write: if request.auth != null && request.auth.uid == userId;
 
-      // Manage own medications subcollection
-      match /medicines/{medicineId} {
+      // Automatically authorize all subcollections under the user
+      match /{allPaths=**} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
-        
-        // Manage own doseLogs via direct path (redundant but safe)
-        match /doseLogs/{logId} {
-          allow read, write: if request.auth != null && request.auth.uid == userId;
-        }
       }
     }
   }
