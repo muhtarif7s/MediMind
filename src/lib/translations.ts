@@ -36,6 +36,19 @@ export const translations = {
     dontHaveAccount: 'ليس لديك حساب؟ سجل الآن',
     alreadyHaveAccount: 'لديك حساب بالفعل؟ سجل دخول',
     registerSuccess: 'تم إنشاء الحساب بنجاح',
-    authError: 'خطأ في المصادقة، يرجى المحاولة مرة أخرى'
+    authError: 'خطأ في المصادقة، يرجى المحاولة مرة أخرى',
+    settings: 'الإعدادات',
+    profileUpdated: 'تم تحديث الملف الشخصي',
+    profileUpdateSuccess: 'تم حفظ التغييرات بنجاح',
+    premiumMember: 'عضو مميز',
+    editProfile: 'تعديل الملف الشخصي',
+    installGuide: 'دليل التثبيت',
+    installSubtitle: 'كيفية تثبيت التطبيق على هاتفك',
+    preferences: 'التفضيلات',
+    reminders: 'التنبيهات',
+    darkMode: 'الوضع الليلي',
+    language: 'اللغة',
+    about: 'عن التطبيق',
+    version: 'الإصدار'
   }
 };

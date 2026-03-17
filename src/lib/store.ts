@@ -3,14 +3,14 @@
 
 import { useMemo, useEffect } from 'react';
 import { Patient, Appointment, ClinicProfile, AppointmentStatus, Medication, DoseLog, DoseStatus } from './types';
-import { 
-  useUser, 
-  useFirestore, 
-  useCollection, 
+import {
+  useUser,
+  useFirestore,
+  useCollection,
   useDoc,
-  useMemoFirebase, 
-  updateDocumentNonBlocking, 
-  addDocumentNonBlocking, 
+  useMemoFirebase,
+  updateDocumentNonBlocking,
+  addDocumentNonBlocking,
   setDocumentNonBlocking,
   deleteDocumentNonBlocking
 } from '@/firebase';
@@ -44,17 +44,17 @@ export function useClinic() {
 
   // 2. Clinic Patients
   const patientsQuery = useMemoFirebase(() => {
-    return shouldFetch 
+    return shouldFetch
       ? query(collection(db, 'clinics', user.uid, 'patients'), orderBy('name'))
       : null;
   }, [db, user, shouldFetch]);
-  
+
   const { data: patientsData, isLoading: isPatientsLoading } = useCollection<Patient>(patientsQuery);
   const patients = patientsData || [];
 
   // 3. Clinic Appointments
   const appointmentsQuery = useMemoFirebase(() => {
-    return shouldFetch 
+    return shouldFetch
       ? query(collection(db, 'clinics', user.uid, 'appointments'), orderBy('dateTime'))
       : null;
   }, [db, user, shouldFetch]);
@@ -64,7 +64,7 @@ export function useClinic() {
 
   // 4. Personal Medications
   const medicationsQuery = useMemoFirebase(() => {
-    return shouldFetch 
+    return shouldFetch
       ? query(collection(db, 'users', user.uid, 'medicines'), orderBy('name'))
       : null;
   }, [db, user, shouldFetch]);
@@ -76,10 +76,10 @@ export function useClinic() {
   const historyQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(
-          collectionGroup(db, 'doseLogs'), 
-          where('userId', '==', user.uid), 
-          orderBy('recordedAt', 'desc')
-        )
+        collectionGroup(db, 'doseLogs'),
+        where('userId', '==', user.uid),
+        orderBy('recordedAt', 'desc')
+      )
       : null;
   }, [db, user, shouldFetch]);
 
@@ -89,37 +89,43 @@ export function useClinic() {
   // Automated Data Bootstrapping
   useEffect(() => {
     const bootstrapData = async () => {
-      // Wait until hooks have settled
       if (!shouldFetch || isMedicationsLoading || isHistoryLoading) return;
 
-      // If user has absolutely no data, create a sample
       if (medications.length === 0 && history.length === 0) {
         try {
-          const medRef = collection(db, 'users', user.uid, 'medicines');
-          const newMedDoc = await addDoc(medRef, {
-            userId: user.uid,
-            name: "Sample Medication",
-            dosageAmount: 1,
-            dosageUnit: "pill",
-            times: ["08:00"],
-            startDate: new Date().toISOString(),
-            totalQuantity: 30,
-            remainingQuantity: 30,
-            refillThreshold: 5,
-            frequency: "daily"
-          });
+          const defaultMeds = [
+            { name: "Paracetamol", dosageAmount: 1, dosageUnit: "pill", times: ["08:00"] },
+            { name: "Vitamin C", dosageAmount: 1, dosageUnit: "pill", times: ["09:00"] },
+            { name: "Ibuprofen", dosageAmount: 1, dosageUnit: "pill", times: ["20:00"] },
+          ];
 
-          // Create Sample DoseLog in subcollection
-          const logRef = collection(db, 'users', user.uid, 'medicines', newMedDoc.id, 'doseLogs');
-          await addDoc(logRef, {
-            userId: user.uid,
-            medicationId: newMedDoc.id,
-            name: "Sample Medication",
-            status: "pending",
-            takenAt: serverTimestamp(),
-            recordedAt: new Date().toISOString(),
-            scheduledTime: new Date().toISOString()
-          });
+          for (const med of defaultMeds) {
+            const medRef = collection(db, 'users', user.uid, 'medicines');
+            const newMedDoc = await addDoc(medRef, {
+              userId: user.uid,
+              name: med.name,
+              dosageAmount: med.dosageAmount,
+              dosageUnit: med.dosageUnit,
+              times: med.times,
+              startDate: new Date().toISOString(),
+              totalQuantity: 30,
+              remainingQuantity: 30,
+              refillThreshold: 5,
+              frequency: "daily"
+            });
+
+            // إنشاء doseLog لكل دواء
+            const logRef = collection(db, 'users', user.uid, 'medicines', newMedDoc.id, 'doseLogs');
+            await addDoc(logRef, {
+              userId: user.uid,
+              medicationId: newMedDoc.id,
+              name: med.name,
+              status: "pending",
+              takenAt: serverTimestamp(),
+              recordedAt: new Date().toISOString(),
+              scheduledTime: new Date().toISOString()
+            });
+          }
         } catch (error) {
           console.error("Failed to bootstrap sample data:", error);
         }
@@ -128,7 +134,6 @@ export function useClinic() {
 
     bootstrapData();
   }, [shouldFetch, medications, history, isMedicationsLoading, isHistoryLoading, user?.uid, db]);
-
   const t = (key: keyof typeof translations.ar) => {
     return translations.ar[key] || key;
   };
@@ -227,7 +232,7 @@ export function useClinic() {
     deleteMedication,
     logDose,
     setProfile: (updates: Partial<ClinicProfile>) => {
-       if (clinicRef) updateDocumentNonBlocking(clinicRef, updates);
+      if (clinicRef) updateDocumentNonBlocking(clinicRef, updates);
     },
     getTodayDoses: () => {
       return [];
