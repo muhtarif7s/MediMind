@@ -282,7 +282,12 @@ export function useClinic() {
     getTodayAppointments,
     setProfile: (updates: Partial<UserProfile>) => {
       if (!userProfileRef) return;
-      setDocumentNonBlocking(userProfileRef, updates, { merge: true });
+      setDocumentNonBlocking(userProfileRef, {
+        ...updates,
+        userId: user?.uid,
+        email: user?.email,
+        createdAt: userProfileData?.createdAt || new Date().toISOString()
+      }, { merge: true });
     },
     addMedication,
     updateMedication,

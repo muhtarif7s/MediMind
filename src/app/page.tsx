@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useClinic } from '@/lib/store';
@@ -33,14 +34,14 @@ export default function Dashboard() {
     if (!isUserLoading) {
       if (!user) {
         router.push('/login');
-      } else if (!user.emailVerified || !user.phoneNumber) {
+      } else if (!user.emailVerified) {
         // Enforce verification before accessing dashboard
         router.push('/login');
       }
     }
   }, [user, isUserLoading, router]);
 
-  if (isUserLoading || !isLoaded || !user?.emailVerified || !user?.phoneNumber) {
+  if (isUserLoading || !isLoaded || !user?.emailVerified) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

@@ -20,6 +20,10 @@
           "description": "The user's email address.",
           "format": "email"
         },
+        "phone": {
+          "type": "string",
+          "description": "The user's contact phone number."
+        },
         "language": {
           "type": "string",
           "description": "Default language for the interface (e.g., 'ar', 'en').",
@@ -206,8 +210,7 @@
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "password"
     ]
   },
   "firestore": {

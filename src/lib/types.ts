@@ -8,6 +8,7 @@ export interface UserProfile {
   userId: string;
   name: string;
   email: string;
+  phone?: string;
   language: 'ar' | 'en' | 'fr' | 'es' | 'de';
   theme: 'light' | 'dark';
   notificationsEnabled: boolean;
