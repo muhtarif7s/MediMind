@@ -5,6 +5,10 @@ import { useEffect, useRef } from 'react';
 import { useMediMind } from '@/lib/store';
 import { parseISO, isSameMinute, format, differenceInMinutes } from 'date-fns';
 
+/**
+ * Global Notification Manager component.
+ * Monitors appointments and medications to trigger local push notifications.
+ */
 export function NotificationManager() {
   const { getTodayDoses, appointments, profile, isLoaded, t } = useMediMind();
   const lastNotifiedMinute = useRef<string | null>(null);
