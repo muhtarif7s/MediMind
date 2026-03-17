@@ -129,7 +129,20 @@ export const translations = {
     min: 'دقيقة',
     sec: 'ثانية',
     signIn: 'تسجيل دخول',
-    goodMorning: 'صباح الخير'
+    goodMorning: 'صباح الخير',
+    verifyEmail: 'تحقق من بريدك الإلكتروني',
+    emailVerificationSent: 'تم إرسال رابط التحقق إلى بريدك الإلكتروني.',
+    checkEmail: 'يرجى التحقق من بريدك الإلكتروني لتفعيل حسابك.',
+    resendEmail: 'إعادة إرسال الرابط',
+    verifyPhone: 'تحقق من رقم هاتفك',
+    enterPhone: 'أدخل رقم هاتفك لتلقي رمز التحقق (OTP)',
+    sendOTP: 'إرسال الرمز',
+    enterOTP: 'أدخل الرمز المكون من 6 أرقام',
+    verifyOTP: 'تأكيد الرمز',
+    otpSent: 'تم إرسال الرمز بنجاح',
+    phoneVerified: 'تم التحقق من الهاتف بنجاح',
+    invalidOTP: 'رمز غير صحيح، حاول مرة أخرى',
+    emailNotVerified: 'بريدك الإلكتروني غير موثق بعد'
   },
   en: {
     appTitle: 'Smart Dentist',
@@ -260,7 +273,20 @@ export const translations = {
     min: 'Min',
     sec: 'Sec',
     signIn: 'Sign In',
-    goodMorning: 'Good Morning'
+    goodMorning: 'Good Morning',
+    verifyEmail: 'Verify Email',
+    emailVerificationSent: 'Verification link sent to your email.',
+    checkEmail: 'Please check your email to activate your account.',
+    resendEmail: 'Resend Link',
+    verifyPhone: 'Verify Phone Number',
+    enterPhone: 'Enter your phone number to receive OTP',
+    sendOTP: 'Send Code',
+    enterOTP: 'Enter 6-digit code',
+    verifyOTP: 'Verify OTP',
+    otpSent: 'OTP sent successfully',
+    phoneVerified: 'Phone verified successfully',
+    invalidOTP: 'Invalid OTP, try again',
+    emailNotVerified: 'Email not verified yet'
   },
   fr: {
     appTitle: 'Dentiste Intelligent',
@@ -391,7 +417,20 @@ export const translations = {
     min: 'min',
     sec: 'sec',
     signIn: 'Se connecter',
-    goodMorning: 'Bonjour'
+    goodMorning: 'Bonjour',
+    verifyEmail: 'Vérifier l\'e-mail',
+    emailVerificationSent: 'Lien de vérification envoyé.',
+    checkEmail: 'Vérifiez vos e-mails pour activer votre compte.',
+    resendEmail: 'Renvoyer le lien',
+    verifyPhone: 'Vérifier le téléphone',
+    enterPhone: 'Entrez votre numéro pour recevoir l\'OTP',
+    sendOTP: 'Envoyer le code',
+    enterOTP: 'Entrez le code à 6 chiffres',
+    verifyOTP: 'Confirmer l\'OTP',
+    otpSent: 'OTP envoyé avec succès',
+    phoneVerified: 'Téléphone vérifié',
+    invalidOTP: 'OTP invalide',
+    emailNotVerified: 'E-mail non vérifié'
   },
   es: {
     appTitle: 'Dentista Inteligente',
@@ -522,7 +561,20 @@ export const translations = {
     min: 'min',
     sec: 'seg',
     signIn: 'Iniciar sesión',
-    goodMorning: 'Buenos Días'
+    goodMorning: 'Buenos Días',
+    verifyEmail: 'Verificar correo',
+    emailVerificationSent: 'Enlace de verificación enviado.',
+    checkEmail: 'Revisa tu correo para activar tu cuenta.',
+    resendEmail: 'Reenviar enlace',
+    verifyPhone: 'Verificar teléfono',
+    enterPhone: 'Ingresa tu número para recibir OTP',
+    sendOTP: 'Enviar código',
+    enterOTP: 'Ingresa el código de 6 dígitos',
+    verifyOTP: 'Confirmar OTP',
+    otpSent: 'OTP enviado con éxito',
+    phoneVerified: 'Teléfono verificado',
+    invalidOTP: 'OTP inválido',
+    emailNotVerified: 'Correo no verificado'
   },
   de: {
     appTitle: 'Smarter Zahnarzt',
@@ -653,6 +705,19 @@ export const translations = {
     min: 'Min.',
     sec: 'Sek.',
     signIn: 'Anmelden',
-    goodMorning: 'Guten Morgen'
+    goodMorning: 'Guten Morgen',
+    verifyEmail: 'E-Mail verifizieren',
+    emailVerificationSent: 'Verifizierungslink gesendet.',
+    checkEmail: 'Prüfen Sie Ihre E-Mails, um Ihr Konto zu aktivieren.',
+    resendEmail: 'Link erneut senden',
+    verifyPhone: 'Telefon verifizieren',
+    enterPhone: 'Nummer für OTP eingeben',
+    sendOTP: 'Code senden',
+    enterOTP: '6-stelligen Code eingeben',
+    verifyOTP: 'OTP bestätigen',
+    otpSent: 'OTP erfolgreich gesendet',
+    phoneVerified: 'Telefon verifiziert',
+    invalidOTP: 'Ungültiges OTP',
+    emailNotVerified: 'E-Mail nicht verifiziert'
   }
 };

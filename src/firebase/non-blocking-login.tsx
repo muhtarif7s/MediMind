@@ -1,29 +1,57 @@
 'use client';
 import {
-  Auth, // Import Auth type for type hinting
+  Auth,
   signInAnonymously,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  // Assume getAuth and app are initialized elsewhere
+  sendEmailVerification,
+  signInWithPhoneNumber,
+  RecaptchaVerifier,
+  ConfirmationResult
 } from 'firebase/auth';
 
-/** Initiate anonymous sign-in (non-blocking). */
-export function initiateAnonymousSignIn(authInstance: Auth): void {
-  // CRITICAL: Call signInAnonymously directly. Do NOT use 'await signInAnonymously(...)'.
-  signInAnonymously(authInstance);
-  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
-}
-
 /** Initiate email/password sign-up (non-blocking). */
-export function initiateEmailSignUp(authInstance: Auth, email: string, password: string): void {
-  // CRITICAL: Call createUserWithEmailAndPassword directly. Do NOT use 'await createUserWithEmailAndPassword(...)'.
-  createUserWithEmailAndPassword(authInstance, email, password);
-  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+export function initiateEmailSignUp(authInstance: Auth, email: string, password: string, callbacks?: { onSuccess?: (user: any) => void; onError?: (err: any) => void }): void {
+  createUserWithEmailAndPassword(authInstance, email, password)
+    .then((userCredential) => {
+      sendEmailVerification(userCredential.user);
+      if (callbacks?.onSuccess) callbacks.onSuccess(userCredential.user);
+    })
+    .catch((error) => {
+      if (callbacks?.onError) callbacks.onError(error);
+    });
 }
 
 /** Initiate email/password sign-in (non-blocking). */
-export function initiateEmailSignIn(authInstance: Auth, email: string, password: string): void {
-  // CRITICAL: Call signInWithEmailAndPassword directly. Do NOT use 'await signInWithEmailAndPassword(...)'.
-  signInWithEmailAndPassword(authInstance, email, password);
-  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+export function initiateEmailSignIn(authInstance: Auth, email: string, password: string, callbacks?: { onSuccess?: (user: any) => void; onError?: (err: any) => void }): void {
+  signInWithEmailAndPassword(authInstance, email, password)
+    .then((userCredential) => {
+      if (callbacks?.onSuccess) callbacks.onSuccess(userCredential.user);
+    })
+    .catch((error) => {
+      if (callbacks?.onError) callbacks.onError(error);
+    });
+}
+
+/** Sends verification email to current user. */
+export function sendVerificationEmail(user: any): void {
+  if (user) sendEmailVerification(user);
+}
+
+/** Setup Recaptcha for Phone Auth */
+export function setupRecaptcha(authInstance: Auth, elementId: string) {
+  if (!(window as any).recaptchaVerifier) {
+    (window as any).recaptchaVerifier = new RecaptchaVerifier(authInstance, elementId, {
+      'size': 'invisible',
+      'callback': (response: any) => {
+        // reCAPTCHA solved, allow signInWithPhoneNumber.
+      }
+    });
+  }
+  return (window as any).recaptchaVerifier;
+}
+
+/** Initiate Phone Auth OTP */
+export async function initiatePhoneSignIn(authInstance: Auth, phoneNumber: string, appVerifier: any): Promise<ConfirmationResult> {
+  return signInWithPhoneNumber(authInstance, phoneNumber, appVerifier);
 }

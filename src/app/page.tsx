@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useClinic } from '@/lib/store';
@@ -8,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Loader2, Calendar, Users, Activity, Stethoscope, Plus, ChevronRight, Pill } from 'lucide-react';
+import { Loader2, Calendar, Users, Activity, Stethoscope, Plus, ChevronRight, Pill, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 import Link from 'next/link';
@@ -31,10 +30,17 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isUserLoading && !user) router.push('/login');
+    if (!isUserLoading) {
+      if (!user) {
+        router.push('/login');
+      } else if (!user.emailVerified || !user.phoneNumber) {
+        // Enforce verification before accessing dashboard
+        router.push('/login');
+      }
+    }
   }, [user, isUserLoading, router]);
 
-  if (isUserLoading || !isLoaded) {
+  if (isUserLoading || !isLoaded || !user?.emailVerified || !user?.phoneNumber) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -57,16 +63,19 @@ export default function Dashboard() {
             </div>
             <h1 className="text-xl font-bold">{t('appTitle')}</h1>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="bg-white/10 rounded-full overflow-hidden active:scale-90 transition-transform" 
-            onClick={() => router.push('/settings')}
-          >
-            <div className="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center font-bold">
-              {(profile?.name || 'D')[0]}
-            </div>
-          </Button>
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-white/70" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="bg-white/10 rounded-full overflow-hidden active:scale-90 transition-transform" 
+              onClick={() => router.push('/settings')}
+            >
+              <div className="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center font-bold">
+                {(profile?.name || user?.email || 'D')[0].toUpperCase()}
+              </div>
+            </Button>
+          </div>
         </div>
         <div className="space-y-1">
           <p className="text-sm opacity-80">{t('welcome')}</p>
