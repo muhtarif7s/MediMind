@@ -3,6 +3,7 @@ export const translations = {
   ar: {
     appTitle: 'طبيب الأسنان الذكي',
     login: 'تسجيل الدخول',
+    register: 'إنشاء حساب جديد',
     email: 'البريد الإلكتروني',
     password: 'كلمة المرور',
     dashboard: 'لوحة التحكم',
@@ -31,6 +32,10 @@ export const translations = {
     logout: 'تسجيل الخروج',
     stats: 'إحصائيات المواعيد',
     totalPatients: 'إجمالي المرضى',
-    searchPatients: 'البحث عن مريض...'
+    searchPatients: 'البحث عن مريض...',
+    dontHaveAccount: 'ليس لديك حساب؟ سجل الآن',
+    alreadyHaveAccount: 'لديك حساب بالفعل؟ سجل دخول',
+    registerSuccess: 'تم إنشاء الحساب بنجاح',
+    authError: 'خطأ في المصادقة، يرجى المحاولة مرة أخرى'
   }
 };

@@ -4,16 +4,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
-import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
+import { initiateEmailSignIn, initiateEmailSignUp } from '@/firebase/non-blocking-login';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Stethoscope, Loader2, Mail, Lock } from 'lucide-react';
+import { Stethoscope, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useClinic } from '@/lib/store';
 
 export default function LoginPage() {
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,12 +31,23 @@ export default function LoginPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    initiateEmailSignIn(auth, email, password, {
-      onError: (err) => {
+    
+    const callbacks = {
+      onError: (err: any) => {
         setIsSubmitting(false);
-        toast({ variant: "destructive", title: "خطأ في الدخول", description: "يرجى التأكد من البريد وكلمة المرور" });
+        toast({ 
+          variant: "destructive", 
+          title: "خطأ", 
+          description: t('authError') 
+        });
       }
-    });
+    };
+
+    if (isLogin) {
+      initiateEmailSignIn(auth, email, password, callbacks);
+    } else {
+      initiateEmailSignUp(auth, email, password, callbacks);
+    }
   };
 
   if (isUserLoading) return null;
@@ -49,13 +61,13 @@ export default function LoginPage() {
           </div>
           <div className="text-center">
             <h1 className="text-3xl font-bold text-slate-900">{t('appTitle')}</h1>
-            <p className="text-sm text-slate-500 font-medium">نظام إدارة عيادات الأسنان</p>
+            <p className="text-sm text-slate-500 font-medium">نظام إدارة عيادات الأسنان الذكي</p>
           </div>
         </div>
 
         <Card className="border-none shadow-xl bg-white rounded-[2rem]">
           <CardHeader className="text-center">
-            <CardTitle>{t('login')}</CardTitle>
+            <CardTitle>{isLogin ? t('login') : t('register')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -67,6 +79,7 @@ export default function LoginPage() {
                   onChange={e => setEmail(e.target.value)} 
                   required 
                   className="h-12 rounded-xl bg-slate-50 border-none"
+                  placeholder="name@example.com"
                 />
               </div>
               <div className="space-y-2">
@@ -77,12 +90,22 @@ export default function LoginPage() {
                   onChange={e => setPassword(e.target.value)} 
                   required 
                   className="h-12 rounded-xl bg-slate-50 border-none"
+                  placeholder="••••••••"
                 />
               </div>
-              <Button type="submit" disabled={isSubmitting} className="w-full h-14 rounded-xl text-lg font-bold">
-                {isSubmitting ? <Loader2 className="animate-spin" /> : t('login')}
+              <Button type="submit" disabled={isSubmitting} className="w-full h-14 rounded-xl text-lg font-bold mt-2">
+                {isSubmitting ? <Loader2 className="animate-spin" /> : (isLogin ? t('login') : t('register'))}
               </Button>
             </form>
+
+            <div className="mt-6 text-center">
+              <button 
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-sm text-primary font-bold hover:underline"
+              >
+                {isLogin ? t('dontHaveAccount') : t('alreadyHaveAccount')}
+              </button>
+            </div>
           </CardContent>
         </Card>
       </div>
