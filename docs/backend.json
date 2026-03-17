@@ -63,6 +63,19 @@
       },
       "required": ["name", "clinicId", "createdAt"]
     },
+    "PatientRecord": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PatientRecord",
+      "type": "object",
+      "description": "A medical record attached to a patient (e.g. X-ray, Prescription).",
+      "properties": {
+        "title": { "type": "string" },
+        "type": { "type": "string", "enum": ["x-ray", "prescription", "report", "other"] },
+        "fileData": { "type": "string", "description": "Base64 encoded file data or image URI." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "type", "fileData", "createdAt"]
+    },
     "Appointment": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Appointment",
@@ -213,6 +226,10 @@
     "/users/{userId}/patients/{patientId}": {
       "schema": { "$ref": "#/backend/entities/Patient" },
       "description": "User clinic patients."
+    },
+    "/users/{userId}/patients/{patientId}/records/{recordId}": {
+      "schema": { "$ref": "#/backend/entities/PatientRecord" },
+      "description": "Medical records for a specific patient."
     },
     "/users/{userId}/appointments/{appointmentId}": {
       "schema": { "$ref": "#/backend/entities/Appointment" },

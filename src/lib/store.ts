@@ -8,7 +8,8 @@ import {
   Medication,
   DoseLog,
   DoseStatus,
-  UserProfile
+  UserProfile,
+  PatientRecord
 } from './types';
 import {
   useUser,
@@ -34,7 +35,6 @@ import { translations } from './translations';
 /**
  * Main store hook for the Smart Dentist & MediMind features.
  * Operates purely on live Firestore data.
- * No automated data bootstrapping is performed.
  */
 export function useClinic() {
   const { user, isUserLoading } = useUser();
@@ -49,7 +49,7 @@ export function useClinic() {
 
   const { data: userProfileData, isLoading: isUserProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
-  // 2. Clinic Patients (User Subcollection)
+  // 2. Clinic Patients
   const patientsQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(collection(db, 'users', user.uid, 'patients'), orderBy('createdAt', 'desc'))
@@ -59,7 +59,7 @@ export function useClinic() {
   const { data: patientsData, isLoading: isPatientsLoading } = useCollection<Patient>(patientsQuery);
   const patients = patientsData || [];
 
-  // 3. Clinic Appointments (User Subcollection)
+  // 3. Clinic Appointments
   const appointmentsQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(collection(db, 'users', user.uid, 'appointments'), orderBy('dateTime', 'asc'))
@@ -69,7 +69,7 @@ export function useClinic() {
   const { data: appointmentsData, isLoading: isAppointmentsLoading } = useCollection<Appointment>(appointmentsQuery);
   const appointments = appointmentsData || [];
 
-  // 4. Personal Medications (MediMind)
+  // 4. Personal Medications
   const medicationsQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(collection(db, 'users', user.uid, 'medicines'), orderBy('name'))
@@ -79,7 +79,7 @@ export function useClinic() {
   const { data: medicationsData, isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
   const medications = medicationsData || [];
 
-  // 5. Medication Dose History (Global Collection Group)
+  // 5. Medication Dose History
   const historyQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(
@@ -118,6 +118,21 @@ export function useClinic() {
       clinicId: user.uid,
       createdAt: new Date().toISOString()
     });
+  };
+
+  const addPatientRecord = (patientId: string, record: Omit<PatientRecord, 'id' | 'createdAt'>) => {
+    if (!shouldFetch) return;
+    const recordsCol = collection(db, 'users', user.uid, 'patients', patientId, 'records');
+    addDocumentNonBlocking(recordsCol, {
+      ...record,
+      createdAt: new Date().toISOString()
+    });
+  };
+
+  const getPatientRecordsQuery = (patientId: string) => {
+    return shouldFetch
+      ? query(collection(db, 'users', user.uid, 'patients', patientId, 'records'), orderBy('createdAt', 'desc'))
+      : null;
   };
 
   const addAppointment = (app: Omit<Appointment, 'id' | 'clinicId' | 'status'>) => {
@@ -257,6 +272,8 @@ export function useClinic() {
     isLoaded,
     t,
     addPatient,
+    addPatientRecord,
+    getPatientRecordsQuery,
     addAppointment,
     updateAppointmentStatus,
     clearPatients,

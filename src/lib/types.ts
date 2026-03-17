@@ -2,6 +2,7 @@
 export type AppointmentStatus = 'pending' | 'attended' | 'no-show' | 'cancelled';
 export type DoseStatus = 'pending' | 'taken' | 'skipped' | 'missed';
 export type DosageUnit = 'pill' | 'mg' | 'ml' | 'drop' | 'capsule' | 'injection';
+export type RecordType = 'x-ray' | 'prescription' | 'report' | 'other';
 
 export interface UserProfile {
   userId: string;
@@ -20,6 +21,14 @@ export interface Patient {
   age?: number;
   phone: string;
   notes?: string;
+  createdAt: string;
+}
+
+export interface PatientRecord {
+  id: string;
+  title: string;
+  type: RecordType;
+  fileData: string; // Base64 or Data URI
   createdAt: string;
 }
 
