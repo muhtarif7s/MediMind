@@ -61,7 +61,7 @@ export default function SettingsPage() {
     });
   };
 
-  const handleLanguageChange = (val: 'en' | 'ar') => {
+  const handleLanguageChange = (val: 'en' | 'ar' | 'fr' | 'es' | 'de') => {
     setProfile({ language: val });
   };
 
@@ -183,12 +183,15 @@ export default function SettingsPage() {
                   <span className="text-sm font-medium">{t('language')}</span>
                 </div>
                 <Select value={profile?.language} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="w-[100px] h-8 text-xs border-none bg-muted/50 rounded-lg">
+                  <SelectTrigger className="w-[120px] h-8 text-xs border-none bg-muted/50 rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="en">English</SelectItem>
                     <SelectItem value="ar">العربية</SelectItem>
+                    <SelectItem value="fr">Français</SelectItem>
+                    <SelectItem value="es">Español</SelectItem>
+                    <SelectItem value="de">Deutsch</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

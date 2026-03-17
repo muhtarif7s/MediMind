@@ -7,7 +7,7 @@ export interface UserProfile {
   userId: string;
   name: string;
   email: string;
-  language: 'ar' | 'en';
+  language: 'ar' | 'en' | 'fr' | 'es' | 'de';
   theme: 'light' | 'dark';
   notificationsEnabled: boolean;
   createdAt: string;
