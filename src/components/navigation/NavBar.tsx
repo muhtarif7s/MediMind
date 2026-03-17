@@ -1,30 +1,30 @@
-
 "use client";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, BarChart, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, Pill, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useClinic } from '@/lib/store';
 
 export function NavBar() {
   const pathname = usePathname();
-  const { t } = useClinic();
+  const { t, profile } = useClinic();
+  const isRTL = profile.language === 'ar';
 
   const navItems = [
     { icon: LayoutDashboard, label: t('dashboard'), href: '/' },
     { icon: Users, label: t('patients'), href: '/clients' },
     { icon: Calendar, label: t('appointments'), href: '/appointments' },
-    { icon: BarChart, label: t('stats'), href: '/stats' },
+    { icon: Pill, label: t('medications'), href: '/medications' },
     { icon: Settings, label: t('settings'), href: '/settings' },
   ];
 
   if (pathname === '/login') return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-xl border-t h-[calc(5rem+env(safe-area-inset-bottom))] flex items-start justify-around px-2 z-50 pt-2 pb-safe-area-inset-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t h-[calc(5rem+env(safe-area-inset-bottom))] flex items-start justify-around px-2 z-50 pt-2 pb-safe-area-inset-bottom">
       {navItems.map((item) => {
-        const isActive = pathname === item.href;
+        const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
         const Icon = item.icon;
         
         return (

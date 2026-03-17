@@ -1,11 +1,10 @@
-
 export const translations = {
   ar: {
     appTitle: 'طبيب الأسنان الذكي',
     login: 'تسجيل الدخول',
     register: 'إنشاء حساب جديد',
     email: 'البريد الإلكتروني',
-    password: 'كلمة المرور',
+    password: 'كلمة مور',
     dashboard: 'الرئيسية',
     patients: 'المرضى',
     appointments: 'المواعيد',
@@ -66,6 +65,7 @@ export const translations = {
     backToList: 'العودة للقائمة',
     appointmentHistory: 'تاريخ المواعيد',
     noPastAppointments: 'لا توجد مواعيد سابقة لهذا المريض',
+    medications: 'الأدوية',
     medicationNotFound: 'الدواء غير موجود',
     stockInventory: 'مخزون الدواء',
     lowStockWarning: 'المخزون منخفض! ينصح بإعادة التعبئة.',
@@ -73,7 +73,13 @@ export const translations = {
     dosage: 'الجرعة',
     frequency: 'التكرار',
     nextDose: 'الجرعة القادمة',
-    dailySchedule: 'الجدول اليومي'
+    dailySchedule: 'الجدول اليومي',
+    todaysTimeline: 'جدول اليوم',
+    skip: 'تخطي',
+    taken: 'تم أخذها',
+    totalQuantity: 'الكمية الإجمالية',
+    initialStock: 'المخزون الأولي',
+    alertThreshold: 'حد التنبيه'
   },
   en: {
     appTitle: 'Smart Dentist',
@@ -141,6 +147,7 @@ export const translations = {
     backToList: 'Back to List',
     appointmentHistory: 'Appointment History',
     noPastAppointments: 'No past appointments for this patient',
+    medications: 'Medications',
     medicationNotFound: 'Medication not found',
     stockInventory: 'Stock Inventory',
     lowStockWarning: 'Low stock! Refill recommended.',
@@ -148,6 +155,12 @@ export const translations = {
     dosage: 'Dosage',
     frequency: 'Frequency',
     nextDose: 'Next Dose',
-    dailySchedule: 'Daily Schedule'
+    dailySchedule: 'Daily Schedule',
+    todaysTimeline: "Today's Timeline",
+    skip: 'Skip',
+    taken: 'Taken',
+    totalQuantity: 'Total Quantity',
+    initialStock: 'Initial Stock',
+    alertThreshold: 'Alert Threshold'
   }
 };

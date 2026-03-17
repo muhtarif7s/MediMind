@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Medication } from '@/lib/types';
 import { parseISO, differenceInSeconds, format } from 'date-fns';
+import { ar, enUS } from 'date-fns/locale';
 import { Card, CardContent } from "@/components/ui/card";
 import { Pill, Clock, AlertCircle } from "lucide-react";
 import { useMediMind } from '@/lib/store';
@@ -14,7 +15,8 @@ interface NextDoseProps {
 
 export function NextDoseCountdown({ medication, scheduledTime }: NextDoseProps) {
   const [timeLeft, setTimeLeft] = useState<number>(0);
-  const { t } = useMediMind();
+  const { t, profile } = useMediMind();
+  const locale = profile.language === 'ar' ? ar : enUS;
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -36,24 +38,24 @@ export function NextDoseCountdown({ medication, scheduledTime }: NextDoseProps) 
   const seconds = timeLeft % 60;
 
   return (
-    <Card className={`${isDue ? 'bg-destructive/20' : 'bg-primary/20'} border-none shadow-lg overflow-hidden relative transition-colors duration-500`}>
+    <Card className={`${isDue ? 'bg-destructive/10 border-destructive/20' : 'bg-primary/10 border-primary/20'} border-none shadow-lg overflow-hidden relative transition-colors duration-500`}>
       <div className="absolute top-0 right-0 p-4 opacity-10">
         <Pill className="h-24 w-24 rotate-45" />
       </div>
       <CardContent className="p-6">
         <div className="flex items-center gap-2 mb-2">
-          {isDue ? <AlertCircle className="h-4 w-4 text-destructive animate-pulse" /> : <Clock className="h-4 w-4 text-accent font-bold" />}
-          <span className={`text-xs font-bold uppercase tracking-wider ${isDue ? 'text-destructive' : 'text-accent'}`}>
+          {isDue ? <AlertCircle className="h-4 w-4 text-destructive animate-pulse" /> : <Clock className="h-4 w-4 text-primary font-bold" />}
+          <span className={`text-xs font-bold uppercase tracking-wider ${isDue ? 'text-destructive' : 'text-primary'}`}>
             {isDue ? 'Dose Due Now' : t('nextDose')}
           </span>
         </div>
         <h2 className="text-2xl font-bold mb-1">{medication.name}</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          {medication.dosageAmount} {medication.dosageUnit} at {format(parseISO(scheduledTime), 'hh:mm a')}
+          {medication.dosageAmount} {medication.dosageUnit} at {format(parseISO(scheduledTime), 'hh:mm a', { locale })}
         </p>
         
         {!isDue ? (
-          <div className="flex gap-3">
+          <div className="flex gap-3 justify-center">
             <div className="flex flex-col items-center">
               <span className="text-3xl font-bold font-mono">{String(hours).padStart(2, '0')}</span>
               <span className="text-[10px] uppercase text-muted-foreground">Hrs</span>
