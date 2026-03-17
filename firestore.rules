@@ -15,38 +15,28 @@ service cloud.firestore {
 
     // --- Collection Group Rules ---
 
-    /**
-     * @description Rules for querying dose logs across all medications using collectionGroup.
-     * Required for history and adherence tracking.
-     */
     match /{path=**}/doseLogs/{doseLogId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow read, write: if isSignedIn();
     }
 
     // --- Clinic Scoped Rules ---
 
     match /clinics/{clinicId} {
       allow read, write: if isOwner(clinicId);
+
+      match /patients/{patientId} {
+        allow read, write: if isOwner(clinicId);
+      }
+
+      match /appointments/{appointmentId} {
+        allow read, write: if isOwner(clinicId);
+      }
     }
 
     // --- User Scoped Rules ---
 
     match /users/{userId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
-
-      match /patients/{patientId} {
-        allow read, write: if isOwner(userId);
-      }
-
-      match /appointments/{appointmentId} {
-        allow read, write: if isOwner(userId);
-      }
+      allow read, write: if isOwner(userId);
 
       match /medicines/{medicineId} {
         allow read, write: if isOwner(userId);

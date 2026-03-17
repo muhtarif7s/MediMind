@@ -38,7 +38,7 @@ export function useClinic() {
 
   const shouldFetch = !!user && !isUserLoading;
 
-  // 1. Clinic Profile (using 'clinics' collection)
+  // 1. Clinic Profile
   const clinicRef = useMemoFirebase(() => {
     return shouldFetch ? doc(db, 'clinics', user.uid) : null;
   }, [db, user, shouldFetch]);
@@ -62,20 +62,20 @@ export function useClinic() {
     }
   }, [shouldFetch, clinicRef, isClinicLoading, clinicData, user]);
 
-  // 2. User Patients
+  // 2. Clinic Patients
   const patientsQuery = useMemoFirebase(() => {
     return shouldFetch
-      ? query(collection(db, 'users', user.uid, 'patients'), orderBy('name'))
+      ? query(collection(db, 'clinics', user.uid, 'patients'), orderBy('name'))
       : null;
   }, [db, user, shouldFetch]);
 
   const { data: patientsData, isLoading: isPatientsLoading } = useCollection<Patient>(patientsQuery);
   const patients = patientsData || [];
 
-  // 3. User Appointments
+  // 3. Clinic Appointments
   const appointmentsQuery = useMemoFirebase(() => {
     return shouldFetch
-      ? query(collection(db, 'users', user.uid, 'appointments'), orderBy('dateTime'))
+      ? query(collection(db, 'clinics', user.uid, 'appointments'), orderBy('dateTime'))
       : null;
   }, [db, user, shouldFetch]);
 
@@ -106,7 +106,7 @@ export function useClinic() {
   const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseLog>(historyQuery);
   const history = historyData || [];
 
-  // Bootstrapping sample data if no medications exist
+  // Bootstrapping sample data
   useEffect(() => {
     if (shouldFetch && !isMedicationsLoading && medications.length === 0) {
       const medRef = collection(db, 'users', user.uid, 'medicines');
@@ -145,7 +145,7 @@ export function useClinic() {
 
   const addPatient = (patient: Omit<Patient, 'id' | 'clinicId' | 'createdAt'>) => {
     if (!shouldFetch) return;
-    addDocumentNonBlocking(collection(db, 'users', user.uid, 'patients'), {
+    addDocumentNonBlocking(collection(db, 'clinics', user.uid, 'patients'), {
       ...patient,
       clinicId: user.uid,
       createdAt: new Date().toISOString()
@@ -154,7 +154,7 @@ export function useClinic() {
 
   const addAppointment = (app: Omit<Appointment, 'id' | 'clinicId' | 'status'>) => {
     if (!shouldFetch) return;
-    addDocumentNonBlocking(collection(db, 'users', user.uid, 'appointments'), {
+    addDocumentNonBlocking(collection(db, 'clinics', user.uid, 'appointments'), {
       ...app,
       clinicId: user.uid,
       status: 'pending'
@@ -163,7 +163,7 @@ export function useClinic() {
 
   const updateAppointmentStatus = (id: string, status: AppointmentStatus) => {
     if (!shouldFetch) return;
-    const docRef = doc(db, 'users', user.uid, 'appointments', id);
+    const docRef = doc(db, 'clinics', user.uid, 'appointments', id);
     updateDocumentNonBlocking(docRef, { status });
   };
 
