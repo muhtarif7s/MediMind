@@ -27,6 +27,7 @@ export const translations = {
     dateTime: 'التاريخ والوقت',
     treatment: 'العلاج المطلوب',
     welcome: 'مرحباً دكتور',
+    doctor: 'دكتور',
     noPatients: 'لا يوجد مرضى مضافين حالياً',
     noAppointments: 'لا توجد مواعيد مجدولة اليوم',
     logout: 'تسجيل الخروج',
@@ -54,6 +55,7 @@ export const translations = {
     attendanceRate: 'معدل الحضور',
     monthlyGrowth: 'النمو الشهري',
     last7Days: 'آخر ٧ أيام',
-    activePatients: 'المرضى النشطين'
+    activePatients: 'المرضى النشطين',
+    viewAll: 'عرض الكل'
   }
 };

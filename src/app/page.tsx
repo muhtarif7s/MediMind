@@ -43,13 +43,13 @@ export default function Dashboard() {
           </div>
           <Button variant="ghost" size="icon" className="bg-white/10 rounded-full" onClick={() => router.push('/settings')}>
             <div className="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center font-bold">
-              {(profile.name || 'D')[0]}
+              {(profile?.name || 'D')[0]}
             </div>
           </Button>
         </div>
         <div className="space-y-1">
           <p className="text-sm opacity-80">{t('welcome')}</p>
-          <p className="text-2xl font-bold">{profile.name}</p>
+          <p className="text-2xl font-bold">{profile?.name || t('doctor')}</p>
         </div>
       </header>
 
@@ -103,7 +103,7 @@ export default function Dashboard() {
               {t('todayAppointments')}
             </h3>
             <Link href="/appointments" className="text-[10px] font-bold text-primary flex items-center gap-1">
-              عرض الكل <ChevronRight className="h-3 w-3" />
+              {t('viewAll')} <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
           
