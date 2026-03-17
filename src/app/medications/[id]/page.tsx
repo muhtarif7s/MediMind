@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMediMind } from '@/lib/store';
@@ -32,9 +33,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+// Required for static export with dynamic routes
+export function generateStaticParams() {
+  return [];
+}
+
 export default function MedicationDetailPage() {
   const router = useRouter();
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string;
   const { medications, updateMedication, deleteMedication, isLoaded } = useMediMind();
   const { toast } = useToast();
   

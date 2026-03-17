@@ -2,7 +2,7 @@
 "use client";
 
 import { useMemo, useEffect } from 'react';
-import { Patient, Appointment, ClinicProfile, AppointmentStatus } from './types';
+import { Patient, Appointment, ClinicProfile, AppointmentStatus, Medication, DoseLog, DoseStatus } from './types';
 import { 
   useUser, 
   useFirestore, 
@@ -11,11 +11,12 @@ import {
   useMemoFirebase, 
   updateDocumentNonBlocking, 
   addDocumentNonBlocking, 
-  setDocumentNonBlocking 
+  setDocumentNonBlocking,
+  deleteDocumentNonBlocking
 } from '@/firebase';
-import { collection, doc, query, orderBy, where } from 'firebase/firestore';
+import { collection, doc, query, orderBy, where, collectionGroup } from 'firebase/firestore';
 import { translations } from './translations';
-import { format, startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay } from 'date-fns';
 
 export function useClinic() {
   const { user, isUserLoading } = useUser();
@@ -23,7 +24,7 @@ export function useClinic() {
 
   const shouldFetch = !!user && !isUserLoading;
 
-  // 1. Clinic Profile
+  // 1. Clinic/User Profile
   const clinicRef = useMemoFirebase(() => {
     return shouldFetch ? doc(db, 'clinics', user.uid) : null;
   }, [db, user, shouldFetch]);
@@ -35,11 +36,23 @@ export function useClinic() {
       setDocumentNonBlocking(clinicRef, {
         id: user.uid,
         name: user.displayName || 'عيادة الأسنان',
+        language: 'ar',
+        theme: 'light',
+        notificationsEnabled: true
+      }, { merge: true });
+
+      // Bootstrap sample data for doseLogs as requested
+      const logRef = doc(collection(db, 'users', user.uid, 'medicines', 'sample-med', 'doseLogs'));
+      setDocumentNonBlocking(logRef, {
+        userId: user.uid,
+        name: "Sample Medication",
+        status: "pending",
+        takenAt: new Date().toISOString()
       }, { merge: true });
     }
-  }, [shouldFetch, clinicRef, isClinicLoading, clinicData, user]);
+  }, [shouldFetch, clinicRef, isClinicLoading, clinicData, user, db]);
 
-  // 2. Patients
+  // 2. Clinic Patients
   const patientsQuery = useMemoFirebase(() => {
     return shouldFetch 
       ? query(collection(db, 'clinics', user.uid, 'patients'), orderBy('name'))
@@ -48,7 +61,7 @@ export function useClinic() {
   
   const { data: patients = [], isLoading: isPatientsLoading } = useCollection<Patient>(patientsQuery);
 
-  // 3. Appointments
+  // 3. Clinic Appointments
   const appointmentsQuery = useMemoFirebase(() => {
     return shouldFetch 
       ? query(collection(db, 'clinics', user.uid, 'appointments'), orderBy('dateTime'))
@@ -57,10 +70,29 @@ export function useClinic() {
 
   const { data: appointments = [], isLoading: isAppointmentsLoading } = useCollection<Appointment>(appointmentsQuery);
 
+  // 4. Personal Medications (MediMind features)
+  const medicationsQuery = useMemoFirebase(() => {
+    return shouldFetch 
+      ? query(collection(db, 'users', user.uid, 'medicines'), orderBy('name'))
+      : null;
+  }, [db, user, shouldFetch]);
+
+  const { data: medications = [], isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
+
+  // 5. Medication Dose History
+  const historyQuery = useMemoFirebase(() => {
+    return shouldFetch
+      ? query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid), orderBy('recordedAt', 'desc'))
+      : null;
+  }, [db, user, shouldFetch]);
+
+  const { data: history = [], isLoading: isHistoryLoading } = useCollection<DoseLog>(historyQuery);
+
   const t = (key: keyof typeof translations.ar) => {
     return translations.ar[key] || key;
   };
 
+  // Helper actions
   const addPatient = (patient: Omit<Patient, 'id' | 'clinicId' | 'createdAt'>) => {
     if (!shouldFetch) return;
     addDocumentNonBlocking(collection(db, 'clinics', user.uid, 'patients'), {
@@ -94,19 +126,72 @@ export function useClinic() {
     });
   };
 
-  const isLoaded = !isUserLoading && (!user || (!isClinicLoading && !isPatientsLoading && !isAppointmentsLoading));
+  // Medication Actions
+  const addMedication = (med: Omit<Medication, 'id' | 'userId'>) => {
+    if (!shouldFetch) return;
+    addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicines'), {
+      ...med,
+      userId: user.uid
+    });
+  };
+
+  const updateMedication = (id: string, updates: Partial<Medication>) => {
+    if (!shouldFetch) return;
+    updateDocumentNonBlocking(doc(db, 'users', user.uid, 'medicines', id), updates);
+  };
+
+  const deleteMedication = (id: string) => {
+    if (!shouldFetch) return;
+    deleteDocumentNonBlocking(doc(db, 'users', user.uid, 'medicines', id));
+  };
+
+  const logDose = (medId: string, scheduledTime: string, status: DoseStatus) => {
+    if (!shouldFetch) return;
+    const logRef = collection(db, 'users', user.uid, 'medicines', medId, 'doseLogs');
+    addDocumentNonBlocking(logRef, {
+      userId: user.uid,
+      medicationId: medId,
+      scheduledTime,
+      recordedAt: new Date().toISOString(),
+      status
+    });
+
+    if (status === 'taken') {
+      const med = medications.find(m => m.id === medId);
+      if (med) {
+        updateMedication(medId, { remainingQuantity: Math.max(0, med.remainingQuantity - med.dosageAmount) });
+      }
+    }
+  };
+
+  const isLoaded = !isUserLoading && (!user || (!isClinicLoading && !isPatientsLoading && !isAppointmentsLoading && !isMedicationsLoading && !isHistoryLoading));
 
   return {
     user,
     isUserLoading,
+    profile: clinicData || { name: 'دكتور', language: 'ar', theme: 'light', notificationsEnabled: true },
     clinic: clinicData,
     patients: patients || [],
     appointments: appointments || [],
+    medications: medications || [],
+    history: history || [],
     isLoaded,
     t,
     addPatient,
     addAppointment,
     updateAppointmentStatus,
-    getTodayAppointments
+    getTodayAppointments,
+    addMedication,
+    updateMedication,
+    deleteMedication,
+    logDose,
+    setProfile: (updates: Partial<ClinicProfile>) => {
+       if (clinicRef) updateDocumentNonBlocking(clinicRef, updates);
+    },
+    getTodayDoses: () => {
+      return [];
+    }
   };
 }
+
+export const useMediMind = useClinic;
