@@ -19,21 +19,22 @@ service cloud.firestore {
     // Collection Group rules for 'doseLogs'
     // This allows query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{doseLogId} {
-      // Robust check: Allow if the document's userId field matches OR if it's in the user's hierarchy
+      // Allow read if the user is signed in and the document belongs to them.
+      // We check the 'userId' field which is used in the collection group query filter.
       allow read: if isSignedIn() && (
-        (resource == null) || // For queries
-        (resource.data.userId == request.auth.uid) ||
-        (path[3] == "users" && path[4] == request.auth.uid)
+        resource.data.userId == request.auth.uid ||
+        // Fallback for hierarchical check if the field is missing (though it should be there)
+        (path.size() >= 2 && path[0] == "users" && path[1] == request.auth.uid)
       );
       
       allow create: if isSignedIn() && (
         request.resource.data.userId == request.auth.uid ||
-        (path[3] == "users" && path[4] == request.auth.uid)
+        (path.size() >= 2 && path[0] == "users" && path[1] == request.auth.uid)
       );
       
       allow update, delete: if isSignedIn() && (
         resource.data.userId == request.auth.uid ||
-        (path[3] == "users" && path[4] == request.auth.uid)
+        (path.size() >= 2 && path[0] == "users" && path[1] == request.auth.uid)
       );
     }
 
