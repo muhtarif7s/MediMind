@@ -116,6 +116,24 @@ export function useClinic() {
   const { data: medicationsData, isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
   const medications = medicationsData || [];
 
+  // Auto-bootstrap sample medication
+  useEffect(() => {
+    if (shouldFetch && !isMedicationsLoading && medications.length === 0) {
+      addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicines'), {
+        userId: user.uid,
+        name: 'بندول (مثال)',
+        dosageAmount: 1,
+        dosageUnit: 'pill',
+        times: ['08:00', '20:00'],
+        startDate: new Date().toISOString(),
+        totalQuantity: 30,
+        remainingQuantity: 30,
+        refillThreshold: 5,
+        frequency: 'daily'
+      });
+    }
+  }, [shouldFetch, isMedicationsLoading, medications.length, user, db]);
+
   // 5. Medication Dose History
   const historyQuery = useMemoFirebase(() => {
     return shouldFetch
