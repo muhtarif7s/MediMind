@@ -32,6 +32,70 @@
         "email",
         "createdAt"
       ]
+    },
+    "Medication": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Medication",
+      "type": "object",
+      "description": "Represents a medication schedule and inventory for a user.",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The unique identifier of the user who owns this medication."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the medication."
+        },
+        "dosageAmount": {
+          "type": "number",
+          "description": "The amount of medication per dose."
+        },
+        "dosageUnit": {
+          "type": "string",
+          "description": "The unit of the dosage (e.g., 'pill', 'mg')."
+        },
+        "times": {
+          "type": "array",
+          "description": "List of times (HH:mm) when the medication should be taken.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The date when the medication schedule starts.",
+          "format": "date-time"
+        },
+        "totalQuantity": {
+          "type": "number",
+          "description": "The initial total quantity of medication."
+        },
+        "remainingQuantity": {
+          "type": "number",
+          "description": "The current remaining quantity of medication."
+        },
+        "refillThreshold": {
+          "type": "number",
+          "description": "The threshold quantity at which a refill alert is triggered."
+        },
+        "frequency": {
+          "type": "string",
+          "description": "The frequency of medication intake (e.g., 'daily')."
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "dosageAmount",
+        "dosageUnit",
+        "times",
+        "startDate",
+        "totalQuantity",
+        "remainingQuantity",
+        "refillThreshold",
+        "frequency"
+      ]
     }
   },
   "auth": {
@@ -49,7 +113,7 @@
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores individual user profiles. Example ID: rpaa4ftx0rPfQiBpJgdCF0YUnlm2",
+          "description": "Stores individual user profiles.",
           "params": [
             {
               "name": "userId",
@@ -57,8 +121,28 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{userId}/medicines/{medicineId}",
+        "definition": {
+          "entityName": "Medication",
+          "schema": {
+            "$ref": "#/backend/entities/Medication"
+          },
+          "description": "Stores individual medications for a user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user owner."
+            },
+            {
+              "name": "medicineId",
+              "description": "The unique identifier of the medication."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The 'users' collection is the root for all user-specific data, ensuring clear ownership and secure access patterns."
+    "reasoning": "The 'medicines' subcollection is nested under the user document to enforce ownership and simplify data isolation per user."
   }
 }
