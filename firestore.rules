@@ -3,15 +3,16 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * 1. Collection Group Rules
+     * 1. Collection Group Rules for doseLogs
      * These rules authorize queries across all 'doseLogs' subcollections globally.
+     * This is required for fetching medication history across different medications.
      */
     match /{path=**}/doseLogs/{logId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Allow reading and modifying existing logs if the user matches
+      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
       
+      // Allow creating new logs if the incoming data matches the authenticated user
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      
-      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
     /**
@@ -19,8 +20,10 @@ service cloud.firestore {
      * Allows users full access to their own branch of the database.
      */
     match /users/{userId} {
+      // Allow user to read/write their own profile document
       allow read, write: if request.auth != null && request.auth.uid == userId;
 
+      // Allow user to read/write any subcollection (like medicines)
       match /{allPaths=**} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }

@@ -9,6 +9,10 @@ import { useEffect, useState } from 'react';
 import { NotificationManager } from '@/components/notifications/NotificationManager';
 import { usePathname } from 'next/navigation';
 
+/**
+ * AppWrapper handles language-specific layout adjustments (RTL/LTR)
+ * and manages global visibility of non-auth components.
+ */
 function AppWrapper({ children }: { children: React.ReactNode }) {
   const { profile, isLoaded } = useMediMind();
   const [isRTL, setIsRTL] = useState(false);
@@ -29,7 +33,7 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
       dir={isRTL ? 'rtl' : 'ltr'} 
       className="max-w-md mx-auto relative bg-background min-h-screen flex flex-col border-x shadow-2xl"
     >
-      <div className="flex-1 flex flex-col relative overflow-y-auto overflow-x-hidden">
+      <div className="flex-1 flex flex-col relative overflow-x-hidden">
         {children}
       </div>
       {!isAuthPage && <NotificationManager />}

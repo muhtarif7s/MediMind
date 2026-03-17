@@ -12,6 +12,10 @@ import { Pill, Loader2, Mail, Lock, UserPlus, LogIn, ArrowRight } from 'lucide-r
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+/**
+ * Mobile-optimized Login/Register Page.
+ * Uses ScrollArea to ensure accessibility on smaller devices.
+ */
 export default function LoginPage() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState('');
@@ -75,9 +79,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <ScrollArea className="flex-1 h-full">
-        <div className="flex flex-col p-6 items-center justify-start min-h-screen py-12">
+    <div className="min-h-screen bg-background">
+      <ScrollArea className="h-screen w-full">
+        <div className="flex flex-col p-6 items-center justify-start min-h-screen pt-12 pb-24">
           <div className="w-full max-w-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex flex-col items-center gap-3">
               <div className="p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/30">
@@ -176,7 +180,7 @@ export default function LoginPage() {
             </Card>
           </div>
           
-          <div className="py-12 text-center w-full">
+          <div className="py-12 text-center w-full mt-auto">
             <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.3em]">
               MediMind Health Assistant • Secure v1.3.1
             </p>

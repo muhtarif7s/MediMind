@@ -16,6 +16,11 @@ import {
 import { collection, doc, query, where, collectionGroup } from 'firebase/firestore';
 import { translations } from './translations';
 
+/**
+ * MediMind Application Store Hook
+ * Manages authentication, profile settings, medications, and dose history.
+ * Implements defensive data fetching to prevent Firestore permission errors.
+ */
 export function useMediMind() {
   const { user, isUserLoading: isAuthLoading } = useUser();
   const db = useFirestore();
@@ -63,26 +68,41 @@ export function useMediMind() {
     setDocumentNonBlocking(profileRef, updates, { merge: true });
   };
 
-  // 2. Fetch Medications
+  // 2. Fetch Medications (Hierarchical)
   const medsQuery = useMemoFirebase(() => {
     if (!db || !shouldFetch) return null;
-    return query(collection(db, 'users', user.uid, 'medicines'), where('isActive', '==', true));
+    return query(
+      collection(db, 'users', user.uid, 'medicines'), 
+      where('isActive', '==', true)
+    );
   }, [db, user, shouldFetch]);
   
   const { data: medicationsData, isLoading: isMedsLoading } = useCollection<Medication>(medsQuery);
   const medications = medicationsData || [];
 
-  // 3. Fetch Dose History
+  // 3. Fetch Dose History (Collection Group)
   const historyQuery = useMemoFirebase(() => {
     if (!db || !shouldFetch) return null;
-    return query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid));
+    // CRITICAL: Collection Group queries MUST filter by userId for security rules to pass
+    return query(
+      collectionGroup(db, 'doseLogs'), 
+      where('userId', '==', user.uid)
+    );
   }, [db, user, shouldFetch]);
 
   const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseHistory>(historyQuery);
   const history = historyData || [];
 
-  // Robust loading state: strictly wait for auth, then wait for data if user exists
-  const isLoaded = !isAuthLoading && (!user || (!isProfileLoading && !isMedsLoading && !isHistoryLoading));
+  /**
+   * Robust loading state
+   * - strictly wait for auth loading to complete
+   * - if user exists, wait for all critical data streams to initialize
+   */
+  const isLoaded = !isAuthLoading && (!user || (
+    !isProfileLoading && 
+    !isMedsLoading && 
+    !isHistoryLoading
+  ));
 
   const addMedication = (med: Omit<Medication, 'id'>) => {
     if (!shouldFetch || !db) return;
