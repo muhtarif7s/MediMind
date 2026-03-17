@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, Pill, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, Pill, BarChart3, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useClinic } from '@/lib/store';
 
@@ -14,6 +14,7 @@ export function NavBar() {
     { icon: LayoutDashboard, label: t('dashboard'), href: '/' },
     { icon: Users, label: t('patients'), href: '/clients' },
     { icon: Calendar, label: t('appointments'), href: '/appointments' },
+    { icon: BarChart3, label: t('stats'), href: '/stats' },
     { icon: Pill, label: t('medications'), href: '/medications' },
     { icon: Settings, label: t('settings'), href: '/settings' },
   ];

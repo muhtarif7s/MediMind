@@ -4,7 +4,7 @@ export const translations = {
     login: 'تسجيل الدخول',
     register: 'إنشاء حساب جديد',
     email: 'البريد الإلكتروني',
-    password: 'كلمة مور',
+    password: 'كلمة مرور',
     dashboard: 'الرئيسية',
     patients: 'المرضى',
     appointments: 'المواعيد',
@@ -30,7 +30,7 @@ export const translations = {
     noPatients: 'لا يوجد مرضى مضافين حالياً',
     noAppointments: 'لا توجد مواعيد مجدولة اليوم',
     logout: 'تسجيل الخروج',
-    stats: 'الإحصائيات',
+    stats: 'الإحصائيات والتحليلات',
     totalPatients: 'إجمالي المرضى',
     searchPatients: 'البحث عن مريض...',
     dontHaveAccount: 'ليس لديك حساب؟ سجل الآن',
@@ -52,7 +52,8 @@ export const translations = {
     version: 'الإصدار',
     quickActions: 'إجراءات سريعة',
     attendanceRate: 'معدل الحضور',
-    monthlyGrowth: 'النمو الشهري',
+    adherenceRate: 'معدل الالتزام بالأدوية',
+    monthlyGrowth: 'النمو والنشاط',
     last7Days: 'آخر ٧ أيام',
     activePatients: 'المرضى النشطين',
     viewAll: 'عرض الكل',
@@ -79,7 +80,11 @@ export const translations = {
     taken: 'تم أخذها',
     totalQuantity: 'الكمية الإجمالية',
     initialStock: 'المخزون الأولي',
-    alertThreshold: 'حد التنبيه'
+    alertThreshold: 'حد التنبيه',
+    clinicalPerformance: 'الأداء العيادي',
+    personalHealth: 'الصحة الشخصية',
+    overview: 'نظرة عامة',
+    viewDetailedAnalytics: 'عرض التحليلات المفصلة'
   },
   en: {
     appTitle: 'Smart Dentist',
@@ -112,7 +117,7 @@ export const translations = {
     noPatients: 'No patients added yet',
     noAppointments: 'No appointments scheduled today',
     logout: 'Logout',
-    stats: 'Statistics',
+    stats: 'Analytics & Insights',
     totalPatients: 'Total Patients',
     searchPatients: 'Search patients...',
     dontHaveAccount: "Don't have an account? Sign Up",
@@ -134,7 +139,8 @@ export const translations = {
     version: 'Version',
     quickActions: 'Quick Actions',
     attendanceRate: 'Attendance Rate',
-    monthlyGrowth: 'Monthly Growth',
+    adherenceRate: 'Medication Adherence',
+    monthlyGrowth: 'Growth & Activity',
     last7Days: 'Last 7 Days',
     activePatients: 'Active Patients',
     viewAll: 'View All',
@@ -161,6 +167,10 @@ export const translations = {
     taken: 'Taken',
     totalQuantity: 'Total Quantity',
     initialStock: 'Initial Stock',
-    alertThreshold: 'Alert Threshold'
+    alertThreshold: 'Alert Threshold',
+    clinicalPerformance: 'Clinical Performance',
+    personalHealth: 'Personal Health',
+    overview: 'Overview',
+    viewDetailedAnalytics: 'View Detailed Analytics'
   }
 };

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMediMind } from '@/lib/store';
@@ -11,23 +10,21 @@ import {
   Bell, 
   Moon, 
   Globe, 
-  ShieldCheck, 
   Info, 
-  Smartphone, 
-  Download,
   LogOut,
   Database,
-  Trash2
+  Trash2,
+  BarChart3,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -78,15 +75,17 @@ export default function SettingsPage() {
     });
   };
 
+  const isRTL = profile.language === 'ar';
+
   return (
-    <div className="flex flex-col h-screen pb-20">
-      <header className="p-6 bg-background">
+    <div className="flex flex-col h-screen pb-20" dir={isRTL ? 'rtl' : 'ltr'}>
+      <header className="p-6 bg-background pt-safe-area-inset-top">
         <h1 className="text-2xl font-bold">{t('settings')}</h1>
       </header>
 
       <div className="px-6 space-y-8 flex-1 overflow-auto no-scrollbar">
-        <div className="flex flex-col items-center py-6 bg-primary/5 rounded-3xl mb-4">
-          <Avatar className="h-24 w-24 border-4 border-background mb-4">
+        <div className="flex flex-col items-center py-6 bg-primary/5 rounded-[2.5rem] mb-4">
+          <Avatar className="h-24 w-24 border-4 border-background mb-4 shadow-xl">
             <AvatarImage src="https://picsum.photos/seed/user1/200/200" />
             <AvatarFallback>{profile?.name ? profile.name[0] : 'D'}</AvatarFallback>
           </Avatar>
@@ -96,7 +95,7 @@ export default function SettingsPage() {
               <Input 
                 value={newName} 
                 onChange={(e) => setNewName(e.target.value)} 
-                className="text-center font-bold"
+                className="text-center font-bold h-12 rounded-xl"
                 autoFocus
               />
               <div className="flex gap-2">
@@ -122,70 +121,30 @@ export default function SettingsPage() {
           )}
         </div>
 
+        {/* Analytics Section */}
         <section className="space-y-4">
-          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('dataManagement')}</h3>
-          <Card className="border-none shadow-sm bg-rose-50/50">
-            <CardContent className="p-0 divide-y divide-rose-100/50">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-rose-50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-rose-100 rounded-lg text-rose-600"><Trash2 className="h-4 w-4" /></div>
-                      <span className="text-sm font-medium text-rose-700">{t('clearPatients')}</span>
-                    </div>
+          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">{t('clinicalPerformance')}</h3>
+          <Link href="/stats">
+            <Card className="border-none shadow-sm bg-primary/10 rounded-3xl group active:scale-[0.98] transition-all">
+              <CardContent className="p-5 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-sm">
+                    <BarChart3 className="h-6 w-6 text-primary" />
                   </div>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-[2rem]" dir="rtl">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-right">{t('clearPatients')}</AlertDialogTitle>
-                    <AlertDialogDescription className="text-right">
-                      {t('confirmClear')}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="flex-row-reverse gap-2">
-                    <AlertDialogAction onClick={() => handleResetData('patients')} className="bg-rose-600 hover:bg-rose-700 rounded-xl flex-1">
-                      {t('save')}
-                    </AlertDialogAction>
-                    <AlertDialogCancel className="rounded-xl flex-1 mt-0">
-                      {t('cancel')}
-                    </AlertDialogCancel>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-rose-50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-rose-100 rounded-lg text-rose-600"><Database className="h-4 w-4" /></div>
-                      <span className="text-sm font-medium text-rose-700">{t('clearAppointments')}</span>
-                    </div>
+                  <div className="text-start">
+                    <p className="text-sm font-bold">{t('viewDetailedAnalytics')}</p>
+                    <p className="text-[10px] text-muted-foreground">{t('monthlyGrowth')}</p>
                   </div>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-[2rem]" dir="rtl">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-right">{t('clearAppointments')}</AlertDialogTitle>
-                    <AlertDialogDescription className="text-right">
-                      {t('confirmClear')}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="flex-row-reverse gap-2">
-                    <AlertDialogAction onClick={() => handleResetData('appointments')} className="bg-rose-600 hover:bg-rose-700 rounded-xl flex-1">
-                      {t('save')}
-                    </AlertDialogAction>
-                    <AlertDialogCancel className="rounded-xl flex-1 mt-0">
-                      {t('cancel')}
-                    </AlertDialogCancel>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </CardContent>
-          </Card>
+                </div>
+                <ChevronRight className={`h-5 w-5 text-muted-foreground ${isRTL ? 'rotate-180' : ''}`} />
+              </CardContent>
+            </Card>
+          </Link>
         </section>
 
         <section className="space-y-4">
-          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('preferences')}</h3>
-          <Card className="border-none shadow-sm">
+          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">{t('preferences')}</h3>
+          <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
             <CardContent className="p-0 divide-y">
               <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
@@ -232,6 +191,67 @@ export default function SettingsPage() {
         </section>
 
         <section className="space-y-4">
+          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">{t('dataManagement')}</h3>
+          <Card className="border-none shadow-sm bg-rose-50/50 rounded-3xl overflow-hidden">
+            <CardContent className="p-0 divide-y divide-rose-100/50">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-rose-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-rose-100 rounded-lg text-rose-600"><Trash2 className="h-4 w-4" /></div>
+                      <span className="text-sm font-medium text-rose-700">{t('clearPatients')}</span>
+                    </div>
+                  </div>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-[2.5rem]" dir={isRTL ? 'rtl' : 'ltr'}>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-start">{t('clearPatients')}</AlertDialogTitle>
+                    <AlertDialogDescription className="text-start">
+                      {t('confirmClear')}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex gap-2">
+                    <AlertDialogAction onClick={() => handleResetData('patients')} className="bg-rose-600 hover:bg-rose-700 rounded-xl flex-1 h-12">
+                      {t('save')}
+                    </AlertDialogAction>
+                    <AlertDialogCancel className="rounded-xl flex-1 mt-0 h-12">
+                      {t('cancel')}
+                    </AlertDialogCancel>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-rose-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-rose-100 rounded-lg text-rose-600"><Database className="h-4 w-4" /></div>
+                      <span className="text-sm font-medium text-rose-700">{t('clearAppointments')}</span>
+                    </div>
+                  </div>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-[2.5rem]" dir={isRTL ? 'rtl' : 'ltr'}>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-start">{t('clearAppointments')}</AlertDialogTitle>
+                    <AlertDialogDescription className="text-start">
+                      {t('confirmClear')}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex gap-2">
+                    <AlertDialogAction onClick={() => handleResetData('appointments')} className="bg-rose-600 hover:bg-rose-700 rounded-xl flex-1 h-12">
+                      {t('save')}
+                    </AlertDialogAction>
+                    <AlertDialogCancel className="rounded-xl flex-1 mt-0 h-12">
+                      {t('cancel')}
+                    </AlertDialogCancel>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="space-y-4">
           <Button 
             variant="ghost" 
             className="w-full h-12 justify-between px-4 text-destructive hover:bg-destructive/10 hover:text-destructive rounded-2xl border border-destructive/20"
@@ -245,15 +265,15 @@ export default function SettingsPage() {
         </section>
 
         <section className="space-y-4 pb-10">
-          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('about')}</h3>
-          <Card className="border-none shadow-sm">
+          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">{t('about')}</h3>
+          <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
             <CardContent className="p-0 divide-y">
               <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-muted rounded-lg"><Info className="h-4 w-4 text-muted-foreground" /></div>
                   <span className="text-sm font-medium">{t('version')}</span>
                 </div>
-                <span className="text-xs text-muted-foreground">1.1.0 (Auth)</span>
+                <span className="text-xs text-muted-foreground">1.5.0 (Analytics)</span>
               </div>
             </CardContent>
           </Card>
