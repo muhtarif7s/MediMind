@@ -53,43 +53,43 @@ export default function LoginPage() {
   if (isUserLoading) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6" dir="rtl">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6" dir="rtl">
       <div className="w-full max-w-sm space-y-8">
         <div className="flex flex-col items-center gap-4">
           <div className="p-6 bg-primary rounded-3xl shadow-xl shadow-primary/20">
-            <Stethoscope className="h-12 w-12 text-white" />
+            <Stethoscope className="h-12 w-12 text-primary-foreground" />
           </div>
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-slate-900">{t('appTitle')}</h1>
-            <p className="text-sm text-slate-500 font-medium">نظام إدارة عيادات الأسنان الذكي</p>
+            <h1 className="text-3xl font-bold text-foreground">{t('appTitle')}</h1>
+            <p className="text-sm text-muted-foreground font-medium">نظام إدارة عيادات الأسنان الذكي</p>
           </div>
         </div>
 
-        <Card className="border-none shadow-xl bg-white rounded-[2rem]">
+        <Card className="border shadow-xl bg-card rounded-[2rem]">
           <CardHeader className="text-center">
-            <CardTitle>{isLogin ? t('login') : t('register')}</CardTitle>
+            <CardTitle className="text-foreground">{isLogin ? t('login') : t('register')}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-500 pr-1">{t('email')}</Label>
+                <Label className="text-xs font-bold text-muted-foreground pr-1">{t('email')}</Label>
                 <Input 
                   type="email" 
                   value={email} 
                   onChange={e => setEmail(e.target.value)} 
                   required 
-                  className="h-12 rounded-xl bg-slate-50 border-none"
+                  className="h-12 rounded-xl bg-muted/50 border-none text-foreground"
                   placeholder="name@example.com"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold text-slate-500 pr-1">{t('password')}</Label>
+                <Label className="text-xs font-bold text-muted-foreground pr-1">{t('password')}</Label>
                 <Input 
                   type="password" 
                   value={password} 
                   onChange={e => setPassword(e.target.value)} 
                   required 
-                  className="h-12 rounded-xl bg-slate-50 border-none"
+                  className="h-12 rounded-xl bg-muted/50 border-none text-foreground"
                   placeholder="••••••••"
                 />
               </div>

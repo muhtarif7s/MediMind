@@ -34,6 +34,7 @@ import { translations } from './translations';
 /**
  * Main store hook for the Smart Dentist & MediMind features.
  * Operates purely on live Firestore data.
+ * No automated data bootstrapping is performed.
  */
 export function useClinic() {
   const { user, isUserLoading } = useUser();
