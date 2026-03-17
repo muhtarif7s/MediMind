@@ -75,108 +75,110 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col overflow-y-auto no-scrollbar">
-      <div className="flex-1 flex flex-col p-6 items-center justify-start pt-12 pb-24">
-        <div className="w-full max-w-sm space-y-8">
-          <div className="flex flex-col items-center gap-3">
-            <div className="p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/30">
-              <Pill className="h-10 w-10 text-primary-foreground" />
-            </div>
-            <div className="text-center">
-              <h1 className="text-3xl font-extrabold tracking-tight text-foreground">MediMind</h1>
-              <p className="text-xs font-medium text-muted-foreground mt-1 uppercase tracking-widest opacity-70">Health Companion</p>
-            </div>
-          </div>
-
-          <Card className="border-none shadow-none bg-transparent">
-            <CardHeader className="text-center px-0 pb-6">
-              <CardTitle className="text-2xl font-bold">
-                {isRegistering ? "Join MediMind" : "Welcome Back"}
-              </CardTitle>
-              <CardDescription className="text-sm mt-2">
-                {isRegistering 
-                  ? "Track your medications securely with our smart health companion." 
-                  : "Sign in to access your daily medication schedule."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="px-0">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-2 px-1">
-                    <Mail className="h-3 w-3" /> Email Address
-                  </Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="name@example.com" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={isSubmitting}
-                    className="h-12 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary text-base"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-2 px-1">
-                    <Lock className="h-3 w-3" /> Password
-                  </Label>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={isSubmitting}
-                    className="h-12 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary text-base"
-                  />
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="w-full h-14 rounded-2xl text-lg font-bold mt-4 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
-                >
-                  {isSubmitting ? (
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      {isRegistering ? <UserPlus className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
-                      {isRegistering ? "Create Account" : "Sign In"}
-                    </div>
-                  )}
-                </Button>
-              </form>
-
-              <div className="mt-8 flex flex-col items-center gap-6">
-                <div className="w-full flex items-center gap-4 py-2">
-                  <div className="h-[1px] bg-border flex-1"></div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground/50 tracking-tighter">or switch mode</span>
-                  <div className="h-[1px] bg-border flex-1"></div>
-                </div>
-
-                <div className="text-center space-y-4 w-full">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {isRegistering ? "Already using MediMind?" : "New to our platform?"}
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    type="button"
-                    onClick={() => setIsRegistering(!isRegistering)}
-                    disabled={isSubmitting}
-                    className="w-full h-12 rounded-2xl border-primary/30 text-primary font-bold hover:bg-primary/5 px-6 flex items-center justify-center gap-2 transition-all active:scale-95 bg-background"
-                  >
-                    {isRegistering ? "Sign In to your Account" : "Create New Account"}
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      <ScrollArea className="flex-1">
+        <div className="flex flex-col p-6 items-center justify-start pt-12 pb-32 min-h-full">
+          <div className="w-full max-w-sm space-y-8">
+            <div className="flex flex-col items-center gap-3">
+              <div className="p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/30">
+                <Pill className="h-10 w-10 text-primary-foreground" />
               </div>
-            </CardContent>
-          </Card>
+              <div className="text-center">
+                <h1 className="text-3xl font-extrabold tracking-tight text-foreground">MediMind</h1>
+                <p className="text-xs font-medium text-muted-foreground mt-1 uppercase tracking-widest opacity-70">Health Companion</p>
+              </div>
+            </div>
+
+            <Card className="border-none shadow-none bg-transparent">
+              <CardHeader className="text-center px-0 pb-6">
+                <CardTitle className="text-2xl font-bold">
+                  {isRegistering ? "Join MediMind" : "Welcome Back"}
+                </CardTitle>
+                <CardDescription className="text-sm mt-2">
+                  {isRegistering 
+                    ? "Track your medications securely with our smart health companion." 
+                    : "Sign in to access your daily medication schedule."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-0">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-2 px-1">
+                      <Mail className="h-3 w-3" /> Email Address
+                    </Label>
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="name@example.com" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      disabled={isSubmitting}
+                      className="h-12 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary text-base"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-2 px-1">
+                      <Lock className="h-3 w-3" /> Password
+                    </Label>
+                    <Input 
+                      id="password" 
+                      type="password" 
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={isSubmitting}
+                      className="h-12 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary text-base"
+                    />
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="w-full h-14 rounded-2xl text-lg font-bold mt-4 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+                  >
+                    {isSubmitting ? (
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        {isRegistering ? <UserPlus className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
+                        {isRegistering ? "Create Account" : "Sign In"}
+                      </div>
+                    )}
+                  </Button>
+                </form>
+
+                <div className="mt-8 flex flex-col items-center gap-6">
+                  <div className="w-full flex items-center gap-4 py-2">
+                    <div className="h-[1px] bg-border flex-1"></div>
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground/50 tracking-tighter">or switch mode</span>
+                    <div className="h-[1px] bg-border flex-1"></div>
+                  </div>
+
+                  <div className="text-center space-y-4 w-full">
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {isRegistering ? "Already using MediMind?" : "New to our platform?"}
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      type="button"
+                      onClick={() => setIsRegistering(!isRegistering)}
+                      disabled={isSubmitting}
+                      className="w-full h-12 rounded-2xl border-primary/30 text-primary font-bold hover:bg-primary/5 px-6 flex items-center justify-center gap-2 transition-all active:scale-95 bg-background"
+                    >
+                      {isRegistering ? "Sign In to your Account" : "Create New Account"}
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      </ScrollArea>
       
-      <div className="p-6 text-center mt-auto">
+      <div className="p-6 text-center border-t bg-background shrink-0">
         <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.3em]">
           MediMind Health Assistant • Secure v1.3.1
         </p>

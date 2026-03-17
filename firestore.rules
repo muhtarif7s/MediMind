@@ -7,29 +7,25 @@ service cloud.firestore {
      * Optimized for collection group queries and hierarchical user data.
      */
 
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
     // 1. Collection Group Rules (Critical for dose history sync)
     // This allows query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{logId} {
       // For read operations (list/get), we ensure the document belongs to the authenticated user.
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
       
       // For create, we validate the data being sent.
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
       
       // For updates and deletes, we check the existing document ownership.
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
     // 2. User Profile & Hierarchical Rules
     match /users/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if request.auth != null && request.auth.uid == userId;
 
       match /{allPaths=**} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
+        allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
   }
