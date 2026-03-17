@@ -10,15 +10,17 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Calendar as CalendarIcon, Clock, Check, X, Ban } from 'lucide-react';
+import { Plus, Clock, Check, X, Ban, Calendar as CalendarIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
 export default function AppointmentsPage() {
-  const { appointments, patients, addAppointment, updateAppointmentStatus, t } = useClinic();
+  const { appointments, patients, addAppointment, updateAppointmentStatus, t, isLoaded } = useClinic();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [formData, setFormData] = useState({ patientId: '', dateTime: '', treatment: '' });
+
+  if (!isLoaded) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,23 +41,23 @@ export default function AppointmentsPage() {
   return (
     <div className="flex flex-col h-screen pb-20">
       <header className="p-6 bg-white border-b flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('appointments')}</h1>
+        <h1 className="text-2xl font-bold text-slate-900">{t('appointments')}</h1>
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gap-2">
+            <Button size="sm" className="gap-2 rounded-xl px-4">
               <Plus className="h-4 w-4" />
               {t('bookAppointment')}
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-xs rounded-3xl" dir="rtl">
+          <DialogContent className="max-w-xs rounded-[2rem]" dir="rtl">
             <DialogHeader>
               <DialogTitle className="text-right">{t('bookAppointment')}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 text-right">
+            <form onSubmit={handleSubmit} className="space-y-4 text-right pt-4">
               <div className="space-y-2">
                 <Label>{t('selectPatient')}</Label>
                 <Select onValueChange={v => setFormData({...formData, patientId: v})}>
-                  <SelectTrigger className="text-right">
+                  <SelectTrigger className="h-12 rounded-xl text-right">
                     <SelectValue placeholder={t('selectPatient')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -70,17 +72,19 @@ export default function AppointmentsPage() {
                 <Input 
                   type="datetime-local" 
                   required 
+                  className="h-12 rounded-xl"
                   onChange={e => setFormData({...formData, dateTime: e.target.value})} 
                 />
               </div>
               <div className="space-y-2">
                 <Label>{t('treatment')}</Label>
                 <Input 
+                  className="h-12 rounded-xl"
                   value={formData.treatment} 
                   onChange={e => setFormData({...formData, treatment: e.target.value})} 
                 />
               </div>
-              <Button type="submit" className="w-full">{t('save')}</Button>
+              <Button type="submit" className="w-full h-12 rounded-xl mt-4">{t('save')}</Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -89,17 +93,17 @@ export default function AppointmentsPage() {
       <ScrollArea className="flex-1 p-6">
         <div className="space-y-4">
           {appointments.map(app => (
-            <Card key={app.id} className="border shadow-sm overflow-hidden">
+            <Card key={app.id} className="border-none shadow-sm bg-white rounded-2xl overflow-hidden">
               <CardContent className="p-4 space-y-4">
                 <div className="flex justify-between items-start">
                   <div className="text-right">
-                    <p className="font-bold">{app.patientName}</p>
+                    <p className="font-bold text-slate-900">{app.patientName}</p>
                     <p className="text-[10px] text-slate-500 flex items-center justify-end gap-1">
                       {format(new Date(app.dateTime), 'EEEE d MMMM, hh:mm a', { locale: ar })}
                       <Clock className="h-3 w-3" />
                     </p>
                   </div>
-                  <div className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                  <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${
                     app.status === 'attended' ? 'bg-emerald-100 text-emerald-700' :
                     app.status === 'no-show' ? 'bg-amber-100 text-amber-700' :
                     app.status === 'cancelled' ? 'bg-rose-100 text-rose-700' :
@@ -110,11 +114,11 @@ export default function AppointmentsPage() {
                 </div>
 
                 {app.status === 'pending' && (
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t">
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="text-[10px] h-8 border-emerald-200 text-emerald-700 bg-emerald-50"
+                      className="text-[10px] h-9 rounded-xl border-emerald-100 text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
                       onClick={() => updateAppointmentStatus(app.id, 'attended')}
                     >
                       <Check className="h-3 w-3 ml-1" /> {t('attended')}
@@ -122,7 +126,7 @@ export default function AppointmentsPage() {
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="text-[10px] h-8 border-amber-200 text-amber-700 bg-amber-50"
+                      className="text-[10px] h-9 rounded-xl border-amber-100 text-amber-700 bg-amber-50 hover:bg-amber-100"
                       onClick={() => updateAppointmentStatus(app.id, 'no-show')}
                     >
                       <X className="h-3 w-3 ml-1" /> {t('noShow')}
@@ -130,7 +134,7 @@ export default function AppointmentsPage() {
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="text-[10px] h-8 border-rose-200 text-rose-700 bg-rose-50"
+                      className="text-[10px] h-9 rounded-xl border-rose-100 text-rose-700 bg-rose-50 hover:bg-rose-100"
                       onClick={() => updateAppointmentStatus(app.id, 'cancelled')}
                     >
                       <Ban className="h-3 w-3 ml-1" /> {t('cancelled')}
@@ -141,8 +145,8 @@ export default function AppointmentsPage() {
             </Card>
           ))}
           {appointments.length === 0 && (
-            <div className="py-20 text-center text-slate-400">
-              <CalendarIcon className="h-10 w-10 mx-auto mb-2 opacity-20" />
+            <div className="py-20 text-center text-slate-300">
+              <CalendarIcon className="h-12 w-12 mx-auto mb-4 opacity-20" />
               <p className="text-sm">{t('noAppointments')}</p>
             </div>
           )}

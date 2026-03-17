@@ -30,6 +30,7 @@ export const translations = {
     noAppointments: 'لا توجد مواعيد مجدولة اليوم',
     logout: 'تسجيل الخروج',
     stats: 'إحصائيات المواعيد',
-    totalPatients: 'إجمالي المرضى'
+    totalPatients: 'إجمالي المرضى',
+    searchPatients: 'البحث عن مريض...'
   }
 };

@@ -88,7 +88,7 @@ export function useClinic() {
   const getTodayAppointments = () => {
     const today = startOfDay(new Date());
     const tonight = endOfDay(new Date());
-    return appointments.filter(a => {
+    return (appointments || []).filter(a => {
       const d = new Date(a.dateTime);
       return d >= today && d <= tonight;
     });
@@ -100,8 +100,8 @@ export function useClinic() {
     user,
     isUserLoading,
     clinic: clinicData,
-    patients,
-    appointments,
+    patients: patients || [],
+    appointments: appointments || [],
     isLoaded,
     t,
     addPatient,

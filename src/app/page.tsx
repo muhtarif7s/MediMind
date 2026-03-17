@@ -4,8 +4,7 @@
 import { useClinic } from '@/lib/store';
 import { NavBar } from '@/components/navigation/NavBar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Loader2, Calendar, Users, Activity, Stethoscope } from 'lucide-react';
@@ -32,7 +31,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen pb-20">
-      <header className="p-6 bg-primary text-white">
+      <header className="p-6 bg-primary text-white rounded-b-[2rem] shadow-lg">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-white/20 rounded-lg">
             <Stethoscope className="h-6 w-6" />
@@ -45,7 +44,7 @@ export default function Dashboard() {
 
       <ScrollArea className="flex-1 p-6 space-y-6">
         <div className="grid grid-cols-2 gap-4">
-          <Card className="border-none shadow-md bg-sky-50">
+          <Card className="border-none shadow-md bg-blue-50">
             <CardContent className="p-4 flex flex-col items-center text-center">
               <Calendar className="h-6 w-6 text-primary mb-2" />
               <p className="text-2xl font-bold text-primary">{todayApps.length}</p>
@@ -61,18 +60,18 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <section className="space-y-3">
-          <h3 className="font-bold text-slate-700 flex items-center gap-2">
+        <section className="space-y-4">
+          <h3 className="font-bold text-slate-700 flex items-center gap-2 px-1">
             <Activity className="h-4 w-4 text-primary" />
             {t('todayAppointments')}
           </h3>
           <div className="space-y-3">
             {todayApps.length > 0 ? (
               todayApps.map(app => (
-                <Card key={app.id} className="border shadow-sm">
+                <Card key={app.id} className="border-none shadow-sm bg-white rounded-2xl">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div>
-                      <p className="font-bold text-sm">{app.patientName}</p>
+                      <p className="font-bold text-sm text-slate-900">{app.patientName}</p>
                       <p className="text-[10px] text-slate-500">
                         {format(new Date(app.dateTime), 'hh:mm a', { locale: ar })}
                       </p>
@@ -89,7 +88,9 @@ export default function Dashboard() {
                 </Card>
               ))
             ) : (
-              <p className="text-center text-sm text-slate-400 py-6">{t('noAppointments')}</p>
+              <div className="text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed">
+                <p className="text-sm text-slate-400">{t('noAppointments')}</p>
+              </div>
             )}
           </div>
         </section>
