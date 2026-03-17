@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
@@ -154,82 +155,82 @@ export default function LoginPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6" dir="auto">
-      <div className="w-full max-w-sm space-y-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6" dir="auto">
+      <div className="w-full max-w-sm space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="flex flex-col items-center gap-4">
-          <div className="p-6 bg-primary rounded-3xl shadow-xl shadow-primary/20">
+          <div className="p-6 bg-primary rounded-[2rem] shadow-2xl shadow-primary/30 active:scale-95 transition-transform cursor-pointer" onClick={() => router.push('/welcome')}>
             <Stethoscope className="h-12 w-12 text-primary-foreground" />
           </div>
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-foreground">{t('appTitle')}</h1>
-            <p className="text-sm text-muted-foreground font-medium">{t('appSubtitle')}</p>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{t('appTitle')}</h1>
+            <p className="text-sm text-slate-500 font-medium">{t('appSubtitle')}</p>
           </div>
         </div>
 
-        <Card className="border shadow-xl bg-card rounded-[2rem]">
+        <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-none bg-white dark:bg-slate-900 rounded-[2.5rem] overflow-hidden">
           <CardHeader className="text-center pb-2 relative">
             {authState === 'forgot-password' && (
               <button 
                 onClick={() => setAuthState('login')}
-                className="absolute left-6 top-8 text-muted-foreground hover:text-primary transition-colors"
+                className="absolute left-6 top-8 text-slate-400 hover:text-primary transition-colors"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
             )}
-            <CardTitle className="text-foreground">
+            <CardTitle className="text-slate-900 dark:text-white font-bold text-xl pt-4">
               {authState === 'login' ? t('login') : 
                authState === 'signup' ? t('register') : 
                authState === 'forgot-password' ? t('resetPassword') : t('verifyEmail')}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-8">
             {(authState === 'login' || authState === 'signup' || authState === 'forgot-password') && (
               <form onSubmit={handleSubmit} className="space-y-5">
                 {authState === 'signup' && (
                   <>
                     <div className="space-y-2 text-start">
-                      <Label className="text-xs font-bold text-muted-foreground">{t('patientName')}</Label>
+                      <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('patientName')}</Label>
                       <Input 
                         type="text" 
                         value={name} 
                         onChange={e => setName(e.target.value)} 
                         required 
-                        className="h-12 rounded-xl bg-muted/50 border-none text-foreground"
+                        className="h-12 rounded-xl bg-slate-50 dark:bg-slate-800 border-none text-slate-900 dark:text-white"
                         placeholder={t('doctor')}
                       />
                     </div>
                     <div className="space-y-2 text-start">
-                      <Label className="text-xs font-bold text-muted-foreground">{t('phone')}</Label>
+                      <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('phone')}</Label>
                       <Input 
                         type="tel" 
                         value={phoneNumber} 
                         onChange={e => setPhoneNumber(e.target.value)} 
-                        className="h-12 rounded-xl bg-muted/50 border-none text-foreground"
-                        placeholder="+1234567890"
+                        className="h-12 rounded-xl bg-slate-50 dark:bg-slate-800 border-none text-slate-900 dark:text-white"
+                        placeholder="+123 456 789"
                       />
                     </div>
                   </>
                 )}
                 <div className="space-y-2 text-start">
-                  <Label className="text-xs font-bold text-muted-foreground">{t('email')}</Label>
+                  <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('email')}</Label>
                   <Input 
                     type="email" 
                     value={email} 
                     onChange={e => setEmail(e.target.value)} 
                     required 
-                    className="h-12 rounded-xl bg-muted/50 border-none text-foreground"
+                    className="h-12 rounded-xl bg-slate-50 dark:bg-slate-800 border-none text-slate-900 dark:text-white"
                     placeholder="name@example.com"
                   />
                 </div>
                 {authState !== 'forgot-password' && (
                   <div className="space-y-2 text-start">
-                    <Label className="text-xs font-bold text-muted-foreground">{t('password')}</Label>
+                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('password')}</Label>
                     <Input 
                       type="password" 
                       value={password} 
                       onChange={e => setPassword(e.target.value)} 
                       required 
-                      className="h-12 rounded-xl bg-muted/50 border-none text-foreground"
+                      className="h-12 rounded-xl bg-slate-50 dark:bg-slate-800 border-none text-slate-900 dark:text-white"
                       placeholder="••••••••"
                     />
                   </div>
@@ -240,20 +241,20 @@ export default function LoginPage() {
                     <button 
                       type="button"
                       onClick={() => setAuthState('forgot-password')}
-                      className="text-xs text-primary font-bold hover:underline"
+                      className="text-xs text-primary font-bold hover:opacity-80 transition-opacity"
                     >
                       {t('forgotPassword')}
                     </button>
                   </div>
                 )}
 
-                <Button type="submit" disabled={isSubmitting} className="w-full h-14 rounded-xl text-lg font-bold mt-2">
+                <Button type="submit" disabled={isSubmitting} className="w-full h-14 rounded-2xl text-lg font-bold mt-2 shadow-lg shadow-primary/20 active:scale-95 transition-all">
                   {isSubmitting ? <Loader2 className="animate-spin" /> : 
                     (authState === 'login' ? t('login') : 
                      authState === 'signup' ? t('register') : t('sendResetLink'))}
                 </Button>
                 
-                <div className="text-center">
+                <div className="text-center pt-2">
                   <button 
                     type="button"
                     onClick={() => setAuthState(authState === 'login' ? 'signup' : 'login')}
@@ -269,11 +270,11 @@ export default function LoginPage() {
             {authState === 'verify-email' && (
               <div className="space-y-6 text-center py-4">
                 <div className="flex justify-center">
-                  <div className="p-4 bg-primary/10 rounded-full">
-                    <Mail className="h-12 w-12 text-primary animate-pulse" />
+                  <div className="p-6 bg-primary/10 rounded-full animate-bounce">
+                    <Mail className="h-12 w-12 text-primary" />
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground px-4 leading-relaxed">
+                <p className="text-sm text-slate-500 px-4 leading-relaxed font-medium">
                   {t('checkEmail')}
                 </p>
                 <div className="space-y-3">
@@ -281,15 +282,15 @@ export default function LoginPage() {
                     onClick={handleResendEmail} 
                     disabled={emailTimer > 0 || isSubmitting}
                     variant="outline" 
-                    className="w-full h-12 rounded-xl border-primary text-primary font-bold gap-2"
+                    className="w-full h-12 rounded-xl border-primary text-primary font-bold gap-2 active:scale-95"
                   >
                     <RefreshCw className={`h-4 w-4 ${isSubmitting ? 'animate-spin' : ''}`} />
                     {emailTimer > 0 ? t('waitOTP').replace('{seconds}', emailTimer.toString()) : t('resendEmail')}
                   </Button>
-                  <Button onClick={() => window.location.reload()} className="w-full h-12 rounded-xl font-bold">
+                  <Button onClick={() => window.location.reload()} className="w-full h-12 rounded-xl font-bold shadow-lg shadow-primary/20">
                     {t('signIn')}
                   </Button>
-                  <button onClick={handleLogout} className="text-xs text-muted-foreground hover:underline">
+                  <button onClick={handleLogout} className="text-xs text-slate-400 font-bold hover:text-slate-600 transition-colors uppercase tracking-widest">
                     {t('logout')}
                   </button>
                 </div>

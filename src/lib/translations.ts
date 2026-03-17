@@ -169,7 +169,16 @@ export const translations = {
     resetPassword: 'إعادة تعيين كلمة المرور',
     sendResetLink: 'إرسال رابط إعادة التعيين',
     resetLinkSent: 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.',
-    backToLogin: 'العودة لتسجيل الدخول'
+    backToLogin: 'العودة لتسجيل الدخول',
+    welcome1_title: "إدارة عيادتك باحترافية",
+    welcome1_desc: "نظام متكامل لتنظيم المواعيد وتتبع حالات المرضى بكل سهولة وكفاءة.",
+    welcome2_title: "ذكاء اصطناعي في خدمتك",
+    welcome2_desc: "تنبيهات ذكية لإعادة تعبئة الأدوية وتحليلات متقدمة لمدى الالتزام بالعلاج.",
+    welcome3_title: "سجلات طبية آمنة",
+    welcome3_desc: "احفظ صور الأشعة والوصفات الطبية في مكان واحد آمن ومنظم يسهل الوصول إليه.",
+    getStarted: "ابدأ الآن",
+    next: "التالي",
+    skip: "تخطي"
   },
   en: {
     appTitle: 'Smart Dentist',
@@ -340,7 +349,16 @@ export const translations = {
     resetPassword: 'Reset Password',
     sendResetLink: 'Send Reset Link',
     resetLinkSent: 'Password reset link sent to your email.',
-    backToLogin: 'Back to Login'
+    backToLogin: 'Back to Login',
+    welcome1_title: "Master Your Clinic",
+    welcome1_desc: "A comprehensive system to organize appointments and track patient cases with ease.",
+    welcome2_title: "AI-Powered Health",
+    welcome2_desc: "Smart refill alerts and deep analysis of treatment adherence powered by Gemini.",
+    welcome3_title: "Secure Medical Records",
+    welcome3_desc: "Safely store X-rays and prescriptions in one organized, accessible place.",
+    getStarted: "Get Started",
+    next: "Next",
+    skip: "Skip"
   },
   fr: {
     appTitle: 'Dentiste Intelligent',
@@ -511,7 +529,16 @@ export const translations = {
     resetPassword: 'Réinitialiser le mot de passe',
     sendResetLink: 'Envoyer le lien de réinitialisation',
     resetLinkSent: 'Lien de réinitialisation envoyé à votre e-mail.',
-    backToLogin: 'Retour à la connexion'
+    backToLogin: 'Retour à la connexion',
+    welcome1_title: "Maîtrisez Votre Clinique",
+    welcome1_desc: "Un système complet pour organiser les rendez-vous et suivre les dossiers patients avec facilité.",
+    welcome2_title: "Santé Assistée par IA",
+    welcome2_desc: "Alertes intelligentes de recharge et analyse approfondie de l'observance thérapeutique via Gemini.",
+    welcome3_title: "Dossiers Médicaux Sécurisés",
+    welcome3_desc: "Stockez vos radios et ordonnances en toute sécurité dans un espace organisé et accessible.",
+    getStarted: "Commencer",
+    next: "Suivant",
+    skip: "Passer"
   },
   es: {
     appTitle: 'Dentista Inteligente',
@@ -682,7 +709,16 @@ export const translations = {
     resetPassword: 'Restablecer contraseña',
     sendResetLink: 'Enviar enlace de restablecimiento',
     resetLinkSent: 'Enlace de restablecimiento enviado a tu correo.',
-    backToLogin: 'Volver al inicio de sesión'
+    backToLogin: 'Volver al inicio de sesión',
+    welcome1_title: "Domina tu Clínica",
+    welcome1_desc: "Un sistema integral para organizar citas y seguir casos de pacientes con facilidad.",
+    welcome2_title: "Salud con IA",
+    welcome2_desc: "Alertas inteligentes de rellenado y análisis profundo de adherencia con Gemini.",
+    welcome3_title: "Registros Seguros",
+    welcome3_desc: "Almacena radiografías y recetas de forma segura en un lugar accesible.",
+    getStarted: "Comenzar",
+    next: "Siguiente",
+    skip: "Saltar"
   },
   de: {
     appTitle: 'Smarter Zahnarzt',
@@ -743,7 +779,7 @@ export const translations = {
     attendanceRate: 'Anwesenheitsrate',
     adherenceRate: 'Therapietreue',
     monthlyGrowth: 'Monatliches Wachstum',
-    last7Days: 'Letzte 7 Tage',
+    last7Days: 'Letzte Tage',
     activePatients: 'Aktive Patienten',
     viewAll: 'Alle anzeigen',
     dataManagement: 'Datenverwaltung',
@@ -853,6 +889,15 @@ export const translations = {
     resetPassword: 'Passwort zurücksetzen',
     sendResetLink: 'Reset-Link senden',
     resetLinkSent: 'Reset-Link an Ihre E-Mail gesendet.',
-    backToLogin: 'Zurück zur Anmeldung'
+    backToLogin: 'Zurück zur Anmeldung',
+    welcome1_title: "Meistern Sie Ihre Klinik",
+    welcome1_desc: "Ein umfassendes System zur einfachen Organisation von Terminen und Patientenakten.",
+    welcome2_title: "KI-Unterstützte Gesundheit",
+    welcome2_desc: "Intelligente Nachfüllwarnungen und tiefe Analyse der Therapietreue durch Gemini.",
+    welcome3_title: "Sichere Krankenakten",
+    welcome3_desc: "Speichern Sie Röntgenbilder und Rezepte sicher an einem organisierten Ort.",
+    getStarted: "Starten",
+    next: "Weiter",
+    skip: "Überspringen"
   }
 };

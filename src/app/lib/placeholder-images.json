@@ -12,6 +12,24 @@
       "description": "User profile avatar",
       "imageUrl": "https://picsum.photos/seed/user1/200/200",
       "imageHint": "person portrait"
+    },
+    {
+      "id": "welcome-clinic",
+      "description": "Modern dental clinic management",
+      "imageUrl": "https://picsum.photos/seed/clinic1/800/800",
+      "imageHint": "dental clinic"
+    },
+    {
+      "id": "welcome-ai",
+      "description": "AI healthcare analysis",
+      "imageUrl": "https://picsum.photos/seed/ai2/800/800",
+      "imageHint": "artificial intelligence"
+    },
+    {
+      "id": "welcome-records",
+      "description": "Secure medical records storage",
+      "imageUrl": "https://picsum.photos/seed/records3/800/800",
+      "imageHint": "medical data"
     }
   ]
 }
