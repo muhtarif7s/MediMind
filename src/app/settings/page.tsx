@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMediMind } from '@/lib/store';
@@ -15,9 +16,12 @@ import {
   Database,
   Trash2,
   BarChart3,
-  ChevronRight
+  ChevronRight,
+  Pill,
+  Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -38,7 +42,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function SettingsPage() {
-  const { profile, setProfile, isLoaded, t, clearPatients, clearAppointments } = useMediMind();
+  const { profile, setProfile, isLoaded, t, clearPatients, clearAppointments, clearMedications } = useMediMind();
   const { toast } = useToast();
   const auth = useAuth();
   const router = useRouter();
@@ -65,9 +69,10 @@ export default function SettingsPage() {
     router.push('/login');
   };
 
-  const handleResetData = (type: 'patients' | 'appointments') => {
+  const handleResetData = (type: 'patients' | 'appointments' | 'medications') => {
     if (type === 'patients') clearPatients();
-    else clearAppointments();
+    else if (type === 'appointments') clearAppointments();
+    else if (type === 'medications') clearMedications();
     
     toast({
       title: t('resetSuccess'),
@@ -239,6 +244,33 @@ export default function SettingsPage() {
                   </AlertDialogHeader>
                   <AlertDialogFooter className="flex gap-2">
                     <AlertDialogAction onClick={() => handleResetData('appointments')} className="bg-rose-600 hover:bg-rose-700 rounded-xl flex-1 h-12">
+                      {t('save')}
+                    </AlertDialogAction>
+                    <AlertDialogCancel className="rounded-xl flex-1 mt-0 h-12">
+                      {t('cancel')}
+                    </AlertDialogCancel>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-rose-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-rose-100 rounded-lg text-rose-600"><Pill className="h-4 w-4" /></div>
+                      <span className="text-sm font-medium text-rose-700">{t('clearMedications')}</span>
+                    </div>
+                  </div>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-[2.5rem]" dir={isRTL ? 'rtl' : 'ltr'}>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-start">{t('clearMedications')}</AlertDialogTitle>
+                    <AlertDialogDescription className="text-start">
+                      {t('confirmClear')}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex gap-2">
+                    <AlertDialogAction onClick={() => handleResetData('medications')} className="bg-rose-600 hover:bg-rose-700 rounded-xl flex-1 h-12">
                       {t('save')}
                     </AlertDialogAction>
                     <AlertDialogCancel className="rounded-xl flex-1 mt-0 h-12">

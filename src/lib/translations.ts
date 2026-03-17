@@ -1,3 +1,4 @@
+
 export const translations = {
   ar: {
     appTitle: 'طبيب الأسنان الذكي',
@@ -60,6 +61,7 @@ export const translations = {
     dataManagement: 'إدارة البيانات',
     clearPatients: 'مسح جميع المرضى',
     clearAppointments: 'مسح جميع المواعيد',
+    clearMedications: 'مسح جميع الأدوية',
     confirmClear: 'هل أنت متأكد؟ سيتم حذف جميع البيانات بشكل نهائي.',
     resetSuccess: 'تم مسح البيانات بنجاح',
     patientNotFound: 'المريض غير موجود',
@@ -147,6 +149,7 @@ export const translations = {
     dataManagement: 'Data Management',
     clearPatients: 'Clear All Patients',
     clearAppointments: 'Clear All Appointments',
+    clearMedications: 'Clear All Medications',
     confirmClear: 'Are you sure? This data will be permanently deleted.',
     resetSuccess: 'Data cleared successfully',
     patientNotFound: 'Patient not found',

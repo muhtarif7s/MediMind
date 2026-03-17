@@ -151,6 +151,14 @@ export function useClinic() {
     });
   };
 
+  const clearMedications = () => {
+    if (!shouldFetch) return;
+    medications.forEach(m => {
+      const docRef = doc(db, 'users', user.uid, 'medicines', m.id);
+      deleteDocumentNonBlocking(docRef);
+    });
+  };
+
   const getTodayAppointments = () => {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
@@ -253,6 +261,7 @@ export function useClinic() {
     updateAppointmentStatus,
     clearPatients,
     clearAppointments,
+    clearMedications,
     getTodayAppointments,
     setProfile: (updates: Partial<UserProfile>) => {
       if (!userProfileRef) return;
