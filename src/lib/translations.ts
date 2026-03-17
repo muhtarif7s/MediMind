@@ -146,7 +146,11 @@ export const translations = {
     appointmentReminder: 'تذكير بموعد',
     appointmentInOneHour: 'لديك موعد مع {name} بعد ساعة من الآن.',
     upcomingMedication: 'تذكير بالدواء',
-    medicationInFiveMinutes: 'لديك جرعة من {name} بعد 5 دقائق.'
+    medicationInFiveMinutes: 'لديك جرعة من {name} بعد 5 دقائق.',
+    resendOTP: 'إعادة إرسال الرمز',
+    waitOTP: 'يرجى الانتظار {seconds} ثانية لإعادة الإرسال',
+    tooManyAttempts: 'محاولات كثيرة جداً. تم حظر الحساب مؤقتاً.',
+    seconds: 'ثانية'
   },
   en: {
     appTitle: 'Smart Dentist',
@@ -294,7 +298,11 @@ export const translations = {
     appointmentReminder: 'Appointment Reminder',
     appointmentInOneHour: 'You have an appointment with {name} in 1 hour.',
     upcomingMedication: 'Medication Reminder',
-    medicationInFiveMinutes: 'You have a dose of {name} in 5 minutes.'
+    medicationInFiveMinutes: 'You have a dose of {name} in 5 minutes.',
+    resendOTP: 'Resend OTP',
+    waitOTP: 'Please wait {seconds}s to resend',
+    tooManyAttempts: 'Too many attempts. Account temporarily locked.',
+    seconds: 's'
   },
   fr: {
     appTitle: 'Dentiste Intelligent',
@@ -442,7 +450,11 @@ export const translations = {
     appointmentReminder: 'Rappel de rendez-vous',
     appointmentInOneHour: 'Vous avez rendez-vous avec {name} dans 1 heure.',
     upcomingMedication: 'Rappel de médicament',
-    medicationInFiveMinutes: 'Vous avez une dose de {name} dans 5 minutes.'
+    medicationInFiveMinutes: 'Vous avez une dose de {name} dans 5 minutes.',
+    resendOTP: 'Renvoyer l\'OTP',
+    waitOTP: 'Attendez {seconds}s pour renvoyer',
+    tooManyAttempts: 'Trop de tentatives. Compte temporairement bloqué.',
+    seconds: 's'
   },
   es: {
     appTitle: 'Dentista Inteligente',
@@ -590,7 +602,11 @@ export const translations = {
     appointmentReminder: 'Recordatorio de cita',
     appointmentInOneHour: 'Tienes una cita con {name} en 1 hora.',
     upcomingMedication: 'Recordatorio de medicamento',
-    medicationInFiveMinutes: 'Tienes una dosis de {name} en 5 minutos.'
+    medicationInFiveMinutes: 'Tienes una dosis de {name} en 5 minutos.',
+    resendOTP: 'Reenviar OTP',
+    waitOTP: 'Espera {seconds}s para reenviar',
+    tooManyAttempts: 'Demasiados intentos. Cuenta bloqueada temporalmente.',
+    seconds: 's'
   },
   de: {
     appTitle: 'Smarter Zahnarzt',
@@ -738,6 +754,10 @@ export const translations = {
     appointmentReminder: 'Terminerinnerung',
     appointmentInOneHour: 'Sie haben in 1 Stunde einen Termin mit {name}.',
     upcomingMedication: 'Medikamentenerinnerung',
-    medicationInFiveMinutes: 'Sie haben eine Dosis von {name} in 5 Minuten.'
+    medicationInFiveMinutes: 'Sie haben eine Dosis von {name} in 5 Minuten.',
+    resendOTP: 'OTP erneut senden',
+    waitOTP: 'Warten Sie {seconds}s zum Erneuern',
+    tooManyAttempts: 'Zu viele Versuche. Konto vorübergehend gesperrt.',
+    seconds: 's'
   }
 };
