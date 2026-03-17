@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -37,8 +36,8 @@ export default function LoginPage() {
         setIsSubmitting(false);
         toast({ 
           variant: "destructive", 
-          title: "خطأ", 
-          description: t('authError') 
+          title: t('authError'), 
+          description: err.message || t('authError')
         });
       }
     };
@@ -61,7 +60,7 @@ export default function LoginPage() {
           </div>
           <div className="text-center">
             <h1 className="text-3xl font-bold text-foreground">{t('appTitle')}</h1>
-            <p className="text-sm text-muted-foreground font-medium">نظام إدارة عيادات الأسنان الذكي</p>
+            <p className="text-sm text-muted-foreground font-medium">{t('appSubtitle')}</p>
           </div>
         </div>
 

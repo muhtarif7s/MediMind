@@ -46,34 +46,34 @@ export function NextDoseCountdown({ medication, scheduledTime }: NextDoseProps) 
         <div className="flex items-center gap-2 mb-2">
           {isDue ? <AlertCircle className="h-4 w-4 text-destructive animate-pulse" /> : <Clock className="h-4 w-4 text-primary font-bold" />}
           <span className={`text-xs font-bold uppercase tracking-wider ${isDue ? 'text-destructive' : 'text-primary'}`}>
-            {isDue ? 'Dose Due Now' : t('nextDose')}
+            {isDue ? t('doseDueNow') : t('nextDose')}
           </span>
         </div>
         <h2 className="text-2xl font-bold mb-1">{medication.name}</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          {medication.dosageAmount} {medication.dosageUnit} at {format(parseISO(scheduledTime), 'hh:mm a', { locale })}
+          {medication.dosageAmount} {t(medication.dosageUnit as any)} at {format(parseISO(scheduledTime), 'hh:mm a', { locale })}
         </p>
         
         {!isDue ? (
           <div className="flex gap-3 justify-center">
             <div className="flex flex-col items-center">
               <span className="text-3xl font-bold font-mono">{String(hours).padStart(2, '0')}</span>
-              <span className="text-[10px] uppercase text-muted-foreground">Hrs</span>
+              <span className="text-[10px] uppercase text-muted-foreground">{t('hrs')}</span>
             </div>
             <span className="text-3xl font-bold">:</span>
             <div className="flex flex-col items-center">
               <span className="text-3xl font-bold font-mono">{String(minutes).padStart(2, '0')}</span>
-              <span className="text-[10px] uppercase text-muted-foreground">Min</span>
+              <span className="text-[10px] uppercase text-muted-foreground">{t('min')}</span>
             </div>
             <span className="text-3xl font-bold">:</span>
             <div className="flex flex-col items-center">
               <span className="text-3xl font-bold font-mono">{String(seconds).padStart(2, '0')}</span>
-              <span className="text-[10px] uppercase text-muted-foreground">Sec</span>
+              <span className="text-[10px] uppercase text-muted-foreground">{t('sec')}</span>
             </div>
           </div>
         ) : (
           <div className="py-2">
-            <p className="text-lg font-bold text-destructive animate-bounce">Please take your medication</p>
+            <p className="text-lg font-bold text-destructive animate-bounce">{t('pleaseTakeMedication')}</p>
           </div>
         )}
       </CardContent>

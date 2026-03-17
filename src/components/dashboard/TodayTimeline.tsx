@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Medication, DoseStatus } from '@/lib/types';
@@ -73,7 +72,7 @@ export function TodayTimeline({ doses, onAction }: TimelineProps) {
                   dose.status === 'taken' ? "bg-primary/5 border-primary/20" : "bg-card shadow-sm"
                 )}>
                   <h4 className="font-bold text-sm">{dose.med.name}</h4>
-                  <p className="text-[10px] text-muted-foreground">{dose.med.dosageAmount} {dose.med.dosageUnit}</p>
+                  <p className="text-[10px] text-muted-foreground">{dose.med.dosageAmount} {t(dose.med.dosageUnit as any)}</p>
                 </div>
               </div>
             </div>
@@ -83,7 +82,7 @@ export function TodayTimeline({ doses, onAction }: TimelineProps) {
         {doses.length === 0 && (
           <div className="py-10 text-center">
             <Clock className="h-10 w-10 text-muted mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">No doses scheduled for today.</p>
+            <p className="text-sm text-muted-foreground">{t('noDosesToday')}</p>
           </div>
         )}
       </div>
