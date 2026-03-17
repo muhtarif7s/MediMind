@@ -15,7 +15,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export default function AddMedication() {
   const router = useRouter();
-  const { addMedication } = useMediMind();
+  const { addMedication, t, profile } = useMediMind();
   const { toast } = useToast();
   
   const [name, setName] = useState('');
@@ -26,13 +26,15 @@ export default function AddMedication() {
   const [refillThreshold, setRefillThreshold] = useState('5');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const isRTL = profile.language === 'ar';
+
   const handleAddTime = () => setTimes([...times, '12:00']);
   const handleRemoveTime = (index: number) => setTimes(times.filter((_, i) => i !== index));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) {
-      toast({ variant: "destructive", title: "Missing Name", description: "Please enter a medication name." });
+      toast({ variant: "destructive", title: t('authError'), description: t('medicationName') });
       return;
     }
 
@@ -50,29 +52,28 @@ export default function AddMedication() {
     });
 
     toast({
-      title: "Success!",
-      description: `${name} has been added to your schedule.`,
+      title: t('profileUpdated'),
+      description: `${name} ${t('profileUpdateSuccess')}`,
     });
     
-    // Small delay to allow Firestore to sync locally
     setTimeout(() => {
-      router.push('/');
+      router.push('/medications');
     }, 500);
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
       <header className="p-6 bg-background border-b flex items-center gap-4 sticky top-0 z-10">
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ChevronLeft className="h-6 w-6" />
+          <ChevronLeft className={`h-6 w-6 ${isRTL ? 'rotate-180' : ''}`} />
         </Button>
-        <h1 className="text-xl font-bold">New Medication</h1>
+        <h1 className="text-xl font-bold">{t('newMedication')}</h1>
       </header>
 
       <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar pb-32">
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-xs font-bold uppercase text-muted-foreground">Medication Name</Label>
+          <div className="space-y-2 text-start">
+            <Label htmlFor="name" className="text-xs font-bold uppercase text-muted-foreground">{t('medicationName')}</Label>
             <Input 
               id="name" 
               placeholder="e.g. Advil" 
@@ -84,8 +85,8 @@ export default function AddMedication() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="dosage" className="text-xs font-bold uppercase text-muted-foreground">Dosage Amount</Label>
+            <div className="space-y-2 text-start">
+              <Label htmlFor="dosage" className="text-xs font-bold uppercase text-muted-foreground">{t('dosageAmount')}</Label>
               <Input 
                 id="dosage" 
                 type="number" 
@@ -94,19 +95,19 @@ export default function AddMedication() {
                 className="h-12 rounded-2xl bg-card border-none shadow-sm"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="unit" className="text-xs font-bold uppercase text-muted-foreground">Unit</Label>
+            <div className="space-y-2 text-start">
+              <Label htmlFor="unit" className="text-xs font-bold uppercase text-muted-foreground">{t('unit')}</Label>
               <Select value={unit} onValueChange={(v: DosageUnit) => setUnit(v)}>
                 <SelectTrigger className="h-12 rounded-2xl bg-card border-none shadow-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pill">Pill</SelectItem>
-                  <SelectItem value="mg">mg</SelectItem>
-                  <SelectItem value="ml">ml</SelectItem>
-                  <SelectItem value="drop">Drop</SelectItem>
-                  <SelectItem value="capsule">Capsule</SelectItem>
-                  <SelectItem value="injection">Injection</SelectItem>
+                  <SelectItem value="pill">{t('pill')}</SelectItem>
+                  <SelectItem value="mg">{t('mg')}</SelectItem>
+                  <SelectItem value="ml">{t('ml')}</SelectItem>
+                  <SelectItem value="drop">{t('drop')}</SelectItem>
+                  <SelectItem value="capsule">{t('capsule')}</SelectItem>
+                  <SelectItem value="injection">{t('injection')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -118,15 +119,15 @@ export default function AddMedication() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-primary" />
-                <Label className="font-bold">Reminder Times</Label>
+                <Label className="font-bold">{t('reminderTimes')}</Label>
               </div>
               <Button type="button" variant="ghost" size="sm" onClick={handleAddTime} className="h-8 text-primary font-bold">
-                <Plus className="h-4 w-4 mr-1" /> Add
+                <Plus className="h-4 w-4 mr-1" /> {t('add')}
               </Button>
             </div>
             <div className="space-y-3">
               {times.map((time, idx) => (
-                <div key={idx} className="flex items-center gap-2 animate-in slide-in-from-right duration-200">
+                <div key={idx} className="flex items-center gap-2">
                   <Input 
                     type="time" 
                     value={time} 
@@ -149,13 +150,13 @@ export default function AddMedication() {
         </Card>
 
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-start">
             <Calendar className="h-4 w-4 text-muted-foreground" />
-            <Label className="font-bold text-sm">Inventory Tracking</Label>
+            <Label className="font-bold text-sm">{t('inventoryTracking')}</Label>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="total" className="text-[10px] uppercase font-bold text-muted-foreground">Initial Stock</Label>
+            <div className="space-y-2 text-start">
+              <Label htmlFor="total" className="text-[10px] uppercase font-bold text-muted-foreground">{t('initialStock')}</Label>
               <Input 
                 id="total" 
                 type="number" 
@@ -164,8 +165,8 @@ export default function AddMedication() {
                 className="h-11 rounded-xl bg-card border-none shadow-sm"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="threshold" className="text-[10px] uppercase font-bold text-muted-foreground">Alert Threshold</Label>
+            <div className="space-y-2 text-start">
+              <Label htmlFor="threshold" className="text-[10px] uppercase font-bold text-muted-foreground">{t('alertThreshold')}</Label>
               <Input 
                 id="threshold" 
                 type="number" 
@@ -183,7 +184,7 @@ export default function AddMedication() {
             disabled={isSubmitting}
             className="w-full h-14 bg-primary text-primary-foreground font-bold text-lg rounded-2xl shadow-xl active:scale-[0.98] transition-transform"
           >
-            {isSubmitting ? "Saving..." : "Create Schedule"}
+            {isSubmitting ? t('saving') : t('createSchedule')}
           </Button>
         </div>
       </form>

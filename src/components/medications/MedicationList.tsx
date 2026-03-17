@@ -1,18 +1,23 @@
+
 import { Medication } from '@/lib/types';
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Pill, Droplet, Plus, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useMediMind } from '@/lib/store';
 
 export function MedicationList({ medications }: { medications: Medication[] }) {
+  const { t, profile } = useMediMind();
+  const isRTL = profile.language === 'ar';
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold">Your Medications</h3>
+        <h3 className="text-lg font-bold">{t('yourMedications')}</h3>
         <Link href="/medications/add">
           <Button size="sm" variant="ghost" className="h-8 px-2 text-primary font-bold">
-            <Plus className="h-4 w-4 mr-1" /> Add
+            <Plus className="h-4 w-4 mr-1" /> {t('add')}
           </Button>
         </Link>
       </div>
@@ -31,20 +36,20 @@ export function MedicationList({ medications }: { medications: Medication[] }) {
                       <Pill className="h-5 w-5 text-primary" />
                     }
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 text-start">
                     <h4 className="font-bold text-sm mb-1 truncate">{med.name}</h4>
                     <p className="text-[10px] text-muted-foreground">
-                      {med.dosageAmount} {med.dosageUnit} • {med.times.length}x daily
+                      {med.dosageAmount} {t(med.dosageUnit as any)} • {med.times.length}x {t('dailySchedule')}
                     </p>
                     <div className="mt-2 space-y-1">
                       <div className="flex justify-between text-[9px] font-bold">
-                        <span>Supply</span>
-                        <span className={progress < 20 ? "text-destructive" : ""}>{med.remainingQuantity} left</span>
+                        <span>{t('supply')}</span>
+                        <span className={progress < 20 ? "text-destructive" : ""}>{med.remainingQuantity} {t('left')}</span>
                       </div>
                       <Progress value={progress} className="h-1" />
                     </div>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-muted shrink-0" />
+                  <ChevronRight className={`h-5 w-5 text-muted shrink-0 ${isRTL ? 'rotate-180' : ''}`} />
                 </CardContent>
               </Card>
             </Link>
@@ -56,9 +61,9 @@ export function MedicationList({ medications }: { medications: Medication[] }) {
         <Card className="border-dashed border-2 bg-transparent">
           <CardContent className="p-10 flex flex-col items-center justify-center text-muted-foreground">
             <Plus className="h-10 w-10 mb-2 opacity-20" />
-            <p className="text-sm">No medications added yet</p>
+            <p className="text-sm">{t('noMedicationsAdded')}</p>
             <Link href="/medications/add" className="mt-4">
-              <Button size="sm">Add First Medicine</Button>
+              <Button size="sm">{t('addFirstMedicine')}</Button>
             </Link>
           </CardContent>
         </Card>
