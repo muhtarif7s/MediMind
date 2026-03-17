@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from 'react';
@@ -37,20 +38,21 @@ export function useClinic() {
 
   const shouldFetch = !!user && !isUserLoading;
 
-  // 1. User Profile
+  // 1. Clinic Profile (using 'clinics' collection)
   const clinicRef = useMemoFirebase(() => {
-    return shouldFetch ? doc(db, 'users', user.uid) : null;
+    return shouldFetch ? doc(db, 'clinics', user.uid) : null;
   }, [db, user, shouldFetch]);
 
   const { data: clinicData, isLoading: isClinicLoading } = useDoc<ClinicProfile>(clinicRef);
 
+  // Auto-bootstrap clinic profile
   useEffect(() => {
     if (shouldFetch && clinicRef && !isClinicLoading && !clinicData) {
       setDocumentNonBlocking(
         clinicRef,
         {
           id: user.uid,
-          name: user.displayName || 'عيادة الأسنان',
+          name: user.displayName || 'عيادة الأسنان الذكية',
           language: 'ar',
           theme: 'light',
           notificationsEnabled: true
@@ -103,6 +105,38 @@ export function useClinic() {
 
   const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseLog>(historyQuery);
   const history = historyData || [];
+
+  // Bootstrapping sample data if no medications exist
+  useEffect(() => {
+    if (shouldFetch && !isMedicationsLoading && medications.length === 0) {
+      const medRef = collection(db, 'users', user.uid, 'medicines');
+      addDocumentNonBlocking(medRef, {
+        userId: user.uid,
+        name: 'Sample Medication',
+        dosageAmount: 1,
+        dosageUnit: 'pill',
+        times: ['08:00', '20:00'],
+        startDate: new Date().toISOString(),
+        totalQuantity: 30,
+        remainingQuantity: 30,
+        refillThreshold: 5,
+        frequency: 'daily'
+      }).then(docRef => {
+        if (docRef) {
+          const logRef = collection(db, 'users', user.uid, 'medicines', docRef.id, 'doseLogs');
+          addDocumentNonBlocking(logRef, {
+            userId: user.uid,
+            medicationId: docRef.id,
+            name: 'Sample Medication',
+            status: 'taken',
+            scheduledTime: new Date().toISOString(),
+            recordedAt: new Date().toISOString(),
+            takenAt: new Date().toISOString()
+          });
+        }
+      });
+    }
+  }, [shouldFetch, isMedicationsLoading, medications, db, user]);
 
   const t = (key: string) => {
     const arTranslations = translations.ar as Record<string, string>;

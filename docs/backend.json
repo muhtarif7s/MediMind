@@ -33,6 +33,44 @@
         "createdAt"
       ]
     },
+    "Clinic": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Clinic",
+      "type": "object",
+      "description": "Stores clinic-specific settings and configurations.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the clinic (matches the user UID)."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the dental clinic."
+        },
+        "language": {
+          "type": "string",
+          "description": "Default language for the clinic interface (e.g., 'ar', 'en').",
+          "default": "ar"
+        },
+        "theme": {
+          "type": "string",
+          "description": "UI theme preference ('light' or 'dark').",
+          "default": "light"
+        },
+        "notificationsEnabled": {
+          "type": "boolean",
+          "description": "Whether push notifications/reminders are active.",
+          "default": true
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "language",
+        "theme",
+        "notificationsEnabled"
+      ]
+    },
     "Medication": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Medication",
@@ -155,6 +193,22 @@
   "firestore": {
     "structure": [
       {
+        "path": "/clinics/{clinicId}",
+        "definition": {
+          "entityName": "Clinic",
+          "schema": {
+            "$ref": "#/backend/entities/Clinic"
+          },
+          "description": "Stores individual clinic configurations.",
+          "params": [
+            {
+              "name": "clinicId",
+              "description": "The unique identifier of the clinic."
+            }
+          ]
+        }
+      },
+      {
         "path": "/users/{userId}",
         "definition": {
           "entityName": "UserProfile",
@@ -215,6 +269,6 @@
         }
       }
     ],
-    "reasoning": "The 'doseLogs' subcollection is nested under the medicine document to maintain clear ownership and parent-child relationship, while allowing collectionGroup queries for global history tracking."
+    "reasoning": "The 'clinics' collection is separated for high-level configuration, while 'users' maintains individual data and sub-resources."
   }
 }

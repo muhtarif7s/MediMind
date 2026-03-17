@@ -13,10 +13,6 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isDataOwner() {
-      return isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
-    }
-
     // --- Collection Group Rules ---
 
     /**
@@ -24,10 +20,16 @@ service cloud.firestore {
      * Required for history and adherence tracking.
      */
     match /{path=**}/doseLogs/{doseLogId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    // --- Clinic Scoped Rules ---
+
+    match /clinics/{clinicId} {
+      allow read, write: if isOwner(clinicId);
     }
 
     // --- User Scoped Rules ---
@@ -52,15 +54,6 @@ service cloud.firestore {
         match /doseLogs/{doseLogId} {
           allow read, write: if isOwner(userId);
         }
-      }
-
-      // Legacy paths from previous version (if still used by older logic)
-      match /doses/{doseId} {
-        allow read, write: if isOwner(userId);
-      }
-      
-      match /doseLogs/{doseLogId} {
-        allow read, write: if isOwner(userId);
       }
     }
   }
