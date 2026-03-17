@@ -77,8 +77,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <div className="p-6 flex flex-col items-center justify-center flex-1 py-12">
+    <div className="flex flex-col min-h-screen bg-background overflow-y-auto">
+      <div className="p-6 flex flex-col items-center justify-center min-h-full py-12">
         <div className="mb-8 flex flex-col items-center gap-3">
           <div className="p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/30 animate-in zoom-in duration-500">
             <Pill className="h-10 w-10 text-primary-foreground" />
@@ -156,7 +156,7 @@ export default function LoginPage() {
                 <div className="h-[1px] bg-border flex-1"></div>
               </div>
 
-              <div className="text-center space-y-4 w-full">
+              <div className="text-center space-y-4 w-full pb-10">
                 <p className="text-sm font-medium text-muted-foreground">
                   {isRegistering ? "Already using MediMind?" : "New to our platform?"}
                 </p>
@@ -175,7 +175,7 @@ export default function LoginPage() {
           </CardContent>
         </Card>
         
-        <div className="mt-12 text-center pb-8">
+        <div className="mt-4 text-center pb-8">
           <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.3em]">
             MediMind Health Assistant • Secure v1.3.1
           </p>
