@@ -20,36 +20,9 @@
           "description": "The user's email address.",
           "format": "email"
         },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the user profile was created.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "userId",
-        "name",
-        "email",
-        "createdAt"
-      ]
-    },
-    "Clinic": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Clinic",
-      "type": "object",
-      "description": "Stores clinic-specific settings and configurations.",
-      "properties": {
-        "clinicId": {
-          "type": "string",
-          "description": "Unique identifier for the clinic (matches the user UID)."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the dental clinic."
-        },
         "language": {
           "type": "string",
-          "description": "Default language for the clinic interface (e.g., 'ar', 'en').",
+          "description": "Default language for the interface (e.g., 'ar', 'en').",
           "default": "ar"
         },
         "theme": {
@@ -61,14 +34,18 @@
           "type": "boolean",
           "description": "Whether push notifications/reminders are active.",
           "default": true
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was created.",
+          "format": "date-time"
         }
       },
       "required": [
-        "clinicId",
+        "userId",
         "name",
-        "language",
-        "theme",
-        "notificationsEnabled"
+        "email",
+        "createdAt"
       ]
     },
     "Patient": {
@@ -221,13 +198,9 @@
     ]
   },
   "firestore": {
-    "/clinics/{clinicId}": {
-      "schema": { "$ref": "#/backend/entities/Clinic" },
-      "description": "Stores individual clinic configurations."
-    },
     "/users/{userId}": {
       "schema": { "$ref": "#/backend/entities/UserProfile" },
-      "description": "Stores individual user profiles."
+      "description": "Stores individual user profiles including settings."
     },
     "/users/{userId}/medicines/{medicineId}": {
       "schema": { "$ref": "#/backend/entities/Medication" },

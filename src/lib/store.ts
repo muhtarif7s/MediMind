@@ -4,7 +4,6 @@
 import {
   Patient,
   Appointment,
-  ClinicProfile,
   AppointmentStatus,
   Medication,
   DoseLog,
@@ -44,21 +43,14 @@ export function useClinic() {
 
   const shouldFetch = !!user && !isUserLoading;
 
-  // 1. User Profile
+  // 1. User Profile & Settings
   const userProfileRef = useMemoFirebase(() => {
     return shouldFetch ? doc(db, 'users', user.uid) : null;
   }, [db, user, shouldFetch]);
 
   const { data: userProfileData, isLoading: isUserProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
-  // 2. Clinic Profile (Settings)
-  const clinicRef = useMemoFirebase(() => {
-    return shouldFetch ? doc(db, 'clinics', user.uid) : null;
-  }, [db, user, shouldFetch]);
-
-  const { data: clinicData, isLoading: isClinicLoading } = useDoc<ClinicProfile>(clinicRef);
-
-  // 3. Clinic Patients (User Subcollection)
+  // 2. Clinic Patients (User Subcollection)
   const patientsQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(collection(db, 'users', user.uid, 'patients'), orderBy('createdAt', 'desc'))
@@ -68,7 +60,7 @@ export function useClinic() {
   const { data: patientsData, isLoading: isPatientsLoading } = useCollection<Patient>(patientsQuery);
   const patients = patientsData || [];
 
-  // 4. Clinic Appointments (User Subcollection)
+  // 3. Clinic Appointments (User Subcollection)
   const appointmentsQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(collection(db, 'users', user.uid, 'appointments'), orderBy('dateTime', 'asc'))
@@ -78,7 +70,7 @@ export function useClinic() {
   const { data: appointmentsData, isLoading: isAppointmentsLoading } = useCollection<Appointment>(appointmentsQuery);
   const appointments = appointmentsData || [];
 
-  // 5. Personal Medications (MediMind)
+  // 4. Personal Medications (MediMind)
   const medicationsQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(collection(db, 'users', user.uid, 'medicines'), orderBy('name'))
@@ -88,7 +80,7 @@ export function useClinic() {
   const { data: medicationsData, isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
   const medications = medicationsData || [];
 
-  // 6. Medication Dose History (Global Collection Group)
+  // 5. Medication Dose History (Global Collection Group)
   const historyQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(
@@ -107,7 +99,6 @@ export function useClinic() {
     !isUserLoading &&
     (!user ||
       (!isUserProfileLoading &&
-        !isClinicLoading &&
         !isPatientsLoading &&
         !isAppointmentsLoading &&
         !isMedicationsLoading &&
@@ -116,24 +107,16 @@ export function useClinic() {
   // Bootstrapping Logic
   useEffect(() => {
     if (shouldFetch && isLoaded && user) {
-      // Bootstrap Profile
+      // Bootstrap Profile & Settings
       if (!userProfileData) {
         setDocumentNonBlocking(doc(db, 'users', user.uid), {
           userId: user.uid,
-          name: user.displayName || 'User',
+          name: user.displayName || 'طبيب',
           email: user.email || '',
-          createdAt: new Date().toISOString()
-        }, { merge: true });
-      }
-
-      // Bootstrap Clinic
-      if (!clinicData) {
-        setDocumentNonBlocking(doc(db, 'clinics', user.uid), {
-          clinicId: user.uid,
-          name: user.displayName ? `${user.displayName}'s Clinic` : 'My Clinic',
           language: 'ar',
           theme: 'light',
-          notificationsEnabled: true
+          notificationsEnabled: true,
+          createdAt: new Date().toISOString()
         }, { merge: true });
       }
 
@@ -162,7 +145,6 @@ export function useClinic() {
             status: "pending",
             scheduledTime: new Date().toISOString(),
             recordedAt: new Date().toISOString(),
-            takenAt: new Date().toISOString()
           });
         });
       }
@@ -190,11 +172,11 @@ export function useClinic() {
         });
       }
     }
-  }, [shouldFetch, isLoaded, userProfileData, clinicData, medications.length, patients.length, db, user]);
+  }, [shouldFetch, isLoaded, userProfileData, medications.length, patients.length, db, user]);
 
   // Translation helper
   const t = (key: string) => {
-    const lang = clinicData?.language || 'ar';
+    const lang = userProfileData?.language || 'ar';
     const dict = (translations as any)[lang] || translations.ar;
     return dict[key] || key;
   };
@@ -322,13 +304,14 @@ export function useClinic() {
   return {
     user,
     isUserLoading,
-    userProfile: userProfileData,
-    profile: clinicData || {
-      clinicId: user?.uid || '',
+    profile: userProfileData || {
+      userId: user?.uid || '',
       name: user?.displayName || 'طبيب',
+      email: user?.email || '',
       language: 'ar',
       theme: 'light',
-      notificationsEnabled: true
+      notificationsEnabled: true,
+      createdAt: new Date().toISOString()
     },
     patients,
     appointments,
@@ -342,9 +325,9 @@ export function useClinic() {
     clearPatients,
     clearAppointments,
     getTodayAppointments,
-    setProfile: (updates: Partial<ClinicProfile>) => {
-      if (!clinicRef) return;
-      setDocumentNonBlocking(clinicRef, updates, { merge: true });
+    setProfile: (updates: Partial<UserProfile>) => {
+      if (!userProfileRef) return;
+      setDocumentNonBlocking(userProfileRef, updates, { merge: true });
     },
     addMedication,
     updateMedication,

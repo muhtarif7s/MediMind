@@ -7,6 +7,9 @@ export interface UserProfile {
   userId: string;
   name: string;
   email: string;
+  language: 'ar' | 'en';
+  theme: 'light' | 'dark';
+  notificationsEnabled: boolean;
   createdAt: string;
 }
 
@@ -28,14 +31,6 @@ export interface Appointment {
   dateTime: string; // ISO string
   status: AppointmentStatus;
   treatment?: string;
-}
-
-export interface ClinicProfile {
-  clinicId: string;
-  name: string;
-  language: 'ar' | 'en';
-  theme: 'light' | 'dark';
-  notificationsEnabled: boolean;
 }
 
 export interface Medication {

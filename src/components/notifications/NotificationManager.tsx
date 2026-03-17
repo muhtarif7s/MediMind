@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef } from 'react';
@@ -5,20 +6,20 @@ import { useMediMind } from '@/lib/store';
 import { parseISO, isSameMinute, format } from 'date-fns';
 
 export function NotificationManager() {
-  const { getTodayDoses, profile } = useMediMind();
+  const { getTodayDoses, profile, isLoaded } = useMediMind();
   const lastNotifiedMinute = useRef<string | null>(null);
 
   useEffect(() => {
-    // Request permission on mount if supported
-    if (typeof window !== 'undefined' && 'Notification' in window) {
+    // Request permission on mount if supported and enabled
+    if (typeof window !== 'undefined' && 'Notification' in window && isLoaded) {
       if (Notification.permission === 'default' && profile.notificationsEnabled) {
         Notification.requestPermission();
       }
     }
-  }, [profile.notificationsEnabled]);
+  }, [profile.notificationsEnabled, isLoaded]);
 
   useEffect(() => {
-    if (!profile.notificationsEnabled) return;
+    if (!profile.notificationsEnabled || !isLoaded) return;
 
     const checkDoses = () => {
       const now = new Date();
@@ -35,8 +36,8 @@ export function NotificationManager() {
 
       if (dueNow) {
         if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('MediMind Reminder', {
-            body: `It's time to take ${dueNow.med.dosageAmount} ${dueNow.med.dosageUnit} of ${dueNow.med.name}.`,
+          new Notification('طبيب الأسنان الذكي', {
+            body: `حان موعد تناول ${dueNow.med.dosageAmount} ${dueNow.med.dosageUnit} من ${dueNow.med.name}.`,
             icon: 'https://picsum.photos/seed/icon/192/192',
             badge: 'https://picsum.photos/seed/icon/192/192',
             tag: `dose-${dueNow.med.id}-${currentMinute}`
@@ -46,9 +47,12 @@ export function NotificationManager() {
       }
     };
 
+    // Check on interval but also trigger when doses data updates
     const interval = setInterval(checkDoses, 10000); // Check every 10 seconds
+    checkDoses(); // Immediate check
+
     return () => clearInterval(interval);
-  }, [getTodayDoses, profile.notificationsEnabled]);
+  }, [getTodayDoses, profile.notificationsEnabled, isLoaded]);
 
   return null; // Invisible manager component
 }
