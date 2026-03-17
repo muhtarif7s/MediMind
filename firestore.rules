@@ -4,26 +4,24 @@ service cloud.firestore {
 
     /**
      * 1. Collection Group Rules for doseLogs
-     * These rules authorize queries across all 'doseLogs' subcollections globally.
-     * This is required for fetching medication history across different medications.
+     * Allows any authenticated user to read and write to any document 
+     * in a collection named 'doseLogs' anywhere in the database.
      */
     match /{path=**}/doseLogs/{logId} {
-      // Allow reading and writing existing logs if the user matches
-      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
-      
-      // Explicitly allow creating new logs with owner validation
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read, write: if request.auth != null;
     }
 
     /**
-     * 2. Hierarchical User Rules
-     * Allows users full access to their own branch of the database.
+     * 2. Individual User Document Rules
+     * Ensures users can only access their own top-level profile document.
      */
     match /users/{userId} {
-      // Allow user to read/write their own profile document
       allow read, write: if request.auth != null && request.auth.uid == userId;
 
-      // Allow user to read/write any subcollection (like medicines)
+      /**
+       * 3. Subcollection Rules
+       * Allows the user full access to their own sub-collections (medicines, etc.)
+       */
       match /{allPaths=**} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }

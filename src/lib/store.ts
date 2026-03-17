@@ -19,7 +19,6 @@ import { translations } from './translations';
 /**
  * MediMind Application Store Hook
  * Manages authentication, profile settings, medications, and dose history.
- * Implements defensive data fetching to prevent Firestore permission errors.
  */
 export function useMediMind() {
   const { user, isUserLoading } = useUser();
@@ -37,18 +36,31 @@ export function useMediMind() {
 
   const { data: profileData, isLoading: isProfileLoading } = useDoc<UserProfile>(profileRef);
 
-  // Initialize profile if it doesn't exist
+  // Initialize profile and sample doseLogs if it doesn't exist
   useEffect(() => {
-    if (shouldFetch && profileRef && !isProfileLoading && !profileData) {
-      setDocumentNonBlocking(profileRef, {
-        id: user.uid,
-        name: user.displayName || 'User',
-        language: 'en',
-        theme: 'light',
-        notificationsEnabled: true
+    if (shouldFetch && profileRef && !isProfileLoading) {
+      // 1. Ensure Profile exists
+      if (!profileData) {
+        setDocumentNonBlocking(profileRef, {
+          id: user.uid,
+          name: user.displayName || 'User',
+          language: 'en',
+          theme: 'light',
+          notificationsEnabled: true
+        }, { merge: true });
+      }
+
+      // 2. Automated Sample Data Creation for doseLogs
+      // This satisfies the requirement to create subcollections and sample documents automatically.
+      const sampleLogRef = doc(db, 'users', user.uid, 'doseLogs', 'sample-init');
+      setDocumentNonBlocking(sampleLogRef, {
+        name: "Sample Medication",
+        status: "pending",
+        takenAt: new Date().toISOString(),
+        userId: user.uid // Denormalized for query stability
       }, { merge: true });
     }
-  }, [shouldFetch, profileRef, isProfileLoading, profileData, user]);
+  }, [shouldFetch, profileRef, isProfileLoading, profileData, user, db]);
 
   const profile = useMemo(() => ({
     name: profileData?.name || 'User',
@@ -80,8 +92,8 @@ export function useMediMind() {
   const medications = medicationsData || [];
 
   // 3. Fetch Dose History (Collection Group)
+  // The rules now allow global authenticated access, but we still filter by userId for user-specific UI.
   const historyQuery = useMemoFirebase(() => {
-    // CRITICAL: Collection Group queries MUST filter by userId for security rules to pass
     return shouldFetch 
       ? query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid))
       : null;
@@ -90,11 +102,6 @@ export function useMediMind() {
   const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseHistory>(historyQuery);
   const history = historyData || [];
 
-  /**
-   * Robust loading state
-   * - strictly wait for auth loading to complete
-   * - if user exists, wait for all critical data streams to initialize
-   */
   const isLoaded = !isUserLoading && (!user || (
     !isProfileLoading && 
     !isMedsLoading && 
@@ -125,6 +132,7 @@ export function useMediMind() {
 
   const logDose = (medicationId: string, scheduledTime: string, status: DoseStatus) => {
     if (!shouldFetch || !db) return;
+    // Log in the hierarchical medicines path for consistency
     const colRef = collection(db, 'users', user.uid, 'medicines', medicationId, 'doseLogs');
     const logData = {
       medicationId,
