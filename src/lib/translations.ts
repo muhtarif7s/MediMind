@@ -144,7 +144,9 @@ export const translations = {
     invalidOTP: 'رمز غير صحيح، حاول مرة أخرى',
     emailNotVerified: 'بريدك الإلكتروني غير موثق بعد',
     appointmentReminder: 'تذكير بموعد',
-    appointmentInOneHour: 'لديك موعد مع {name} بعد ساعة من الآن.'
+    appointmentInOneHour: 'لديك موعد مع {name} بعد ساعة من الآن.',
+    upcomingMedication: 'تذكير بالدواء',
+    medicationInFiveMinutes: 'لديك جرعة من {name} بعد 5 دقائق.'
   },
   en: {
     appTitle: 'Smart Dentist',
@@ -290,7 +292,9 @@ export const translations = {
     invalidOTP: 'Invalid OTP, try again',
     emailNotVerified: 'Email not verified yet',
     appointmentReminder: 'Appointment Reminder',
-    appointmentInOneHour: 'You have an appointment with {name} in 1 hour.'
+    appointmentInOneHour: 'You have an appointment with {name} in 1 hour.',
+    upcomingMedication: 'Medication Reminder',
+    medicationInFiveMinutes: 'You have a dose of {name} in 5 minutes.'
   },
   fr: {
     appTitle: 'Dentiste Intelligent',
@@ -436,7 +440,9 @@ export const translations = {
     invalidOTP: 'OTP invalide',
     emailNotVerified: 'E-mail non vérifié',
     appointmentReminder: 'Rappel de rendez-vous',
-    appointmentInOneHour: 'Vous avez rendez-vous avec {name} dans 1 heure.'
+    appointmentInOneHour: 'Vous avez rendez-vous avec {name} dans 1 heure.',
+    upcomingMedication: 'Rappel de médicament',
+    medicationInFiveMinutes: 'Vous avez une dose de {name} dans 5 minutes.'
   },
   es: {
     appTitle: 'Dentista Inteligente',
@@ -582,7 +588,9 @@ export const translations = {
     invalidOTP: 'OTP inválido',
     emailNotVerified: 'Correo no verificado',
     appointmentReminder: 'Recordatorio de cita',
-    appointmentInOneHour: 'Tienes una cita con {name} en 1 hora.'
+    appointmentInOneHour: 'Tienes una cita con {name} en 1 hora.',
+    upcomingMedication: 'Recordatorio de medicamento',
+    medicationInFiveMinutes: 'Tienes una dosis de {name} en 5 minutos.'
   },
   de: {
     appTitle: 'Smarter Zahnarzt',
@@ -728,6 +736,8 @@ export const translations = {
     invalidOTP: 'Ungültiges OTP',
     emailNotVerified: 'E-Mail nicht verifiziert',
     appointmentReminder: 'Terminerinnerung',
-    appointmentInOneHour: 'Sie haben in 1 Stunde einen Termin mit {name}.'
+    appointmentInOneHour: 'Sie haben in 1 Stunde einen Termin mit {name}.',
+    upcomingMedication: 'Medikamentenerinnerung',
+    medicationInFiveMinutes: 'Sie haben eine Dosis von {name} in 5 Minuten.'
   }
 };

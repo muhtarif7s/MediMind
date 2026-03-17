@@ -3,7 +3,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useMediMind } from '@/lib/store';
-import { parseISO, isSameMinute, format, differenceInMinutes } from 'date-fns';
+import { parseISO, isSameMinute, format, differenceInMinutes, addMinutes } from 'date-fns';
 
 /**
  * Global Notification Manager component.
@@ -30,27 +30,43 @@ export function NotificationManager() {
       const now = new Date();
       const currentMinute = format(now, 'yyyy-MM-dd HH:mm');
       
-      // Don't notify multiple times for the exact same event in the same minute
+      // Don't notify multiple times for the exact same event type in the same minute
       if (lastNotifiedMinute.current === currentMinute) return;
 
       // 1. Check Medications
       const doses = getTodayDoses();
-      const dueNow = doses.find(dose => 
-        dose.status === 'pending' && 
-        isSameMinute(parseISO(dose.time), now)
-      );
+      
+      doses.forEach(dose => {
+        if (dose.status !== 'pending') return;
 
-      if (dueNow && !notifiedEvents.current.has(`dose-${dueNow.med.id}-${currentMinute}`)) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification(t('appTitle'), {
-            body: `${t('pleaseTakeMedication')}: ${dueNow.med.dosageAmount} ${t(dueNow.med.dosageUnit as any)} ${dueNow.med.name}.`,
-            icon: 'https://picsum.photos/seed/med-icon/192/192',
-            badge: 'https://picsum.photos/seed/med-icon/192/192',
-            tag: `dose-${dueNow.med.id}-${currentMinute}`
-          });
-          notifiedEvents.current.add(`dose-${dueNow.med.id}-${currentMinute}`);
+        const doseTime = parseISO(dose.time);
+        
+        // Reminder 1: 5 minutes before
+        const fiveMinutesFromNow = addMinutes(now, 5);
+        if (isSameMinute(doseTime, fiveMinutesFromNow) && !notifiedEvents.current.has(`dose-5min-${dose.med.id}-${dose.time}`)) {
+          if ('Notification' in window && Notification.permission === 'granted') {
+            const body = t('medicationInFiveMinutes').replace('{name}', dose.med.name);
+            new Notification(t('upcomingMedication'), {
+              body,
+              icon: 'https://picsum.photos/seed/med-icon/192/192',
+              tag: `dose-5min-${dose.med.id}-${dose.time}`
+            });
+            notifiedEvents.current.add(`dose-5min-${dose.med.id}-${dose.time}`);
+          }
         }
-      }
+
+        // Reminder 2: Exactly now
+        if (isSameMinute(doseTime, now) && !notifiedEvents.current.has(`dose-now-${dose.med.id}-${dose.time}`)) {
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(t('appTitle'), {
+              body: `${t('pleaseTakeMedication')}: ${dose.med.dosageAmount} ${t(dose.med.dosageUnit as any)} ${dose.med.name}.`,
+              icon: 'https://picsum.photos/seed/med-icon/192/192',
+              tag: `dose-now-${dose.med.id}-${dose.time}`
+            });
+            notifiedEvents.current.add(`dose-now-${dose.med.id}-${dose.time}`);
+          }
+        }
+      });
 
       // 2. Check Appointments (1 hour before)
       (appointments || []).forEach(app => {
@@ -60,16 +76,15 @@ export function NotificationManager() {
         const minutesDiff = differenceInMinutes(appTime, now);
 
         // Notify if exactly 60 minutes before
-        if (minutesDiff === 60 && !notifiedEvents.current.has(`app-${app.id}`)) {
+        if (minutesDiff === 60 && !notifiedEvents.current.has(`app-1hr-${app.id}`)) {
           if ('Notification' in window && Notification.permission === 'granted') {
             const body = t('appointmentInOneHour').replace('{name}', app.patientName);
             new Notification(t('appointmentReminder'), {
               body,
               icon: 'https://picsum.photos/seed/app-icon/192/192',
-              badge: 'https://picsum.photos/seed/app-icon/192/192',
-              tag: `app-${app.id}`
+              tag: `app-1hr-${app.id}`
             });
-            notifiedEvents.current.add(`app-${app.id}`);
+            notifiedEvents.current.add(`app-1hr-${app.id}`);
           }
         }
       });
