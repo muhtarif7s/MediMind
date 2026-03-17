@@ -12,30 +12,42 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
     // Collection Group rules for 'doseLogs'
-    // Required for query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
+    // This allows query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{doseLogId} {
-      // Allow reading and listing if the document belongs to the signed-in user.
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      // Robust check: Allow if the document's userId field matches OR if it's in the user's hierarchy
+      allow read: if isSignedIn() && (
+        (resource == null) || // For queries
+        (resource.data.userId == request.auth.uid) ||
+        (path[3] == "users" && path[4] == request.auth.uid)
+      );
       
-      // Allow creation if the new document identifies the current user.
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid ||
+        (path[3] == "users" && path[4] == request.auth.uid)
+      );
       
-      // Allow updates/deletes if the existing document belongs to the user.
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        (path[3] == "users" && path[4] == request.auth.uid)
+      );
     }
 
     // User Profile & Hierarchical Rules
     match /users/{userId} {
       // Users can only read/write their own profile and everything underneath it.
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
 
       // Nested collections benefit from the parent userId match
       match /medicines/{medicineId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
+        allow read, write: if isOwner(userId);
 
         match /doseLogs/{doseLogId} {
-          allow read, write: if isSignedIn() && request.auth.uid == userId;
+          allow read, write: if isOwner(userId);
         }
       }
     }
