@@ -14,7 +14,7 @@ import {
   setDocumentNonBlocking,
   deleteDocumentNonBlocking
 } from '@/firebase';
-import { collection, doc, query, orderBy, where, collectionGroup, addDoc, startOfDay, endOfDay } from 'firebase/firestore';
+import { collection, doc, query, orderBy, where, collectionGroup, addDoc, serverTimestamp } from 'firebase/firestore';
 import { translations } from './translations';
 
 export function useClinic() {
@@ -89,9 +89,10 @@ export function useClinic() {
   // Automated Data Bootstrapping
   useEffect(() => {
     const bootstrapData = async () => {
+      // Wait until hooks have settled
       if (!shouldFetch || isMedicationsLoading || isHistoryLoading) return;
 
-      // Check if user already has data to avoid duplication
+      // If user has absolutely no data, create a sample
       if (medications.length === 0 && history.length === 0) {
         try {
           const medRef = collection(db, 'users', user.uid, 'medicines');
@@ -115,7 +116,7 @@ export function useClinic() {
             medicationId: newMedDoc.id,
             name: "Sample Medication",
             status: "pending",
-            takenAt: new Date().toISOString(),
+            takenAt: serverTimestamp(),
             recordedAt: new Date().toISOString(),
             scheduledTime: new Date().toISOString()
           });
@@ -160,7 +161,7 @@ export function useClinic() {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
     const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-    return appointments.filter(a => {
+    return (appointments || []).filter(a => {
       const d = new Date(a.dateTime);
       return d >= start && d <= end;
     });
