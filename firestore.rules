@@ -14,8 +14,13 @@ service cloud.firestore {
     // 1. Collection Group Rules (Critical for dose history sync)
     // This allows query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{logId} {
-      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      // For read operations (list/get), we ensure the document belongs to the authenticated user.
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      // For create, we validate the data being sent.
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      
+      // For updates and deletes, we check the existing document ownership.
       allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 

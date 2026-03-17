@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Pill, Loader2, Mail, Lock, UserPlus, LogIn, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function LoginPage() {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -74,9 +75,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="flex-1 flex flex-col p-6 items-center justify-center">
-        <div className="w-full max-w-sm space-y-8 py-10">
+    <div className="min-h-screen bg-background flex flex-col overflow-y-auto no-scrollbar">
+      <div className="flex-1 flex flex-col p-6 items-center justify-start pt-12 pb-24">
+        <div className="w-full max-w-sm space-y-8">
           <div className="flex flex-col items-center gap-3">
             <div className="p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/30">
               <Pill className="h-10 w-10 text-primary-foreground" />
@@ -175,7 +176,7 @@ export default function LoginPage() {
         </div>
       </div>
       
-      <div className="p-6 text-center">
+      <div className="p-6 text-center mt-auto">
         <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.3em]">
           MediMind Health Assistant • Secure v1.3.1
         </p>
