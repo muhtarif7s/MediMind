@@ -9,7 +9,6 @@ import { useClinic } from '@/lib/store';
 export function NavBar() {
   const pathname = usePathname();
   const { t, profile } = useClinic();
-  const isRTL = profile.language === 'ar';
 
   const navItems = [
     { icon: LayoutDashboard, label: t('dashboard'), href: '/' },

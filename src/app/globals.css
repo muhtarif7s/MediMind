@@ -23,7 +23,7 @@
     --border: 214.3 32.1% 91.4%;
     --input: 214.3 32.1% 91.4%;
     --ring: 199 89% 48%;
-    --radius: 1rem;
+    --radius: 1.5rem;
   }
 
   .dark {
@@ -59,13 +59,15 @@
   font-family: 'Noto Sans Arabic', sans-serif;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
 .no-scrollbar::-webkit-scrollbar {
     display: none;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
 .no-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.pb-safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }

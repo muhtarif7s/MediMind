@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Loader2, Calendar, Users, Activity, Stethoscope, Plus, ChevronRight, Pill, Clock } from 'lucide-react';
+import { Loader2, Calendar, Users, Activity, Stethoscope, Plus, ChevronRight, Pill } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 import Link from 'next/link';
@@ -58,17 +58,24 @@ export default function Dashboard() {
       </header>
 
       <ScrollArea className="flex-1 p-6 space-y-8 no-scrollbar">
-        {/* Next Dose Highlight */}
-        {nextDose && (
+        {/* PERSONAL HEALTH SECTION (MediMind) */}
+        {nextDose ? (
           <section className="space-y-4">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">
               {t('nextDose')}
             </h3>
             <NextDoseCountdown medication={nextDose.med} scheduledTime={nextDose.time} />
           </section>
+        ) : medications.length > 0 && (
+          <section className="space-y-4">
+            <Card className="border-none shadow-sm bg-accent/10 rounded-3xl p-6 text-center">
+              <Pill className="h-8 w-8 text-accent mx-auto mb-2" />
+              <p className="text-sm font-bold">{t('dailyScheduleCompleted') || 'All doses taken for today!'}</p>
+            </Card>
+          </section>
         )}
 
-        {/* Quick Actions */}
+        {/* CLINICAL QUICK ACTIONS */}
         <section className="space-y-4">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">
             {t('quickActions')}
@@ -93,7 +100,7 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* Stats Row */}
+        {/* STATS OVERVIEW */}
         <div className="grid grid-cols-2 gap-4">
           <Card className="border-none shadow-sm bg-slate-50 dark:bg-slate-900 rounded-3xl">
             <CardContent className="p-4 flex flex-col items-center text-center">
@@ -109,7 +116,7 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Daily Medication Timeline */}
+        {/* DAILY MEDICATION TIMELINE */}
         {todayDoses.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between px-1">
@@ -125,7 +132,7 @@ export default function Dashboard() {
           </section>
         )}
 
-        {/* Clinical Schedule */}
+        {/* TODAY'S CLINICAL SCHEDULE */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <h3 className="font-bold text-foreground flex items-center gap-2">
@@ -168,6 +175,11 @@ export default function Dashboard() {
               <div className="text-center py-12 bg-slate-50 dark:bg-slate-900 rounded-[2rem] border-2 border-dashed border-slate-200">
                 <Calendar className="h-10 w-10 text-slate-200 mx-auto mb-2" />
                 <p className="text-sm text-slate-400 font-medium">{t('noAppointments')}</p>
+                <Link href="/appointments">
+                  <Button variant="ghost" className="text-primary text-xs font-bold mt-2">
+                    {t('bookAppointment')}
+                  </Button>
+                </Link>
               </div>
             )}
           </div>

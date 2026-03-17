@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -31,10 +30,11 @@ import {
   collectionGroup
 } from 'firebase/firestore';
 import { translations } from './translations';
+import { useEffect } from 'react';
 
 /**
  * Main store hook for the Smart Dentist & MediMind features.
- * Provides access to patients, appointments, medications, and clinic settings.
+ * Operates purely on live Firestore data without automated bootstrapping.
  */
 export function useClinic() {
   const { user, isUserLoading } = useUser();
@@ -49,6 +49,18 @@ export function useClinic() {
 
   const { data: userProfileData, isLoading: isUserProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
+  // Auto-provision UserProfile if it doesn't exist
+  useEffect(() => {
+    if (shouldFetch && !isUserProfileLoading && !userProfileData) {
+      setDocumentNonBlocking(doc(db, 'users', user.uid), {
+        userId: user.uid,
+        name: user.displayName || 'User',
+        email: user.email || '',
+        createdAt: new Date().toISOString()
+      }, { merge: true });
+    }
+  }, [shouldFetch, isUserProfileLoading, userProfileData, db, user]);
+
   // 2. Clinic Profile (Professional)
   const clinicRef = useMemoFirebase(() => {
     return shouldFetch ? doc(db, 'clinics', user.uid) : null;
@@ -59,7 +71,7 @@ export function useClinic() {
   // 3. Clinic Patients
   const patientsQuery = useMemoFirebase(() => {
     return shouldFetch
-      ? query(collection(db, 'clinics', user.uid, 'patients'), orderBy('name'))
+      ? query(collection(db, 'clinics', user.uid, 'patients'), orderBy('createdAt', 'desc'))
       : null;
   }, [db, user, shouldFetch]);
 
@@ -69,7 +81,7 @@ export function useClinic() {
   // 4. Clinic Appointments
   const appointmentsQuery = useMemoFirebase(() => {
     return shouldFetch
-      ? query(collection(db, 'clinics', user.uid, 'appointments'), orderBy('dateTime'))
+      ? query(collection(db, 'clinics', user.uid, 'appointments'), orderBy('dateTime', 'asc'))
       : null;
   }, [db, user, shouldFetch]);
 
