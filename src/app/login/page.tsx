@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
@@ -7,18 +6,19 @@ import { useAuth, useUser } from '@/firebase';
 import { 
   initiateEmailSignIn, 
   initiateEmailSignUp, 
-  sendVerificationEmail
+  sendVerificationEmail,
+  initiatePasswordReset
 } from '@/firebase/non-blocking-login';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Stethoscope, Loader2, Mail, RefreshCw } from 'lucide-react';
+import { Stethoscope, Loader2, Mail, RefreshCw, ChevronLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useClinic } from '@/lib/store';
 import { signOut } from 'firebase/auth';
 
-type LoginState = 'login' | 'signup' | 'verify-email';
+type LoginState = 'login' | 'signup' | 'verify-email' | 'forgot-password';
 
 const COOLDOWN_DELAY = 60; // seconds
 
@@ -70,20 +70,36 @@ export default function LoginPage() {
         return t('tooManyRequests');
       case 'auth/operation-not-allowed':
         return t('operationNotAllowed');
+      case 'auth/user-not-found':
+        return t('patientNotFound');
       default:
         return err.message;
     }
   };
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
+    if (authState === 'forgot-password') {
+      initiatePasswordReset(auth, email, {
+        onSuccess: () => {
+          setIsSubmitting(false);
+          toast({ title: t('resetPassword'), description: t('resetLinkSent') });
+          setAuthState('login');
+        },
+        onError: (err) => {
+          setIsSubmitting(false);
+          toast({ variant: "destructive", title: t('authError'), description: mapAuthError(err) });
+        }
+      });
+      return;
+    }
+
     const callbacks = {
       onSuccess: (u: any) => {
         setIsSubmitting(false);
         if (authState === 'signup') {
-          // Initialize profile with name and phone
           setProfile({ 
             name: name || t('doctor'),
             phone: phoneNumber 
@@ -105,7 +121,7 @@ export default function LoginPage() {
 
     if (authState === 'login') {
       initiateEmailSignIn(auth, email, password, callbacks);
-    } else {
+    } else if (authState === 'signup') {
       initiateEmailSignUp(auth, email, password, callbacks);
     }
   };
@@ -151,15 +167,24 @@ export default function LoginPage() {
         </div>
 
         <Card className="border shadow-xl bg-card rounded-[2rem]">
-          <CardHeader className="text-center pb-2">
+          <CardHeader className="text-center pb-2 relative">
+            {authState === 'forgot-password' && (
+              <button 
+                onClick={() => setAuthState('login')}
+                className="absolute left-6 top-8 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+            )}
             <CardTitle className="text-foreground">
               {authState === 'login' ? t('login') : 
-               authState === 'signup' ? t('register') : t('verifyEmail')}
+               authState === 'signup' ? t('register') : 
+               authState === 'forgot-password' ? t('resetPassword') : t('verifyEmail')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {(authState === 'login' || authState === 'signup') && (
-              <form onSubmit={handleEmailSubmit} className="space-y-5">
+            {(authState === 'login' || authState === 'signup' || authState === 'forgot-password') && (
+              <form onSubmit={handleSubmit} className="space-y-5">
                 {authState === 'signup' && (
                   <>
                     <div className="space-y-2 text-start">
@@ -196,27 +221,46 @@ export default function LoginPage() {
                     placeholder="name@example.com"
                   />
                 </div>
-                <div className="space-y-2 text-start">
-                  <Label className="text-xs font-bold text-muted-foreground">{t('password')}</Label>
-                  <Input 
-                    type="password" 
-                    value={password} 
-                    onChange={e => setPassword(e.target.value)} 
-                    required 
-                    className="h-12 rounded-xl bg-muted/50 border-none text-foreground"
-                    placeholder="••••••••"
-                  />
-                </div>
+                {authState !== 'forgot-password' && (
+                  <div className="space-y-2 text-start">
+                    <Label className="text-xs font-bold text-muted-foreground">{t('password')}</Label>
+                    <Input 
+                      type="password" 
+                      value={password} 
+                      onChange={e => setPassword(e.target.value)} 
+                      required 
+                      className="h-12 rounded-xl bg-muted/50 border-none text-foreground"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                )}
+                
+                {authState === 'login' && (
+                  <div className="text-start">
+                    <button 
+                      type="button"
+                      onClick={() => setAuthState('forgot-password')}
+                      className="text-xs text-primary font-bold hover:underline"
+                    >
+                      {t('forgotPassword')}
+                    </button>
+                  </div>
+                )}
+
                 <Button type="submit" disabled={isSubmitting} className="w-full h-14 rounded-xl text-lg font-bold mt-2">
-                  {isSubmitting ? <Loader2 className="animate-spin" /> : (authState === 'login' ? t('login') : t('register'))}
+                  {isSubmitting ? <Loader2 className="animate-spin" /> : 
+                    (authState === 'login' ? t('login') : 
+                     authState === 'signup' ? t('register') : t('sendResetLink'))}
                 </Button>
+                
                 <div className="text-center">
                   <button 
                     type="button"
                     onClick={() => setAuthState(authState === 'login' ? 'signup' : 'login')}
                     className="text-sm text-primary font-bold hover:underline"
                   >
-                    {authState === 'login' ? t('dontHaveAccount') : t('alreadyHaveAccount')}
+                    {authState === 'login' ? t('dontHaveAccount') : 
+                     authState === 'signup' ? t('alreadyHaveAccount') : t('backToLogin')}
                   </button>
                 </div>
               </form>

@@ -1,12 +1,12 @@
 'use client';
 import {
   Auth,
-  signInAnonymously,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendEmailVerification,
-  signInWithPhoneNumber,
+  sendPasswordResetEmail,
   RecaptchaVerifier,
+  signInWithPhoneNumber,
   ConfirmationResult
 } from 'firebase/auth';
 
@@ -27,6 +27,17 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
   signInWithEmailAndPassword(authInstance, email, password)
     .then((userCredential) => {
       if (callbacks?.onSuccess) callbacks.onSuccess(userCredential.user);
+    })
+    .catch((error) => {
+      if (callbacks?.onError) callbacks.onError(error);
+    });
+}
+
+/** Initiate password reset email (non-blocking). */
+export function initiatePasswordReset(authInstance: Auth, email: string, callbacks?: { onSuccess?: () => void; onError?: (err: any) => void }): void {
+  sendPasswordResetEmail(authInstance, email)
+    .then(() => {
+      if (callbacks?.onSuccess) callbacks.onSuccess();
     })
     .catch((error) => {
       if (callbacks?.onError) callbacks.onError(error);

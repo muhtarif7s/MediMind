@@ -131,7 +131,7 @@ export const translations = {
     sec: 'ثانية',
     signIn: 'تسجيل دخول',
     goodMorning: 'صباح الخير',
-    verifyEmail: 'تحقق من بريدك الإلكتروني',
+    verifyEmail: 'التحقق من البريد',
     emailVerificationSent: 'تم إرسال رابط التحقق إلى بريدك الإلكتروني.',
     checkEmail: 'يرجى التحقق من بريدك الإلكتروني لتفعيل حسابك.',
     resendEmail: 'إعادة إرسال الرابط',
@@ -164,7 +164,12 @@ export const translations = {
     other: 'آخر',
     fileSelect: 'اختر الملف أو الصورة',
     uploadSuccess: 'تم رفع السجل بنجاح',
-    noRecords: 'لا توجد سجلات طبية مضافة لهذا المريض'
+    noRecords: 'لا توجد سجلات طبية مضافة لهذا المريض',
+    forgotPassword: 'نسيت كلمة المرور؟',
+    resetPassword: 'إعادة تعيين كلمة المرور',
+    sendResetLink: 'إرسال رابط إعادة التعيين',
+    resetLinkSent: 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.',
+    backToLogin: 'العودة لتسجيل الدخول'
   },
   en: {
     appTitle: 'Smart Dentist',
@@ -330,7 +335,12 @@ export const translations = {
     other: 'Other',
     fileSelect: 'Select File or Image',
     uploadSuccess: 'Record uploaded successfully',
-    noRecords: 'No medical records added for this patient'
+    noRecords: 'No medical records added for this patient',
+    forgotPassword: 'Forgot Password?',
+    resetPassword: 'Reset Password',
+    sendResetLink: 'Send Reset Link',
+    resetLinkSent: 'Password reset link sent to your email.',
+    backToLogin: 'Back to Login'
   },
   fr: {
     appTitle: 'Dentiste Intelligent',
@@ -496,7 +506,12 @@ export const translations = {
     other: 'Autre',
     fileSelect: 'Choisir un fichier ou une image',
     uploadSuccess: 'Dossier ajouté avec succès',
-    noRecords: 'Aucun dossier médical pour ce patient'
+    noRecords: 'Aucun dossier médical pour ce patient',
+    forgotPassword: 'Mot de passe oublié?',
+    resetPassword: 'Réinitialiser le mot de passe',
+    sendResetLink: 'Envoyer le lien de réinitialisation',
+    resetLinkSent: 'Lien de réinitialisation envoyé à votre e-mail.',
+    backToLogin: 'Retour à la connexion'
   },
   es: {
     appTitle: 'Dentista Inteligente',
@@ -662,7 +677,12 @@ export const translations = {
     other: 'Otro',
     fileSelect: 'Seleccionar archivo o imagen',
     uploadSuccess: 'Registro subido con éxito',
-    noRecords: 'No hay registros médicos para este paciente'
+    noRecords: 'No hay registros médicos para este paciente',
+    forgotPassword: '¿Olvidaste tu contraseña?',
+    resetPassword: 'Restablecer contraseña',
+    sendResetLink: 'Enviar enlace de restablecimiento',
+    resetLinkSent: 'Enlace de restablecimiento enviado a tu correo.',
+    backToLogin: 'Volver al inicio de sesión'
   },
   de: {
     appTitle: 'Smarter Zahnarzt',
@@ -828,6 +848,11 @@ export const translations = {
     other: 'Sonstiges',
     fileSelect: 'Datei oder Bild auswählen',
     uploadSuccess: 'Unterlage erfolgreich hochgeladen',
-    noRecords: 'Keine medizinischen Unterlagen für diesen Patienten'
+    noRecords: 'Keine medizinischen Unterlagen für diesen Patienten',
+    forgotPassword: 'Passwort vergessen?',
+    resetPassword: 'Passwort zurücksetzen',
+    sendResetLink: 'Reset-Link senden',
+    resetLinkSent: 'Reset-Link an Ihre E-Mail gesendet.',
+    backToLogin: 'Zurück zur Anmeldung'
   }
 };
