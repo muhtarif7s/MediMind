@@ -47,7 +47,7 @@ export default function Dashboard() {
   const locale = profile.language === 'ar' ? ar : enUS;
 
   return (
-    <div className="flex flex-col h-screen pb-20 bg-background transition-colors duration-300">
+    <div className="flex flex-col h-screen pb-20 bg-background transition-colors animate-page-enter">
       <header className="p-6 bg-primary text-white rounded-b-[2.5rem] shadow-xl shadow-primary/20 pt-safe-area-inset-top">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -56,7 +56,12 @@ export default function Dashboard() {
             </div>
             <h1 className="text-xl font-bold">{t('appTitle')}</h1>
           </div>
-          <Button variant="ghost" size="icon" className="bg-white/10 rounded-full overflow-hidden" onClick={() => router.push('/settings')}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="bg-white/10 rounded-full overflow-hidden active:scale-90 transition-transform" 
+            onClick={() => router.push('/settings')}
+          >
             <div className="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center font-bold">
               {(profile?.name || 'D')[0]}
             </div>
@@ -81,7 +86,7 @@ export default function Dashboard() {
           <section className="space-y-4">
             <Card className="border-none shadow-sm bg-accent/10 rounded-3xl p-6 text-center">
               <Pill className="h-8 w-8 text-accent mx-auto mb-2" />
-              <p className="text-sm font-bold">{t('dailyScheduleCompleted') || 'All doses taken for today!'}</p>
+              <p className="text-sm font-bold">{t('dailyScheduleCompleted')}</p>
             </Card>
           </section>
         )}
@@ -92,16 +97,16 @@ export default function Dashboard() {
             {t('quickActions')}
           </h3>
           <div className="grid grid-cols-2 gap-4">
-            <Link href="/clients" className="block">
-              <div className="p-4 bg-card border rounded-3xl shadow-sm hover:shadow-md transition-all active:scale-95 flex flex-col items-center text-center gap-2">
+            <Link href="/clients" className="block active:scale-95 transition-transform">
+              <div className="p-4 bg-card border rounded-3xl shadow-sm hover:shadow-md flex flex-col items-center text-center gap-2 h-full">
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
                   <Plus className="h-6 w-6 text-blue-600" />
                 </div>
                 <span className="text-xs font-bold text-foreground">{t('addPatient')}</span>
               </div>
             </Link>
-            <Link href="/appointments" className="block">
-              <div className="p-4 bg-card border rounded-3xl shadow-sm hover:shadow-md transition-all active:scale-95 flex flex-col items-center text-center gap-2">
+            <Link href="/appointments" className="block active:scale-95 transition-transform">
+              <div className="p-4 bg-card border rounded-3xl shadow-sm hover:shadow-md flex flex-col items-center text-center gap-2 h-full">
                 <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl">
                   <Calendar className="h-6 w-6 text-emerald-600" />
                 </div>
@@ -135,7 +140,7 @@ export default function Dashboard() {
                 <Pill className="h-4 w-4 text-primary" />
                 {t('dailySchedule')}
               </h3>
-              <Link href="/medications" className="text-[10px] font-bold text-primary flex items-center gap-1">
+              <Link href="/medications" className="text-[10px] font-bold text-primary flex items-center gap-1 active:opacity-70 transition-opacity">
                 {t('viewAll')} <ChevronRight className="h-3 w-3" />
               </Link>
             </div>
@@ -150,7 +155,7 @@ export default function Dashboard() {
               <Activity className="h-4 w-4 text-primary" />
               {t('todayAppointments')}
             </h3>
-            <Link href="/appointments" className="text-[10px] font-bold text-primary flex items-center gap-1">
+            <Link href="/appointments" className="text-[10px] font-bold text-primary flex items-center gap-1 active:opacity-70 transition-opacity">
               {t('viewAll')} <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
@@ -158,7 +163,7 @@ export default function Dashboard() {
           <div className="space-y-3">
             {todayApps.length > 0 ? (
               todayApps.map(app => (
-                <Card key={app.id} className="border shadow-sm bg-card rounded-3xl overflow-hidden">
+                <Card key={app.id} className="border shadow-sm bg-card rounded-3xl overflow-hidden active:scale-[0.98] transition-all">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-muted rounded-xl">
@@ -187,7 +192,7 @@ export default function Dashboard() {
                 <Calendar className="h-10 w-10 text-muted/30 mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground font-medium">{t('noAppointments')}</p>
                 <Link href="/appointments">
-                  <Button variant="ghost" className="text-primary text-xs font-bold mt-2">
+                  <Button variant="ghost" className="text-primary text-xs font-bold mt-2 active:bg-primary/5 rounded-xl">
                     {t('bookAppointment')}
                   </Button>
                 </Link>

@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -52,7 +51,8 @@
 
 @layer base {
   body {
-    @apply font-arabic bg-background text-foreground transition-colors duration-300 antialiased min-h-screen;
+    @apply font-arabic bg-background text-foreground transition-colors duration-300 antialiased min-h-screen overflow-x-hidden;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -75,4 +75,29 @@
 
 .pt-safe-area-inset-top {
   padding-top: env(safe-area-inset-top);
+}
+
+/* Page Transitions */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: page-enter 0.4s ease-out forwards;
+}
+
+/* Touch Interactions */
+.active-press {
+  transition: transform 0.1s ease-out;
+}
+
+.active-press:active {
+  transform: scale(0.96);
 }
