@@ -18,6 +18,7 @@ import {
   BarChart3,
   ChevronRight,
   Pill,
+  Smartphone,
   Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -191,6 +192,24 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="space-y-4">
+          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">{t('installGuide')}</h3>
+          <Card className="border-none shadow-sm bg-blue-50/50 dark:bg-blue-900/10 rounded-3xl group active:scale-[0.98] transition-all">
+            <CardContent className="p-5 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-sm">
+                  <Smartphone className="h-6 w-6 text-blue-600" />
+                </div>
+                <div className="text-start">
+                  <p className="text-sm font-bold">{t('installGuide')}</p>
+                  <p className="text-[10px] text-muted-foreground">{t('installSubtitle')}</p>
+                </div>
+              </div>
+              <ChevronRight className={`h-5 w-5 text-muted-foreground ${isRTL ? 'rotate-180' : ''}`} />
             </CardContent>
           </Card>
         </section>
