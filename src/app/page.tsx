@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useClinic } from '@/lib/store';
@@ -84,9 +85,9 @@ export default function Dashboard() {
           </section>
         ) : (medications && medications.length > 0) && (
           <section className="space-y-4">
-            <Card className="border-none shadow-sm bg-accent/10 rounded-3xl p-6 text-center">
-              <Pill className="h-8 w-8 text-accent mx-auto mb-2" />
-              <p className="text-sm font-bold">{t('dailyScheduleCompleted')}</p>
+            <Card className="border-none shadow-sm bg-primary/5 rounded-3xl p-6 text-center">
+              <Pill className="h-8 w-8 text-primary mx-auto mb-2" />
+              <p className="text-sm font-bold text-foreground">{t('dailyScheduleCompleted')}</p>
             </Card>
           </section>
         )}

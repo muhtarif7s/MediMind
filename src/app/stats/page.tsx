@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useClinic } from '@/lib/store';
@@ -10,11 +11,6 @@ import {
   Cell,
   ResponsiveContainer,
   Tooltip,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
 } from 'recharts';
 import { 
   TrendingUp, 
