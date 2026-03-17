@@ -88,6 +88,17 @@ export default function LoginPage() {
     }
   }, [user, isUserLoading, router]);
 
+  const mapAuthError = (err: any) => {
+    switch (err.code) {
+      case 'auth/too-many-requests':
+        return t('tooManyRequests');
+      case 'auth/operation-not-allowed':
+        return t('operationNotAllowed');
+      default:
+        return err.message;
+    }
+  };
+
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -103,11 +114,10 @@ export default function LoginPage() {
       },
       onError: (err: any) => {
         setIsSubmitting(false);
-        const errorMessage = err.code === 'auth/too-many-requests' ? t('tooManyRequests') : err.message;
         toast({ 
           variant: "destructive", 
           title: t('authError'), 
-          description: errorMessage
+          description: mapAuthError(err)
         });
       }
     };
@@ -132,8 +142,7 @@ export default function LoginPage() {
       setOtpAttempts(0);
       toast({ title: t('otpSent') });
     } catch (err: any) {
-      const errorMessage = err.code === 'auth/too-many-requests' ? t('tooManyRequests') : err.message;
-      toast({ variant: "destructive", title: t('authError'), description: errorMessage });
+      toast({ variant: "destructive", title: t('authError'), description: mapAuthError(err) });
     } finally {
       setIsSubmitting(false);
     }
@@ -174,8 +183,7 @@ export default function LoginPage() {
       setEmailTimer(COOLDOWN_DELAY);
       toast({ title: t('emailVerificationSent') });
     } catch (err: any) {
-      const errorMessage = err.code === 'auth/too-many-requests' ? t('tooManyRequests') : err.message;
-      toast({ variant: "destructive", title: t('authError'), description: errorMessage });
+      toast({ variant: "destructive", title: t('authError'), description: mapAuthError(err) });
     } finally {
       setIsSubmitting(false);
     }
