@@ -14,6 +14,7 @@ export interface Patient {
   id: string;
   clinicId: string;
   name: string;
+  age?: number;
   phone: string;
   notes?: string;
   createdAt: string;

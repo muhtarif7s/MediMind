@@ -78,6 +78,7 @@
       "description": "Represents a patient in the clinic.",
       "properties": {
         "name": { "type": "string" },
+        "age": { "type": "number" },
         "clinicId": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" },
         "phone": { "type": "string" },
@@ -224,14 +225,6 @@
       "schema": { "$ref": "#/backend/entities/Clinic" },
       "description": "Stores individual clinic configurations."
     },
-    "/clinics/{clinicId}/patients/{patientId}": {
-      "schema": { "$ref": "#/backend/entities/Patient" },
-      "description": "Clinic patients."
-    },
-    "/clinics/{clinicId}/appointments/{appointmentId}": {
-      "schema": { "$ref": "#/backend/entities/Appointment" },
-      "description": "Clinic appointments."
-    },
     "/users/{userId}": {
       "schema": { "$ref": "#/backend/entities/UserProfile" },
       "description": "Stores individual user profiles."
@@ -243,6 +236,14 @@
     "/users/{userId}/medicines/{medicineId}/doseLogs/{doseLogId}": {
       "schema": { "$ref": "#/backend/entities/DoseLog" },
       "description": "Logs for each dose of a medication."
+    },
+    "/users/{userId}/patients/{patientId}": {
+      "schema": { "$ref": "#/backend/entities/Patient" },
+      "description": "User clinic patients."
+    },
+    "/users/{userId}/appointments/{appointmentId}": {
+      "schema": { "$ref": "#/backend/entities/Appointment" },
+      "description": "User clinic appointments."
     }
   }
 }
