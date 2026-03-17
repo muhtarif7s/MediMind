@@ -30,12 +30,11 @@ export interface Appointment {
 }
 
 export interface ClinicProfile {
-  id: string;
+  clinicId: string;
   name: string;
-  phone?: string;
-  language?: 'ar' | 'en';
-  theme?: 'light' | 'dark';
-  notificationsEnabled?: boolean;
+  language: 'ar' | 'en';
+  theme: 'light' | 'dark';
+  notificationsEnabled: boolean;
 }
 
 export interface Medication {

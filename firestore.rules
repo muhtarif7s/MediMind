@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -13,9 +14,9 @@ service cloud.firestore {
     }
 
     // --- Collection Group Rules ---
-    // Allow collection group queries for doseLogs for authenticated users
+    // Allow collection group queries for doseLogs for authenticated users who own the logs
     match /{path=**}/doseLogs/{doseLogId} {
-      allow read, write: if isSignedIn();
+      allow read, write: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
     // --- Clinic Scoped Rules ---

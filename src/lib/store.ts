@@ -21,7 +21,6 @@ import {
   updateDocumentNonBlocking,
   addDocumentNonBlocking,
   setDocumentNonBlocking,
-  deleteDocumentNonBlocking
 } from '@/firebase';
 import {
   collection,
@@ -75,7 +74,7 @@ export function useClinic() {
       setDocumentNonBlocking(
         clinicRef,
         {
-          id: user.uid,
+          clinicId: user.uid,
           name: user.displayName || 'عيادة الأسنان الذكية',
           language: 'ar',
           theme: 'light',
@@ -106,6 +105,35 @@ export function useClinic() {
   const { data: appointmentsData, isLoading: isAppointmentsLoading } = useCollection<Appointment>(appointmentsQuery);
   const appointments = appointmentsData || [];
 
+  // Auto-bootstrap sample patient and appointment
+  useEffect(() => {
+    if (shouldFetch && !isPatientsLoading && patients.length === 0) {
+      const patientsCol = collection(db, 'clinics', user.uid, 'patients');
+      const now = new Date().toISOString();
+      
+      const samplePatient = {
+        name: 'مريض تجريبي',
+        clinicId: user.uid,
+        phone: '0000000000',
+        createdAt: now
+      };
+
+      addDocumentNonBlocking(patientsCol, samplePatient).then((docRef) => {
+        if (docRef && appointments.length === 0) {
+          const appointmentsCol = collection(db, 'clinics', user.uid, 'appointments');
+          addDocumentNonBlocking(appointmentsCol, {
+            clinicId: user.uid,
+            patientId: docRef.id,
+            patientName: samplePatient.name,
+            dateTime: now,
+            status: 'pending',
+            treatment: 'فحص عام'
+          });
+        }
+      });
+    }
+  }, [shouldFetch, isPatientsLoading, patients.length, appointments.length, user, db]);
+
   // 4. User Medications
   const medicationsQuery = useMemoFirebase(() => {
     return shouldFetch
@@ -115,42 +143,6 @@ export function useClinic() {
 
   const { data: medicationsData, isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
   const medications = medicationsData || [];
-
-  // Auto-bootstrap sample medication and dose logs
-  useEffect(() => {
-    if (shouldFetch && !isMedicationsLoading && medications.length === 0) {
-      const medName = 'بندول (مثال)';
-      const medicinesCol = collection(db, 'users', user.uid, 'medicines');
-      
-      const medData = {
-        userId: user.uid,
-        name: medName,
-        dosageAmount: 1,
-        dosageUnit: 'pill',
-        times: ['08:00', '20:00'],
-        startDate: new Date().toISOString(),
-        totalQuantity: 30,
-        remainingQuantity: 30,
-        refillThreshold: 5,
-        frequency: 'daily'
-      };
-
-      addDocumentNonBlocking(medicinesCol, medData).then((docRef) => {
-        if (docRef) {
-          const now = new Date().toISOString();
-          addDocumentNonBlocking(collection(docRef, 'doseLogs'), {
-            userId: user.uid,
-            medicationId: docRef.id,
-            name: medName,
-            status: 'pending',
-            scheduledTime: now,
-            recordedAt: now,
-            takenAt: now
-          });
-        }
-      });
-    }
-  }, [shouldFetch, isMedicationsLoading, medications.length, user, db]);
 
   // 5. Medication Dose History
   const historyQuery = useMemoFirebase(() => {
@@ -221,6 +213,7 @@ export function useClinic() {
     isUserLoading,
     userProfile: userProfileData,
     profile: clinicData || {
+      clinicId: user?.uid || '',
       name: 'دكتور',
       language: 'ar',
       theme: 'light',
