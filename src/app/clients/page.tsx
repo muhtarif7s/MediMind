@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -9,8 +8,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, User, Phone, Users } from 'lucide-react';
+import { Plus, Search, User, Phone, Users, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import Link from 'next/link';
 
 export default function PatientsPage() {
   const { patients, addPatient, t, isLoaded } = useClinic();
@@ -20,7 +20,7 @@ export default function PatientsPage() {
 
   if (!isLoaded) return null;
 
-  const filtered = patients.filter(p => 
+  const filtered = (patients || []).filter(p => 
     p.name.toLowerCase().includes(search.toLowerCase()) || 
     p.phone.includes(search)
   );
@@ -95,19 +95,22 @@ export default function PatientsPage() {
       <ScrollArea className="flex-1 p-6">
         <div className="space-y-3">
           {filtered.map(patient => (
-            <Card key={patient.id} className="border-none shadow-sm bg-white rounded-2xl">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="p-3 bg-slate-50 rounded-2xl">
-                  <User className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1 text-right">
-                  <p className="font-bold text-sm text-slate-900">{patient.name}</p>
-                  <p className="text-[10px] text-slate-500 flex items-center gap-1 justify-end">
-                    {patient.phone} <Phone className="h-3 w-3" />
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <Link key={patient.id} href={`/clients/${patient.id}`}>
+              <Card className="border-none shadow-sm bg-white rounded-2xl active:scale-[0.98] transition-all">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="p-3 bg-slate-50 rounded-2xl">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 text-right">
+                    <p className="font-bold text-sm text-slate-900">{patient.name}</p>
+                    <p className="text-[10px] text-slate-500 flex items-center gap-1 justify-end">
+                      {patient.phone} <Phone className="h-3 w-3" />
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-slate-300" />
+                </CardContent>
+              </Card>
+            </Link>
           ))}
           {filtered.length === 0 && (
             <div className="py-20 text-center text-slate-300">

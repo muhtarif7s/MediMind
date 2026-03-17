@@ -1,4 +1,3 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -14,7 +13,7 @@ service cloud.firestore {
     }
 
     // --- Collection Group Rules ---
-
+    // Allow collection group queries for doseLogs for authenticated users
     match /{path=**}/doseLogs/{doseLogId} {
       allow read, write: if isSignedIn();
     }

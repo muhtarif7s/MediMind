@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect } from 'react';
@@ -82,7 +81,7 @@ export function useClinic() {
   const { data: appointmentsData, isLoading: isAppointmentsLoading } = useCollection<Appointment>(appointmentsQuery);
   const appointments = appointmentsData || [];
 
-  // 4. User Medications
+  // 4. User Medications (Used for prescriptions or dentist's own tracking)
   const medicationsQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(collection(db, 'users', user.uid, 'medicines'), orderBy('name'))
@@ -106,7 +105,7 @@ export function useClinic() {
   const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseLog>(historyQuery);
   const history = historyData || [];
 
-  // Bootstrapping sample data
+  // Bootstrapping sample data for new accounts
   useEffect(() => {
     if (shouldFetch && !isMedicationsLoading && medications.length === 0) {
       const medRef = collection(db, 'users', user.uid, 'medicines');
