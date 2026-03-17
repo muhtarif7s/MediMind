@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useEffect } from 'react';
@@ -180,7 +179,6 @@ export function useClinic() {
        if (clinicRef) updateDocumentNonBlocking(clinicRef, updates);
     },
     getTodayDoses: () => {
-      // Logic for calculating today's doses based on medication schedules
       return [];
     }
   };
