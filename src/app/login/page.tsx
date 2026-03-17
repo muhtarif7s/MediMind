@@ -65,6 +65,7 @@ export default function LoginPage() {
       initiateEmailSignIn(auth, email, password, callbacks);
     }
     
+    // Safety timeout
     setTimeout(() => setIsSubmitting(false), 15000);
   };
 
@@ -79,7 +80,7 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden">
       <ScrollArea className="flex-1">
-        <div className="p-6 flex flex-col items-center justify-start min-h-full py-12">
+        <div className="p-6 flex flex-col items-center justify-center min-h-full py-12">
           <div className="mb-8 flex flex-col items-center gap-3">
             <div className="p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/30 animate-in zoom-in duration-500">
               <Pill className="h-10 w-10 text-primary-foreground" />
@@ -150,7 +151,7 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <div className="mt-8 flex flex-col items-center gap-4">
+              <div className="mt-8 flex flex-col items-center gap-6">
                 <div className="w-full flex items-center gap-2 py-2">
                   <div className="h-[1px] bg-border flex-1"></div>
                   <span className="text-[10px] uppercase font-bold text-muted-foreground/50">or</span>
@@ -163,6 +164,7 @@ export default function LoginPage() {
                   </p>
                   <Button 
                     variant="outline" 
+                    type="button"
                     onClick={() => {
                       setIsRegistering(!isRegistering);
                     }}
