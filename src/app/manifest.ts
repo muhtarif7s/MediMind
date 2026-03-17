@@ -1,26 +1,24 @@
+
 import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'MediMind Medication Tracker',
-    short_name: 'MediMind',
-    description: 'Intelligent medication manager with AI refill alerts.',
+    name: 'طبيب الأسنان الذكي',
+    short_name: 'طبيب الأسنان',
+    description: 'نظام إدارة عيادات الأسنان الذكي المتكامل',
     start_url: '/',
     display: 'standalone',
-    display_override: ['window-controls-overlay', 'standalone', 'minimal-ui'],
-    orientation: 'portrait',
-    background_color: '#f0f9ff',
-    theme_color: '#bae6fd',
-    categories: ['medical', 'health', 'lifestyle'],
+    background_color: '#f8fafc',
+    theme_color: '#0ea5e9',
     icons: [
       {
-        src: 'https://picsum.photos/seed/icon/192/192',
+        src: 'https://picsum.photos/seed/dentist-icon/192/192',
         sizes: '192x192',
         type: 'image/png',
         purpose: 'maskable'
       },
       {
-        src: 'https://picsum.photos/seed/icon/512/512',
+        src: 'https://picsum.photos/seed/dentist-icon/512/512',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any'
