@@ -1,4 +1,3 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -14,37 +13,46 @@ service cloud.firestore {
     }
 
     // --- Collection Group Rules ---
-    // Allow collection group queries for doseLogs for authenticated users who own the logs
+    // Specifically for doseLogs to support global history queries across all medicines
     match /{path=**}/doseLogs/{doseLogId} {
-      allow read, write: if isSignedIn() && resource.data.userId == request.auth.uid;
-    }
-
-    // --- Clinic Scoped Rules ---
-
-    match /clinics/{clinicId} {
-      allow read, write: if isOwner(clinicId);
-
-      match /patients/{patientId} {
-        allow read, write: if isOwner(clinicId);
-      }
-
-      match /appointments/{appointmentId} {
-        allow read, write: if isOwner(clinicId);
-      }
+      // Allow read/delete if the existing document belongs to the user
+      allow read, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      // Allow create/update if the incoming data belongs to the user
+      allow create, update: if isSignedIn() && request.resource.data.userId == request.auth.uid;
     }
 
     // --- User Scoped Rules ---
-
     match /users/{userId} {
+      // Users can read/write their own profile
       allow read, write: if isOwner(userId);
 
       match /medicines/{medicineId} {
+        // Users can read/write their own medications
         allow read, write: if isOwner(userId);
 
         match /doseLogs/{doseLogId} {
+          // Users can read/write logs nested under their medicines
           allow read, write: if isOwner(userId);
         }
       }
     }
+
+    // --- Clinic Scoped Rules ---
+    match /clinics/{clinicId} {
+      // Clinics can read/write their own configuration (clinicId matches user UID)
+      allow read, write: if isOwner(clinicId);
+
+      match /patients/{patientId} {
+        // Clinic owners can manage their patients
+        allow read, write: if isOwner(clinicId);
+      }
+
+      match /appointments/{appointmentId} {
+        // Clinic owners can manage their appointments
+        allow read, write: if isOwner(clinicId);
+      }
+    }
+
+    // Default deny for all other access
   }
 }
