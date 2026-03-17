@@ -19,10 +19,11 @@ service cloud.firestore {
     // This allows query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{doseLogId} {
       // For collection group queries, we authorize based on the userId field.
-      // We use 'read' to cover both 'get' and 'list' operations.
+      // We allow list operations if the query is filtered by the user's own ID.
+      // We allow get operations if the document itself belongs to the user.
       allow read: if isSignedIn() && (
-        (resource != null && resource.data.userId == request.auth.uid) ||
-        (resource == null) // Allow query planning even if no documents exist yet
+        (resource == null) || // Allow query evaluation
+        (resource.data.userId == request.auth.uid)
       );
       
       // Write operations
@@ -35,14 +36,9 @@ service cloud.firestore {
       // Users can only read/write their own profile and everything underneath it.
       allow read, write: if isOwner(userId);
 
-      // Nested collections benefit from the parent userId match
-      match /medicines/{medicineId} {
+      // Recursive match for all subcollections under a user
+      match /{allPaths=**} {
         allow read, write: if isOwner(userId);
-
-        match /doseLogs/{doseLogId} {
-          // Path-based access for direct reads
-          allow read, write: if isOwner(userId);
-        }
       }
     }
   }

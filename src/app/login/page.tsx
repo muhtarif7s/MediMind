@@ -40,8 +40,8 @@ export default function LoginPage() {
         console.error('Auth Error:', err);
         
         let message = "An error occurred. Please try again.";
-        if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found') {
-          message = "Incorrect email or password. If you don't have an account, tap 'Create Account' below.";
+        if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+          message = "Incorrect email or password. If you don't have an account, tap 'Create New Account' below.";
         } else if (err.code === 'auth/email-already-in-use') {
           message = "This email is already registered. Please log in instead.";
           setIsRegistering(false);
@@ -65,22 +65,22 @@ export default function LoginPage() {
       initiateEmailSignIn(auth, email, password, callbacks);
     }
     
-    // Safety timeout
-    setTimeout(() => setIsSubmitting(false), 15000);
+    // Safety timeout to ensure UI doesn't stay locked
+    setTimeout(() => setIsSubmitting(false), 10000);
   };
 
   if (isUserLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full bg-background overflow-hidden">
-      <ScrollArea className="flex-1">
-        <div className="p-6 flex flex-col items-center justify-start min-h-full py-12">
+    <div className="flex flex-col min-h-screen bg-background">
+      <ScrollArea className="h-screen w-full">
+        <div className="p-6 flex flex-col items-center justify-center min-h-screen py-12">
           <div className="mb-10 flex flex-col items-center gap-3">
             <div className="p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/30 animate-in zoom-in duration-500">
               <Pill className="h-10 w-10 text-primary-foreground" />
@@ -154,7 +154,7 @@ export default function LoginPage() {
               <div className="mt-12 flex flex-col items-center gap-8">
                 <div className="w-full flex items-center gap-4 py-2">
                   <div className="h-[1px] bg-border flex-1"></div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground/50 tracking-tighter">or continue with</span>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground/50 tracking-tighter">or switch mode</span>
                   <div className="h-[1px] bg-border flex-1"></div>
                 </div>
 
