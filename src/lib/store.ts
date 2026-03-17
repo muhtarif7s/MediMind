@@ -134,8 +134,10 @@ export function useClinic() {
 
     bootstrapData();
   }, [shouldFetch, medications, history, isMedicationsLoading, isHistoryLoading, user?.uid, db]);
-  const t = (key: keyof typeof translations.ar) => {
-    return translations.ar[key] || key;
+
+  const t = (key: string) => {
+    const arTranslations = translations.ar as Record<string, string>;
+    return arTranslations[key] || key;
   };
 
   const addPatient = (patient: Omit<Patient, 'id' | 'clinicId' | 'createdAt'>) => {
@@ -235,7 +237,23 @@ export function useClinic() {
       if (clinicRef) updateDocumentNonBlocking(clinicRef, updates);
     },
     getTodayDoses: () => {
-      return [];
+      const todayDoses: Array<{ med: Medication; time: string; status: DoseStatus }> = [];
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+
+      (medications || []).forEach(med => {
+        (med.times || []).forEach(time => {
+          const scheduledTime = `${todayStr}T${time}:00`;
+          const log = (history || []).find(h => h.medicationId === med.id && h.scheduledTime === scheduledTime);
+          todayDoses.push({
+            med,
+            time: scheduledTime,
+            status: log ? log.status : 'pending'
+          });
+        });
+      });
+
+      return todayDoses.sort((a, b) => a.time.localeCompare(b.time));
     }
   };
 }
