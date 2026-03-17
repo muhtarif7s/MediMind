@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useClinic } from '@/lib/store';
@@ -29,13 +28,6 @@ export default function Dashboard() {
     medications 
   } = useClinic();
   const router = useRouter();
-
-  // Handle global theme synchronization based on profile preference
-  useEffect(() => {
-    if (isLoaded && profile?.theme) {
-      document.documentElement.classList.toggle('dark', profile.theme === 'dark');
-    }
-  }, [isLoaded, profile?.theme]);
 
   useEffect(() => {
     if (!isUserLoading && !user) router.push('/login');

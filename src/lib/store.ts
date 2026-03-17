@@ -212,6 +212,7 @@ export function useClinic() {
 
     if (status === 'taken') {
       const docRef = doc(db, 'users', user.uid, 'medicines', medId);
+      // Ensure quantity is updated in Firestore
       updateDocumentNonBlocking(docRef, {
         remainingQuantity: Math.max(0, med.remainingQuantity - med.dosageAmount)
       });

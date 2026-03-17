@@ -1,8 +1,8 @@
-
 import './globals.css';
 import { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { ThemeWrapper } from '@/components/ThemeWrapper';
 
 export const metadata: Metadata = {
   title: 'طبيب الأسنان الذكي',
@@ -25,9 +25,10 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="theme-color" content="#0ea5e9" />
       </head>
-      <body className="font-arabic antialiased bg-slate-50 min-h-screen">
+      <body className="font-arabic antialiased bg-background text-foreground min-h-screen">
         <FirebaseClientProvider>
-          <div className="max-w-md mx-auto relative bg-white min-h-screen flex flex-col border-x shadow-xl pb-safe-area-inset-bottom">
+          <ThemeWrapper />
+          <div className="max-w-md mx-auto relative bg-background min-h-screen flex flex-col border-x shadow-xl pb-safe-area-inset-bottom">
             {children}
           </div>
           <Toaster />
