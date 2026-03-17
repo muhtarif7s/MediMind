@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -34,8 +33,7 @@ export interface InternalQuery extends Query<DocumentData> {
     path: {
       canonicalString(): string;
       toString(): string;
-    };
-    collectionGroup?: string;
+    }
   }
 }
 
@@ -86,24 +84,21 @@ export function useCollection<T = any>(
         setError(null);
         setIsLoading(false);
       },
-      async (serverError: FirestoreError) => {
+      (error: FirestoreError) => {
         // This logic extracts the path from either a ref or a query
-        let path: string = '';
-        if (memoizedTargetRefOrQuery.type === 'collection') {
-           path = (memoizedTargetRefOrQuery as CollectionReference).path;
-        } else {
-           const internalQuery = memoizedTargetRefOrQuery as unknown as InternalQuery;
-           path = internalQuery._query?.path?.canonicalString() || `collectionGroup:${internalQuery._query?.collectionGroup || 'unknown'}`;
-        }
+        const path: string =
+          memoizedTargetRefOrQuery.type === 'collection'
+            ? (memoizedTargetRefOrQuery as CollectionReference).path
+            : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString()
 
         const contextualError = new FirestorePermissionError({
           operation: 'list',
           path,
-        });
+        })
 
-        setError(contextualError);
-        setData(null);
-        setIsLoading(false);
+        setError(contextualError)
+        setData(null)
+        setIsLoading(false)
 
         // trigger global error propagation
         errorEmitter.emit('permission-error', contextualError);

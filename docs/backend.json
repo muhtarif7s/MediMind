@@ -1,76 +1,428 @@
-
 {
   "entities": {
-    "ClinicProfile": {
-      "title": "ClinicProfile",
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
       "type": "object",
-      "description": "Represents the dental clinic's profile and settings.",
+      "description": "Stores user-specific settings, preferences, and basic identifying information. Assumes user authentication is handled by an external system.",
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "phone": { "type": "string" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity, typically provided by an external authentication system."
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was created.",
+          "format": "date-time"
+        },
+        "languagePreference": {
+          "type": "string",
+          "description": "User's preferred application language (e.g., 'en' for English, 'ar' for Arabic)."
+        },
+        "themePreference": {
+          "type": "string",
+          "description": "User's preferred application theme ('light' or 'dark')."
+        },
+        "biometricLockEnabled": {
+          "type": "boolean",
+          "description": "Flag indicating if biometric authentication (fingerprint/face ID) is enabled for app access."
+        },
+        "notificationSoundEnabled": {
+          "type": "boolean",
+          "description": "Flag indicating if notification sounds are enabled for dose reminders."
+        },
+        "notificationVibrationEnabled": {
+          "type": "boolean",
+          "description": "Flag indicating if notification vibration is enabled for dose reminders."
+        }
       },
-      "required": ["id", "name"]
+      "required": [
+        "id",
+        "name",
+        "email",
+        "createdAt",
+        "languagePreference",
+        "themePreference",
+        "biometricLockEnabled",
+        "notificationSoundEnabled",
+        "notificationVibrationEnabled"
+      ]
     },
-    "Patient": {
-      "title": "Patient",
+    "Medicine": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Medicine",
       "type": "object",
-      "description": "Represents a patient in the dental clinic.",
+      "description": "Represents a single medication with its details, inventory, and general properties.",
       "properties": {
-        "id": { "type": "string" },
-        "clinicId": { "type": "string" },
-        "name": { "type": "string" },
-        "phone": { "type": "string" },
-        "notes": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Medicine entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile who owns this medicine. (Relationship: UserProfile 1:N Medicine)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The commercial or generic name of the medicine."
+        },
+        "dosageAmount": {
+          "type": "number",
+          "description": "The quantity of medicine per single dose (e.g., 250 for 250mg)."
+        },
+        "dosageUnit": {
+          "type": "string",
+          "description": "The unit for the dosage amount (e.g., 'mg', 'ml', 'tablet', 'capsule')."
+        },
+        "medicineType": {
+          "type": "string",
+          "description": "The physical form of the medicine (e.g., 'tablet', 'capsule', 'liquid', 'cream')."
+        },
+        "totalQuantity": {
+          "type": "number",
+          "description": "The initial or total quantity of the medicine purchased or refilled, used for inventory tracking."
+        },
+        "remainingQuantity": {
+          "type": "number",
+          "description": "The current remaining quantity of the medicine in inventory. Automatically decreases when a dose is taken."
+        },
+        "refillThreshold": {
+          "type": "number",
+          "description": "The quantity level at which the user should be alerted to refill the medicine."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional additional notes or instructions about the medicine."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates if the medicine is currently active and its schedules should generate doses."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the medicine record was first created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the medicine record was last updated.",
+          "format": "date-time"
+        }
       },
-      "required": ["id", "clinicId", "name", "phone"]
+      "required": [
+        "id",
+        "userId",
+        "name",
+        "dosageAmount",
+        "dosageUnit",
+        "medicineType",
+        "totalQuantity",
+        "remainingQuantity",
+        "refillThreshold",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
     },
-    "Appointment": {
-      "title": "Appointment",
+    "MedicineSchedule": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MedicineSchedule",
       "type": "object",
-      "description": "Represents a scheduled dental appointment.",
+      "description": "Defines a recurring pattern for when a specific medicine should be taken.",
       "properties": {
-        "id": { "type": "string" },
-        "clinicId": { "type": "string" },
-        "patientId": { "type": "string" },
-        "patientName": { "type": "string" },
-        "dateTime": { "type": "string", "format": "date-time" },
-        "status": { "type": "string", "enum": ["pending", "attended", "no-show", "cancelled"] },
-        "treatment": { "type": "string" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MedicineSchedule entity."
+        },
+        "medicineId": {
+          "type": "string",
+          "description": "Reference to the Medicine this schedule belongs to. (Relationship: Medicine 1:N MedicineSchedule)"
+        },
+        "scheduleType": {
+          "type": "string",
+          "description": "The type of scheduling pattern (e.g., 'daily', 'weekly', 'interval', 'custom_range')."
+        },
+        "doseTimes": {
+          "type": "array",
+          "description": "An array of specific times of day (HH:MM format) for doses, applicable for 'daily' or 'weekly' schedules.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "intervalHours": {
+          "type": "number",
+          "description": "For 'every X hours' schedules, specifies the interval in hours between doses."
+        },
+        "specificWeekdays": {
+          "type": "array",
+          "description": "For 'weekly' schedules, an array of weekday names (e.g., 'Monday', 'Wednesday', 'Friday').",
+          "items": {
+            "type": "string"
+          }
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The date and time when this schedule becomes active.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "Optional date and time when this schedule ceases to be active. If null, the schedule is ongoing.",
+          "format": "date-time"
+        },
+        "isEnabled": {
+          "type": "boolean",
+          "description": "Flag indicating if this specific schedule is currently active and should generate doses."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the schedule record was first created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the schedule record was last updated.",
+          "format": "date-time"
+        }
       },
-      "required": ["id", "clinicId", "patientId", "dateTime", "status"]
+      "required": [
+        "id",
+        "medicineId",
+        "scheduleType",
+        "startDate",
+        "isEnabled",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Dose": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Dose",
+      "type": "object",
+      "description": "Represents a single, specific instance of a medication dose scheduled for a particular time. This is generated by the scheduling service.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this specific Dose instance."
+        },
+        "medicineId": {
+          "type": "string",
+          "description": "Reference to the Medicine associated with this dose. (Relationship: Medicine 1:N Dose)"
+        },
+        "medicineScheduleId": {
+          "type": "string",
+          "description": "Reference to the MedicineSchedule that generated this specific dose instance. (Relationship: MedicineSchedule 1:N Dose)"
+        },
+        "scheduledTime": {
+          "type": "string",
+          "description": "The exact date and time this dose was scheduled for.",
+          "format": "date-time"
+        },
+        "dosageAmount": {
+          "type": "number",
+          "description": "The dosage quantity for this specific dose, copied from the Medicine at the time of generation."
+        },
+        "dosageUnit": {
+          "type": "string",
+          "description": "The dosage unit for this specific dose, copied from the Medicine at the time of generation."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the dose ('scheduled', 'taken', 'skipped', 'missed', 'reminded_later')."
+        },
+        "originalMedicineName": {
+          "type": "string",
+          "description": "The name of the medicine at the time this dose was created, useful for historical context even if the medicine name is later changed."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this dose instance was generated.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the dose status was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "medicineId",
+        "medicineScheduleId",
+        "scheduledTime",
+        "dosageAmount",
+        "dosageUnit",
+        "status",
+        "originalMedicineName",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "DoseLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DoseLog",
+      "type": "object",
+      "description": "Records the user's interaction (e.g., taken, skipped) with a specific scheduled dose.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the DoseLog entry."
+        },
+        "doseId": {
+          "type": "string",
+          "description": "Reference to the specific Dose instance this log entry pertains to. (Relationship: Dose 1:N DoseLog)"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile who performed the action. (Relationship: UserProfile 1:N DoseLog)"
+        },
+        "action": {
+          "type": "string",
+          "description": "The action taken by the user ('taken', 'skipped', 'reminded_later')."
+        },
+        "actionTime": {
+          "type": "string",
+          "description": "The exact date and time the user performed the action.",
+          "format": "date-time"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional additional user notes regarding this specific dose action."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the log entry was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "doseId",
+        "userId",
+        "action",
+        "actionTime",
+        "createdAt"
+      ]
     }
   },
   "auth": {
-    "providers": ["password"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
     "structure": [
       {
-        "path": "/clinics/{clinicId}",
+        "path": "/users/{userId}",
         "definition": {
-          "entityName": "ClinicProfile",
-          "schema": { "$ref": "#/backend/entities/ClinicProfile" },
-          "description": "Top-level clinic profile."
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores individual user profiles and settings. The document ID `{userId}` must match `request.auth.uid`. This path ensures private access for each user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user, matching their Firebase Authentication UID."
+            }
+          ]
         }
       },
       {
-        "path": "/clinics/{clinicId}/patients/{patientId}",
+        "path": "/users/{userId}/medicines/{medicineId}",
         "definition": {
-          "entityName": "Patient",
-          "schema": { "$ref": "#/backend/entities/Patient" },
-          "description": "Patients belonging to a clinic."
+          "entityName": "Medicine",
+          "schema": {
+            "$ref": "#/backend/entities/Medicine"
+          },
+          "description": "Stores specific medication details owned by a user. Each document includes the `userId` field, denormalized from the parent UserProfile, to ensure Authorization Independence and support direct ownership checks in security rules. This allows for efficient 'list' operations for a user's medicines.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this medicine."
+            },
+            {
+              "name": "medicineId",
+              "description": "The unique identifier for the medicine document."
+            }
+          ]
         }
       },
       {
-        "path": "/clinics/{clinicId}/appointments/{appointmentId}",
+        "path": "/users/{userId}/medicines/{medicineId}/schedules/{scheduleId}",
         "definition": {
-          "entityName": "Appointment",
-          "schema": { "$ref": "#/backend/entities/Appointment" },
-          "description": "Appointments for a specific clinic."
+          "entityName": "MedicineSchedule",
+          "schema": {
+            "$ref": "#/backend/entities/MedicineSchedule"
+          },
+          "description": "Defines a recurring schedule for a specific medicine. Each document must include the `userId` (denormalized from the owning UserProfile) and `medicineId` (denormalized from the owning Medicine) fields to ensure Authorization Independence and simplify security rules, avoiding `get()` calls to parent documents.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this medicine schedule."
+            },
+            {
+              "name": "medicineId",
+              "description": "The unique identifier of the medicine this schedule belongs to."
+            },
+            {
+              "name": "scheduleId",
+              "description": "The unique identifier for the medicine schedule document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/doses/{doseId}",
+        "definition": {
+          "entityName": "Dose",
+          "schema": {
+            "$ref": "#/backend/entities/Dose"
+          },
+          "description": "Represents a single scheduled dose instance. Each document must include the `userId` (denormalized from the owning UserProfile), `medicineId`, and `medicineScheduleId` fields to ensure Authorization Independence. This structure allows for efficient queries across all doses for a user and direct ownership checks in security rules without `get()` calls.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user this dose belongs to."
+            },
+            {
+              "name": "doseId",
+              "description": "The unique identifier for the dose document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/doseLogs/{doseLogId}",
+        "definition": {
+          "entityName": "DoseLog",
+          "schema": {
+            "$ref": "#/backend/entities/DoseLog"
+          },
+          "description": "Records user actions (taken, skipped, etc.) for a specific dose. Each document includes the `userId` field, ensuring direct ownership checks in security rules and supporting efficient queries for a user's dose history.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who performed the action."
+            },
+            {
+              "name": "doseLogId",
+              "description": "The unique identifier for the dose log document."
+            }
+          ]
         }
       }
-    ]
+    ],
+    "reasoning": "The Firestore structure is designed to be secure, scalable, and highly debuggable, prioritizing Authorization Independence and QAPs (Query-Agnostic Permissions). All user-specific data is rooted under a top-level `/users/{userId}` collection, establishing clear ownership and simplifying security rules. This adheres to the 'Private Data' and 'Hierarchical Paths for User-Owned Data' access modeling strategies.\n\n**Authorization Independence via Denormalization:**\n*   **UserProfile:** The user profile itself is located at `/users/{userId}/{userId}`. The `userId` in the path directly corresponds to `request.auth.uid`, ensuring immediate authorization without external lookups.\n*   **Medicine:** Medicines are stored in a subcollection at `/users/{userId}/medicines/{medicineId}`. Each `Medicine` document explicitly contains a `userId` field, denormalized from its owner. This allows security rules to evaluate `request.auth.uid == resource.data.userId` for every operation on a medicine, eliminating the need for `get()` calls to the parent `UserProfile` document. This enables atomic operations (e.g., creating a user and their first medicine in a batch) and robust rules.\n*   **MedicineSchedule:** Schedules are nested under medicines at `/users/{userId}/medicines/{medicineId}/schedules/{scheduleId}`. To achieve Authorization Independence, each `MedicineSchedule` document must include both the `medicineId` and, critically, the `userId` of the owning user. This denormalization allows rules to check `request.auth.uid == resource.data.userId` without needing to `get()` the parent `Medicine` document.\n*   **Dose:** Doses are stored in a top-level subcollection `/users/{userId}/doses/{doseId}` for easier querying of all doses for a user. Each `Dose` document explicitly includes the `medicineId` it belongs to and the `userId` of the owning user. This is crucial for Authorization Independence, enabling security rules to directly verify `request.auth.uid == resource.data.userId` without performing `get()` operations on parent `Medicine` or `MedicineSchedule` documents. This allows for efficient `list` operations on a user's doses.\n*   **DoseLog:** Dose logs are stored in a top-level subcollection `/users/{userId}/doseLogs/{doseLogId}`. Each `DoseLog` document includes `userId`, ensuring direct authorization checks (`request.auth.uid == resource.data.userId`) without `get()` calls.\n\n**QAPs (Rules are not Filters):**\n*   By embedding `userId` in every document that belongs to a user (Medicine, MedicineSchedule, Dose, DoseLog) and organizing data under `/users/{userId}/...`, `list` operations become inherently secure and efficient. A query like `db.collection('users/{userId}/medicines').where('userId', '==', request.auth.uid)` will match the security rules `allow list: if request.auth.uid == userId && resource.data.userId == request.auth.uid;`. This structure guarantees that users can only list their own data and prevents accidental exposure or performance issues arising from rules acting as filters.\n\nThis design leverages structural segregation to ensure all documents within a given subcollection (e.g., `/users/{userId}/medicines`) share the same security posture, making rules concise and easy to audit. The use of descriptive wildcards (`{userId}`, `{medicineId}`) and consistent authorization fields (`userId`) further enhances clarity and debuggability."
   }
 }

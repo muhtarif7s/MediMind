@@ -1,8 +1,15 @@
-
 "use client";
 
-import { useMemo, useEffect } from 'react';
-import { Patient, Appointment, ClinicProfile, AppointmentStatus, Medication, DoseLog, DoseStatus } from './types';
+import { useEffect } from 'react';
+import {
+  Patient,
+  Appointment,
+  ClinicProfile,
+  AppointmentStatus,
+  Medication,
+  DoseLog,
+  DoseStatus
+} from './types';
 import {
   useUser,
   useFirestore,
@@ -14,7 +21,14 @@ import {
   setDocumentNonBlocking,
   deleteDocumentNonBlocking
 } from '@/firebase';
-import { collection, doc, query, orderBy, where, collectionGroup, addDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  query,
+  orderBy,
+  where,
+  collectionGroup
+} from 'firebase/firestore';
 import { translations } from './translations';
 
 export function useClinic() {
@@ -23,46 +37,50 @@ export function useClinic() {
 
   const shouldFetch = !!user && !isUserLoading;
 
-  // 1. Clinic/User Profile
+  // 1. User Profile
   const clinicRef = useMemoFirebase(() => {
-    return shouldFetch ? doc(db, 'clinics', user.uid) : null;
+    return shouldFetch ? doc(db, 'users', user.uid) : null;
   }, [db, user, shouldFetch]);
 
   const { data: clinicData, isLoading: isClinicLoading } = useDoc<ClinicProfile>(clinicRef);
 
   useEffect(() => {
     if (shouldFetch && clinicRef && !isClinicLoading && !clinicData) {
-      setDocumentNonBlocking(clinicRef, {
-        id: user.uid,
-        name: user.displayName || 'عيادة الأسنان',
-        language: 'ar',
-        theme: 'light',
-        notificationsEnabled: true
-      }, { merge: true });
+      setDocumentNonBlocking(
+        clinicRef,
+        {
+          id: user.uid,
+          name: user.displayName || 'عيادة الأسنان',
+          language: 'ar',
+          theme: 'light',
+          notificationsEnabled: true
+        },
+        { merge: true }
+      );
     }
   }, [shouldFetch, clinicRef, isClinicLoading, clinicData, user]);
 
-  // 2. Clinic Patients
+  // 2. User Patients
   const patientsQuery = useMemoFirebase(() => {
     return shouldFetch
-      ? query(collection(db, 'clinics', user.uid, 'patients'), orderBy('name'))
+      ? query(collection(db, 'users', user.uid, 'patients'), orderBy('name'))
       : null;
   }, [db, user, shouldFetch]);
 
   const { data: patientsData, isLoading: isPatientsLoading } = useCollection<Patient>(patientsQuery);
   const patients = patientsData || [];
 
-  // 3. Clinic Appointments
+  // 3. User Appointments
   const appointmentsQuery = useMemoFirebase(() => {
     return shouldFetch
-      ? query(collection(db, 'clinics', user.uid, 'appointments'), orderBy('dateTime'))
+      ? query(collection(db, 'users', user.uid, 'appointments'), orderBy('dateTime'))
       : null;
   }, [db, user, shouldFetch]);
 
   const { data: appointmentsData, isLoading: isAppointmentsLoading } = useCollection<Appointment>(appointmentsQuery);
   const appointments = appointmentsData || [];
 
-  // 4. Personal Medications
+  // 4. User Medications
   const medicationsQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(collection(db, 'users', user.uid, 'medicines'), orderBy('name'))
@@ -72,68 +90,19 @@ export function useClinic() {
   const { data: medicationsData, isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
   const medications = medicationsData || [];
 
-  // 5. Medication Dose History (Collection Group)
+  // 5. Medication Dose History
   const historyQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(
-        collectionGroup(db, 'doseLogs'),
-        where('userId', '==', user.uid),
-        orderBy('recordedAt', 'desc')
-      )
+          collectionGroup(db, 'doseLogs'),
+          where('userId', '==', user.uid),
+          orderBy('recordedAt', 'desc')
+        )
       : null;
   }, [db, user, shouldFetch]);
 
   const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseLog>(historyQuery);
   const history = historyData || [];
-
-  // Automated Data Bootstrapping
-  useEffect(() => {
-    const bootstrapData = async () => {
-      if (!shouldFetch || isMedicationsLoading || isHistoryLoading) return;
-
-      if (medications.length === 0 && history.length === 0) {
-        try {
-          const defaultMeds = [
-            { name: "Paracetamol", dosageAmount: 1, dosageUnit: "pill", times: ["08:00"] },
-            { name: "Vitamin C", dosageAmount: 1, dosageUnit: "pill", times: ["09:00"] },
-            { name: "Ibuprofen", dosageAmount: 1, dosageUnit: "pill", times: ["20:00"] },
-          ];
-
-          for (const med of defaultMeds) {
-            const medRef = collection(db, 'users', user.uid, 'medicines');
-            const newMedDoc = await addDoc(medRef, {
-              userId: user.uid,
-              name: med.name,
-              dosageAmount: med.dosageAmount,
-              dosageUnit: med.dosageUnit,
-              times: med.times,
-              startDate: new Date().toISOString(),
-              totalQuantity: 30,
-              remainingQuantity: 30,
-              refillThreshold: 5,
-              frequency: "daily"
-            });
-
-            // إنشاء doseLog لكل دواء
-            const logRef = collection(db, 'users', user.uid, 'medicines', newMedDoc.id, 'doseLogs');
-            await addDoc(logRef, {
-              userId: user.uid,
-              medicationId: newMedDoc.id,
-              name: med.name,
-              status: "pending",
-              takenAt: serverTimestamp(),
-              recordedAt: new Date().toISOString(),
-              scheduledTime: new Date().toISOString()
-            });
-          }
-        } catch (error) {
-          console.error("Failed to bootstrap sample data:", error);
-        }
-      }
-    };
-
-    bootstrapData();
-  }, [shouldFetch, medications, history, isMedicationsLoading, isHistoryLoading, user?.uid, db]);
 
   const t = (key: string) => {
     const arTranslations = translations.ar as Record<string, string>;
@@ -142,7 +111,7 @@ export function useClinic() {
 
   const addPatient = (patient: Omit<Patient, 'id' | 'clinicId' | 'createdAt'>) => {
     if (!shouldFetch) return;
-    addDocumentNonBlocking(collection(db, 'clinics', user.uid, 'patients'), {
+    addDocumentNonBlocking(collection(db, 'users', user.uid, 'patients'), {
       ...patient,
       clinicId: user.uid,
       createdAt: new Date().toISOString()
@@ -151,7 +120,7 @@ export function useClinic() {
 
   const addAppointment = (app: Omit<Appointment, 'id' | 'clinicId' | 'status'>) => {
     if (!shouldFetch) return;
-    addDocumentNonBlocking(collection(db, 'clinics', user.uid, 'appointments'), {
+    addDocumentNonBlocking(collection(db, 'users', user.uid, 'appointments'), {
       ...app,
       clinicId: user.uid,
       status: 'pending'
@@ -160,7 +129,7 @@ export function useClinic() {
 
   const updateAppointmentStatus = (id: string, status: AppointmentStatus) => {
     if (!shouldFetch) return;
-    const docRef = doc(db, 'clinics', user.uid, 'appointments', id);
+    const docRef = doc(db, 'users', user.uid, 'appointments', id);
     updateDocumentNonBlocking(docRef, { status });
   };
 
@@ -168,6 +137,7 @@ export function useClinic() {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
     const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+
     return (appointments || []).filter(a => {
       const d = new Date(a.dateTime);
       return d >= start && d <= end;
@@ -194,7 +164,9 @@ export function useClinic() {
 
   const logDose = (medId: string, scheduledTime: string, status: DoseStatus) => {
     if (!shouldFetch) return;
+
     const logRef = collection(db, 'users', user.uid, 'medicines', medId, 'doseLogs');
+
     addDocumentNonBlocking(logRef, {
       userId: user.uid,
       medicationId: medId,
@@ -207,17 +179,31 @@ export function useClinic() {
     if (status === 'taken') {
       const med = medications.find(m => m.id === medId);
       if (med) {
-        updateMedication(medId, { remainingQuantity: Math.max(0, med.remainingQuantity - med.dosageAmount) });
+        updateMedication(medId, {
+          remainingQuantity: Math.max(0, med.remainingQuantity - med.dosageAmount)
+        });
       }
     }
   };
 
-  const isLoaded = !isUserLoading && (!user || (!isClinicLoading && !isPatientsLoading && !isAppointmentsLoading && !isMedicationsLoading && !isHistoryLoading));
+  const isLoaded =
+    !isUserLoading &&
+    (!user ||
+      (!isClinicLoading &&
+        !isPatientsLoading &&
+        !isAppointmentsLoading &&
+        !isMedicationsLoading &&
+        !isHistoryLoading));
 
   return {
     user,
     isUserLoading,
-    profile: clinicData || { name: 'دكتور', language: 'ar', theme: 'light', notificationsEnabled: true },
+    profile: clinicData || {
+      name: 'دكتور',
+      language: 'ar',
+      theme: 'light',
+      notificationsEnabled: true
+    },
     clinic: clinicData,
     patients,
     appointments,
@@ -244,7 +230,10 @@ export function useClinic() {
       (medications || []).forEach(med => {
         (med.times || []).forEach(time => {
           const scheduledTime = `${todayStr}T${time}:00`;
-          const log = (history || []).find(h => h.medicationId === med.id && h.scheduledTime === scheduledTime);
+          const log = (history || []).find(
+            h => h.medicationId === med.id && h.scheduledTime === scheduledTime
+          );
+
           todayDoses.push({
             med,
             time: scheduledTime,
