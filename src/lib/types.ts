@@ -56,7 +56,9 @@ export interface DoseLog {
   id: string;
   userId: string;
   medicationId: string;
+  name: string;
+  status: DoseStatus;
   scheduledTime: string;
   recordedAt: string;
-  status: DoseStatus;
+  takenAt?: string;
 }

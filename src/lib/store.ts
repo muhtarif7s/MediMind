@@ -116,12 +116,15 @@ export function useClinic() {
   const { data: medicationsData, isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
   const medications = medicationsData || [];
 
-  // Auto-bootstrap sample medication
+  // Auto-bootstrap sample medication and dose logs
   useEffect(() => {
     if (shouldFetch && !isMedicationsLoading && medications.length === 0) {
-      addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicines'), {
+      const medName = 'بندول (مثال)';
+      const medicinesCol = collection(db, 'users', user.uid, 'medicines');
+      
+      const medData = {
         userId: user.uid,
-        name: 'بندول (مثال)',
+        name: medName,
         dosageAmount: 1,
         dosageUnit: 'pill',
         times: ['08:00', '20:00'],
@@ -130,6 +133,21 @@ export function useClinic() {
         remainingQuantity: 30,
         refillThreshold: 5,
         frequency: 'daily'
+      };
+
+      addDocumentNonBlocking(medicinesCol, medData).then((docRef) => {
+        if (docRef) {
+          const now = new Date().toISOString();
+          addDocumentNonBlocking(collection(docRef, 'doseLogs'), {
+            userId: user.uid,
+            medicationId: docRef.id,
+            name: medName,
+            status: 'pending',
+            scheduledTime: now,
+            recordedAt: now,
+            takenAt: now
+          });
+        }
       });
     }
   }, [shouldFetch, isMedicationsLoading, medications.length, user, db]);
