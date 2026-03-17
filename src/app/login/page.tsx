@@ -45,7 +45,7 @@ export default function LoginPage() {
           message = "Incorrect email or password. If you don't have an account, tap 'Create Account' below.";
         } else if (err.code === 'auth/email-already-in-use') {
           message = "This email is already registered. Please log in instead.";
-          setIsRegistering(false); // Auto-switch to login for better UX
+          setIsRegistering(false);
         } else if (err.code === 'auth/weak-password') {
           message = "Password must be at least 6 characters.";
         } else if (err.code === 'auth/invalid-email') {
@@ -66,7 +66,6 @@ export default function LoginPage() {
       initiateEmailSignIn(auth, email, password, callbacks);
     }
     
-    // Safety timeout to reset submitting state if no response
     setTimeout(() => setIsSubmitting(false), 15000);
   };
 
@@ -81,8 +80,8 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden">
       <ScrollArea className="flex-1">
-        <div className="p-6 flex flex-col items-center justify-center min-h-full py-12">
-          <div className="mb-10 flex flex-col items-center gap-3">
+        <div className="p-6 flex flex-col items-center justify-center min-h-full py-8">
+          <div className="mb-8 flex flex-col items-center gap-3">
             <div className="p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/30 animate-in zoom-in duration-500">
               <Pill className="h-10 w-10 text-primary-foreground" />
             </div>
@@ -93,7 +92,7 @@ export default function LoginPage() {
           </div>
 
           <Card className="w-full max-w-sm border-none shadow-none bg-transparent">
-            <CardHeader className="text-center px-0 pb-8">
+            <CardHeader className="text-center px-0 pb-6">
               <CardTitle className="text-2xl font-bold">
                 {isRegistering ? "Create Account" : "Welcome Back"}
               </CardTitle>
@@ -139,7 +138,7 @@ export default function LoginPage() {
                 <Button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="w-full h-14 rounded-2xl text-lg font-bold mt-6 shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
+                  className="w-full h-14 rounded-2xl text-lg font-bold mt-4 shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
                 >
                   {isSubmitting ? (
                     <Loader2 className="h-6 w-6 animate-spin" />
@@ -152,14 +151,14 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <div className="mt-8 flex flex-col items-center gap-4">
-                <div className="w-full flex items-center gap-2 py-4">
+              <div className="mt-6 flex flex-col items-center gap-4">
+                <div className="w-full flex items-center gap-2 py-2">
                   <div className="h-[1px] bg-border flex-1"></div>
                   <span className="text-[10px] uppercase font-bold text-muted-foreground/50">or</span>
                   <div className="h-[1px] bg-border flex-1"></div>
                 </div>
 
-                <div className="text-center space-y-3">
+                <div className="text-center space-y-3 w-full">
                   <p className="text-xs font-medium text-muted-foreground">
                     {isRegistering ? "Already have an account?" : "Need a new account?"}
                   </p>
@@ -167,10 +166,6 @@ export default function LoginPage() {
                     variant="outline" 
                     onClick={() => {
                       setIsRegistering(!isRegistering);
-                      toast({ 
-                        title: isRegistering ? "Switched to Login" : "Switched to Register", 
-                        duration: 1000 
-                      });
                     }}
                     disabled={isSubmitting}
                     className="w-full h-12 rounded-2xl border-primary/20 text-primary font-bold hover:bg-primary/5 px-6 flex items-center justify-center gap-2"
@@ -183,7 +178,7 @@ export default function LoginPage() {
             </CardContent>
           </Card>
           
-          <div className="mt-12 text-center">
+          <div className="mt-8 text-center">
             <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.2em]">
               MediMind Health Assistant • v1.2.1
             </p>
