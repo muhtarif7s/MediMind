@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { Metadata, Viewport } from 'next';
@@ -28,9 +27,9 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
   return (
     <main 
       dir={isRTL ? 'rtl' : 'ltr'} 
-      className="max-w-md mx-auto relative bg-background h-full shadow-xl overflow-hidden flex flex-col border-x"
+      className="max-w-md mx-auto relative bg-background min-h-full shadow-xl flex flex-col border-x"
     >
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1">
         {children}
       </div>
       {!isAuthPage && <NotificationManager />}
@@ -53,7 +52,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="font-body antialiased bg-background h-full overflow-hidden">
+      <body className="font-body antialiased bg-background h-full overflow-x-hidden">
         <FirebaseClientProvider>
           <AppWrapper>
             {children}

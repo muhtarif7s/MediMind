@@ -15,8 +15,7 @@ service cloud.firestore {
     // This allows query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{logId} {
       // For collection group queries, we authorize based on the userId field.
-      // We allow read (get/list) and write (update/delete) for documents owned by the user.
-      allow read, write: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow read, update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
       
       // Allow creation if the new document's userId matches the authenticated user.
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
