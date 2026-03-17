@@ -19,10 +19,10 @@ export function NavBar() {
     { icon: Settings, label: t('settings'), href: '/settings' },
   ];
 
-  if (pathname === '/login') return null;
+  if (pathname === '/login' || pathname === '/welcome') return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card/90 dark:bg-card/95 backdrop-blur-xl border-t h-[calc(4.5rem+env(safe-area-inset-bottom))] flex items-start justify-around px-2 z-50 pt-2 pb-safe-area-inset-bottom transition-all shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
+    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card/90 dark:bg-card/95 backdrop-blur-xl border-t h-[calc(4.5rem+env(safe-area-inset-bottom))] grid grid-cols-5 items-start px-2 z-50 pt-2 pb-safe-area-inset-bottom transition-all shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
       {navItems.map((item) => {
         const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
         const Icon = item.icon;
@@ -32,7 +32,7 @@ export function NavBar() {
             key={item.href} 
             href={item.href}
             className={cn(
-              "flex flex-col items-center gap-1 transition-all flex-1 py-1 active:scale-90",
+              "flex flex-col items-center gap-1 transition-all py-1 active:scale-90",
               isActive ? "text-primary" : "text-muted-foreground"
             )}
           >
