@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMediMind } from '@/lib/store';
@@ -9,14 +8,13 @@ import { MedicationList } from '@/components/medications/MedicationList';
 import { InventoryAlert } from '@/components/dashboard/InventoryAlert';
 import { NavBar } from '@/components/navigation/NavBar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, LogIn } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function Home() {
-  const { user, isUserLoading } = useUser();
-  const { medications = [], profile, logDose, getTodayDoses, isLoaded, t } = useMediMind();
+  const { user, isUserLoading, medications = [], profile, logDose, getTodayDoses, isLoaded, t } = useMediMind();
   const router = useRouter();
 
   useEffect(() => {
@@ -25,9 +23,29 @@ export default function Home() {
     }
   }, [user, isUserLoading, router]);
 
-  if (isUserLoading || !isLoaded || !user) {
+  if (isUserLoading) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-6 space-y-4">
+      <div className="h-screen flex flex-col items-center justify-center p-6 space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm font-bold text-muted-foreground">Initializing User...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center p-6 space-y-4">
+        <p className="text-sm font-bold text-muted-foreground">Please log in to continue</p>
+        <Button onClick={() => router.push('/login')}>
+          <LogIn className="h-4 w-4 mr-2" /> Sign In
+        </Button>
+      </div>
+    );
+  }
+
+  if (!isLoaded) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center p-6 space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-sm font-bold text-muted-foreground">{t('syncing')}</p>
       </div>

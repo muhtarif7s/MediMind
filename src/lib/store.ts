@@ -17,20 +17,23 @@ import { collection, doc, query, where, collectionGroup } from 'firebase/firesto
 import { translations } from './translations';
 
 export function useMediMind() {
-  const { user } = useUser();
+  const { user, isUserLoading: isAuthLoading } = useUser();
   const db = useFirestore();
+
+  // Guard: No Firestore operations until auth is ready and user exists
+  const shouldFetch = !!user && !isAuthLoading;
 
   // 1. Fetch User Profile from Firestore
   const profileRef = useMemoFirebase(() => {
-    if (!db || !user) return null;
+    if (!db || !shouldFetch) return null;
     return doc(db, 'users', user.uid);
-  }, [db, user]);
+  }, [db, user, shouldFetch]);
 
   const { data: profileData, isLoading: isProfileLoading } = useDoc<UserProfile>(profileRef);
 
   // Initialize profile if it doesn't exist
   useEffect(() => {
-    if (user && profileRef && !isProfileLoading && !profileData) {
+    if (shouldFetch && profileRef && !isProfileLoading && !profileData) {
       setDocumentNonBlocking(profileRef, {
         id: user.uid,
         name: user.displayName || 'User',
@@ -39,7 +42,7 @@ export function useMediMind() {
         notificationsEnabled: true
       }, { merge: true });
     }
-  }, [user, profileRef, isProfileLoading, profileData]);
+  }, [shouldFetch, profileRef, isProfileLoading, profileData, user]);
 
   const profile = useMemo(() => ({
     name: profileData?.name || 'User',
@@ -56,34 +59,33 @@ export function useMediMind() {
   };
 
   const setProfile = (updates: Partial<UserProfile>) => {
-    if (!user || !db || !profileRef) return;
+    if (!shouldFetch || !profileRef) return;
     setDocumentNonBlocking(profileRef, updates, { merge: true });
   };
 
   // 2. Fetch Medications
   const medsQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
+    if (!db || !shouldFetch) return null;
     return query(collection(db, 'users', user.uid, 'medicines'), where('isActive', '==', true));
-  }, [db, user]);
+  }, [db, user, shouldFetch]);
   
   const { data: medicationsData, isLoading: isMedsLoading } = useCollection<Medication>(medsQuery);
   const medications = medicationsData || [];
 
   // 3. Fetch Dose History
   const historyQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    // Collection group query requires specific security rules and an index (managed by Studio)
-    // The userId filter is critical for security rule validation.
+    if (!db || !shouldFetch) return null;
     return query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid));
-  }, [db, user]);
+  }, [db, user, shouldFetch]);
 
   const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseHistory>(historyQuery);
   const history = historyData || [];
 
-  const isLoaded = !isMedsLoading && !isProfileLoading && !isHistoryLoading && !!user;
+  // Robust loading state: strictly wait for auth, then wait for data if user exists
+  const isLoaded = !isAuthLoading && (!user || (!isProfileLoading && !isMedsLoading && !isHistoryLoading));
 
   const addMedication = (med: Omit<Medication, 'id'>) => {
-    if (!user || !db) return;
+    if (!shouldFetch || !db) return;
     const colRef = collection(db, 'users', user.uid, 'medicines');
     addDocumentNonBlocking(colRef, {
       ...med,
@@ -93,19 +95,19 @@ export function useMediMind() {
   };
 
   const updateMedication = (id: string, updates: Partial<Medication>) => {
-    if (!user || !db) return;
+    if (!shouldFetch || !db) return;
     const docRef = doc(db, 'users', user.uid, 'medicines', id);
     updateDocumentNonBlocking(docRef, updates);
   };
 
   const deleteMedication = (id: string) => {
-    if (!user || !db) return;
+    if (!shouldFetch || !db) return;
     const docRef = doc(db, 'users', user.uid, 'medicines', id);
     updateDocumentNonBlocking(docRef, { isActive: false });
   };
 
   const logDose = (medicationId: string, scheduledTime: string, status: DoseStatus) => {
-    if (!user || !db) return;
+    if (!shouldFetch || !db) return;
     const colRef = collection(db, 'users', user.uid, 'medicines', medicationId, 'doseLogs');
     const logData = {
       medicationId,
@@ -128,6 +130,8 @@ export function useMediMind() {
   };
 
   const getTodayDoses = () => {
+    if (!isLoaded || !user) return [];
+    
     const today = new Date();
     const todayStart = startOfDay(today);
     const todayEnd = endOfDay(today);
@@ -146,7 +150,6 @@ export function useMediMind() {
         const doseTime = new Date(today);
         doseTime.setHours(hours, minutes, 0, 0);
 
-        // Check if doseTime is after the medication start date
         if (isAfter(doseTime, medStart) && (!med.endDate || isBefore(doseTime, medEnd))) {
           const log = history.find(h => 
             h.medicationId === med.id && 
@@ -170,6 +173,8 @@ export function useMediMind() {
   };
 
   return {
+    user,
+    isUserLoading: isAuthLoading,
     medications,
     history,
     profile,

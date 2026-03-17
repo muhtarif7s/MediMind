@@ -1,17 +1,23 @@
-
 "use client";
 
 import { useMediMind } from '@/lib/store';
 import { NavBar } from '@/components/navigation/NavBar';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import { CheckCircle2, XCircle, Clock, Activity } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { CheckCircle2, XCircle, Activity, Loader2 } from 'lucide-react';
 
 export default function HistoryPage() {
-  const { history, isLoaded } = useMediMind();
+  const { history, isLoaded, isUserLoading } = useMediMind();
 
-  if (!isLoaded) return null;
+  if (isUserLoading || !isLoaded) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center p-6 space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm font-bold text-muted-foreground">Loading History...</p>
+      </div>
+    );
+  }
 
   const takenCount = history.filter(h => h.status === 'taken').length;
   const missedCount = history.filter(h => h.status === 'missed').length;
@@ -24,7 +30,6 @@ export default function HistoryPage() {
     { name: 'Skipped', value: skippedCount, color: 'hsl(var(--muted-foreground))' },
   ];
 
-  // Adherence Percentage
   const adherence = totalCompleted > 0 ? Math.round((takenCount / totalCompleted) * 100) : 0;
 
   return (

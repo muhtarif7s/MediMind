@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMediMind } from '@/lib/store';
@@ -6,16 +5,23 @@ import { NavBar } from '@/components/navigation/NavBar';
 import { MedicationList } from '@/components/medications/MedicationList';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useState } from 'react';
 
 export default function MedicationsPage() {
-  const { medications = [], isLoaded } = useMediMind();
+  const { medications = [], isLoaded, isUserLoading } = useMediMind();
   const [search, setSearch] = useState('');
 
-  if (!isLoaded) return null;
+  if (isUserLoading || !isLoaded) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center p-6 space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm font-bold text-muted-foreground">Loading Medications...</p>
+      </div>
+    );
+  }
 
   const filtered = (medications || []).filter(m => 
     m.name.toLowerCase().includes(search.toLowerCase())
