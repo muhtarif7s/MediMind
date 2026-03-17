@@ -15,7 +15,9 @@ import {
   Info, 
   Smartphone, 
   Download,
-  LogOut 
+  LogOut,
+  Database,
+  Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -26,14 +28,25 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function SettingsPage() {
-  const { profile, setProfile, isLoaded, t } = useMediMind();
+  const { profile, setProfile, isLoaded, t, clearPatients, clearAppointments } = useMediMind();
   const { toast } = useToast();
   const auth = useAuth();
   const router = useRouter();
   const [editingName, setEditingName] = useState(false);
-  const [newName, setNewName] = useState(profile.name);
+  const [newName, setNewName] = useState(profile?.name || '');
 
   if (!isLoaded) return null;
 
@@ -55,6 +68,16 @@ export default function SettingsPage() {
     router.push('/login');
   };
 
+  const handleResetData = (type: 'patients' | 'appointments') => {
+    if (type === 'patients') clearPatients();
+    else clearAppointments();
+    
+    toast({
+      title: t('resetSuccess'),
+      description: t('resetSuccess'),
+    });
+  };
+
   return (
     <div className="flex flex-col h-screen pb-20">
       <header className="p-6 bg-background">
@@ -65,7 +88,7 @@ export default function SettingsPage() {
         <div className="flex flex-col items-center py-6 bg-primary/5 rounded-3xl mb-4">
           <Avatar className="h-24 w-24 border-4 border-background mb-4">
             <AvatarImage src="https://picsum.photos/seed/user1/200/200" />
-            <AvatarFallback>{profile.name[0]}</AvatarFallback>
+            <AvatarFallback>{profile?.name ? profile.name[0] : 'D'}</AvatarFallback>
           </Avatar>
           
           {editingName ? (
@@ -83,13 +106,13 @@ export default function SettingsPage() {
             </div>
           ) : (
             <>
-              <h2 className="text-xl font-bold">{profile.name}</h2>
+              <h2 className="text-xl font-bold">{profile?.name}</h2>
               <p className="text-xs text-muted-foreground">{t('premiumMember')}</p>
               <Button 
                 variant="ghost" 
                 className="mt-2 text-primary text-xs font-bold h-8"
                 onClick={() => {
-                  setNewName(profile.name);
+                  setNewName(profile?.name || '');
                   setEditingName(true);
                 }}
               >
@@ -100,26 +123,62 @@ export default function SettingsPage() {
         </div>
 
         <section className="space-y-4">
-          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('installGuide')}</h3>
-          <Card className="border-none shadow-sm bg-accent/5">
-            <CardContent className="p-4">
-              <Accordion type="single" collapsible>
-                <AccordionItem value="install-guide" className="border-none">
-                  <AccordionTrigger className="py-0 hover:no-underline">
+          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('dataManagement')}</h3>
+          <Card className="border-none shadow-sm bg-rose-50/50">
+            <CardContent className="p-0 divide-y divide-rose-100/50">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-rose-50 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-accent/10 rounded-lg"><Smartphone className="h-4 w-4 text-accent" /></div>
-                      <div className="text-start">
-                        <p className="text-sm font-medium">{t('installGuide')}</p>
-                        <p className="text-[10px] text-muted-foreground">{t('installSubtitle')}</p>
-                      </div>
+                      <div className="p-2 bg-rose-100 rounded-lg text-rose-600"><Trash2 className="h-4 w-4" /></div>
+                      <span className="text-sm font-medium text-rose-700">{t('clearPatients')}</span>
                     </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-4 text-xs text-muted-foreground space-y-2 text-start">
-                    <p><strong>iOS:</strong> Tap the <Download className="inline h-3 w-3" /> Share icon and select "Add to Home Screen".</p>
-                    <p><strong>Android:</strong> Tap the menu icon (three dots) and select "Install app" or "Add to Home screen".</p>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+                  </div>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-[2rem]" dir="rtl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-right">{t('clearPatients')}</AlertDialogTitle>
+                    <AlertDialogDescription className="text-right">
+                      {t('confirmClear')}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex-row-reverse gap-2">
+                    <AlertDialogAction onClick={() => handleResetData('patients')} className="bg-rose-600 hover:bg-rose-700 rounded-xl flex-1">
+                      {t('save')}
+                    </AlertDialogAction>
+                    <AlertDialogCancel className="rounded-xl flex-1 mt-0">
+                      {t('cancel')}
+                    </AlertDialogCancel>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-rose-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-rose-100 rounded-lg text-rose-600"><Database className="h-4 w-4" /></div>
+                      <span className="text-sm font-medium text-rose-700">{t('clearAppointments')}</span>
+                    </div>
+                  </div>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-[2rem]" dir="rtl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-right">{t('clearAppointments')}</AlertDialogTitle>
+                    <AlertDialogDescription className="text-right">
+                      {t('confirmClear')}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex-row-reverse gap-2">
+                    <AlertDialogAction onClick={() => handleResetData('appointments')} className="bg-rose-600 hover:bg-rose-700 rounded-xl flex-1">
+                      {t('save')}
+                    </AlertDialogAction>
+                    <AlertDialogCancel className="rounded-xl flex-1 mt-0">
+                      {t('cancel')}
+                    </AlertDialogCancel>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </CardContent>
           </Card>
         </section>
@@ -135,7 +194,7 @@ export default function SettingsPage() {
                 </div>
                 <Switch 
                   id="notifications" 
-                  checked={profile.notificationsEnabled} 
+                  checked={profile?.notificationsEnabled} 
                   onCheckedChange={(val) => setProfile({ notificationsEnabled: val })} 
                 />
               </div>
@@ -146,7 +205,7 @@ export default function SettingsPage() {
                 </div>
                 <Switch 
                   id="dark-mode" 
-                  checked={profile.theme === 'dark'} 
+                  checked={profile?.theme === 'dark'} 
                   onCheckedChange={(val) => {
                     setProfile({ theme: val ? 'dark' : 'light' });
                     document.documentElement.classList.toggle('dark', val);
@@ -158,7 +217,7 @@ export default function SettingsPage() {
                   <div className="p-2 bg-orange-100 rounded-lg text-orange-600"><Globe className="h-4 w-4" /></div>
                   <span className="text-sm font-medium">{t('language')}</span>
                 </div>
-                <Select value={profile.language} onValueChange={handleLanguageChange}>
+                <Select value={profile?.language} onValueChange={handleLanguageChange}>
                   <SelectTrigger className="w-[100px] h-8 text-xs border-none bg-muted/50 rounded-lg">
                     <SelectValue />
                   </SelectTrigger>

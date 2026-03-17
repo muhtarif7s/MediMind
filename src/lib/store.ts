@@ -21,6 +21,7 @@ import {
   updateDocumentNonBlocking,
   addDocumentNonBlocking,
   setDocumentNonBlocking,
+  deleteDocumentNonBlocking,
 } from '@/firebase';
 import {
   collection,
@@ -126,6 +127,22 @@ export function useClinic() {
     updateDocumentNonBlocking(docRef, { status });
   };
 
+  const clearPatients = () => {
+    if (!shouldFetch) return;
+    patients.forEach(p => {
+      const docRef = doc(db, 'clinics', user.uid, 'patients', p.id);
+      deleteDocumentNonBlocking(docRef);
+    });
+  };
+
+  const clearAppointments = () => {
+    if (!shouldFetch) return;
+    appointments.forEach(a => {
+      const docRef = doc(db, 'clinics', user.uid, 'appointments', a.id);
+      deleteDocumentNonBlocking(docRef);
+    });
+  };
+
   const getTodayAppointments = () => {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
@@ -167,6 +184,8 @@ export function useClinic() {
     addPatient,
     addAppointment,
     updateAppointmentStatus,
+    clearPatients,
+    clearAppointments,
     getTodayAppointments,
     setProfile: (updates: Partial<ClinicProfile>) => {
       if (!clinicRef) return;
@@ -187,7 +206,6 @@ export function useClinic() {
     deleteMedication: (id: string) => {
       if (!shouldFetch) return;
       const docRef = doc(db, 'users', user.uid, 'medicines', id);
-      // Note: In production you might want to delete doseLogs subcollection too
       updateDocumentNonBlocking(docRef, { deleted: true }); 
     },
     logDose: (medId: string, scheduledTime: string, status: DoseStatus) => {

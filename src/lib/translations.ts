@@ -56,6 +56,11 @@ export const translations = {
     monthlyGrowth: 'النمو الشهري',
     last7Days: 'آخر ٧ أيام',
     activePatients: 'المرضى النشطين',
-    viewAll: 'عرض الكل'
+    viewAll: 'عرض الكل',
+    dataManagement: 'إدارة البيانات',
+    clearPatients: 'مسح جميع المرضى',
+    clearAppointments: 'مسح جميع المواعيد',
+    confirmClear: 'هل أنت متأكد؟ سيتم حذف جميع البيانات بشكل نهائي.',
+    resetSuccess: 'تم مسح البيانات بنجاح'
   }
 };
