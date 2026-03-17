@@ -22,16 +22,17 @@ import { translations } from './translations';
  * Implements defensive data fetching to prevent Firestore permission errors.
  */
 export function useMediMind() {
-  const { user, isUserLoading: isAuthLoading } = useUser();
+  const { user, isUserLoading } = useUser();
   const db = useFirestore();
 
-  // Guard: No Firestore operations until auth is ready and user exists
-  const shouldFetch = !!user && !isAuthLoading;
+  /**
+   * Defensive Auth Guard: Ensure no Firestore operations run until auth is ready.
+   */
+  const shouldFetch = !!user && !isUserLoading;
 
   // 1. Fetch User Profile from Firestore
   const profileRef = useMemoFirebase(() => {
-    if (!db || !shouldFetch) return null;
-    return doc(db, 'users', user.uid);
+    return shouldFetch ? doc(db, 'users', user.uid) : null;
   }, [db, user, shouldFetch]);
 
   const { data: profileData, isLoading: isProfileLoading } = useDoc<UserProfile>(profileRef);
@@ -70,11 +71,9 @@ export function useMediMind() {
 
   // 2. Fetch Medications (Hierarchical)
   const medsQuery = useMemoFirebase(() => {
-    if (!db || !shouldFetch) return null;
-    return query(
-      collection(db, 'users', user.uid, 'medicines'), 
-      where('isActive', '==', true)
-    );
+    return shouldFetch 
+      ? query(collection(db, 'users', user.uid, 'medicines'), where('isActive', '==', true))
+      : null;
   }, [db, user, shouldFetch]);
   
   const { data: medicationsData, isLoading: isMedsLoading } = useCollection<Medication>(medsQuery);
@@ -82,12 +81,10 @@ export function useMediMind() {
 
   // 3. Fetch Dose History (Collection Group)
   const historyQuery = useMemoFirebase(() => {
-    if (!db || !shouldFetch) return null;
     // CRITICAL: Collection Group queries MUST filter by userId for security rules to pass
-    return query(
-      collectionGroup(db, 'doseLogs'), 
-      where('userId', '==', user.uid)
-    );
+    return shouldFetch 
+      ? query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid))
+      : null;
   }, [db, user, shouldFetch]);
 
   const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseHistory>(historyQuery);
@@ -98,7 +95,7 @@ export function useMediMind() {
    * - strictly wait for auth loading to complete
    * - if user exists, wait for all critical data streams to initialize
    */
-  const isLoaded = !isAuthLoading && (!user || (
+  const isLoaded = !isUserLoading && (!user || (
     !isProfileLoading && 
     !isMedsLoading && 
     !isHistoryLoading
@@ -194,7 +191,7 @@ export function useMediMind() {
 
   return {
     user,
-    isUserLoading: isAuthLoading,
+    isUserLoading,
     medications,
     history,
     profile,

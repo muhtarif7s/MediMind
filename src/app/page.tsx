@@ -27,7 +27,7 @@ export default function Home() {
     return (
       <div className="h-screen flex flex-col items-center justify-center p-6 space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm font-bold text-muted-foreground">Initializing User...</p>
+        <p className="text-sm font-bold text-muted-foreground">Loading user...</p>
       </div>
     );
   }
@@ -35,7 +35,7 @@ export default function Home() {
   if (!user) {
     return (
       <div className="h-screen flex flex-col items-center justify-center p-6 space-y-4">
-        <p className="text-sm font-bold text-muted-foreground">Please log in to continue</p>
+        <p className="text-sm font-bold text-muted-foreground">Please login first</p>
         <Button onClick={() => router.push('/login')}>
           <LogIn className="h-4 w-4 mr-2" /> Sign In
         </Button>

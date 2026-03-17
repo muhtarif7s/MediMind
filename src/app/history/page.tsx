@@ -5,12 +5,35 @@ import { NavBar } from '@/components/navigation/NavBar';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { CheckCircle2, XCircle, Activity, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, Activity, Loader2, LogIn } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 export default function HistoryPage() {
-  const { history, isLoaded, isUserLoading } = useMediMind();
+  const { user, history, isLoaded, isUserLoading } = useMediMind();
+  const router = useRouter();
 
-  if (isUserLoading || !isLoaded) {
+  if (isUserLoading) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center p-6 space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm font-bold text-muted-foreground">Loading user...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center p-6 space-y-4">
+        <p className="text-sm font-bold text-muted-foreground">Please login first</p>
+        <Button onClick={() => router.push('/login')}>
+          <LogIn className="h-4 w-4 mr-2" /> Sign In
+        </Button>
+      </div>
+    );
+  }
+
+  if (!isLoaded) {
     return (
       <div className="h-screen flex flex-col items-center justify-center p-6 space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
