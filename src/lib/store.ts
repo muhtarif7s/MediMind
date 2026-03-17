@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useEffect } from 'react';
@@ -13,7 +14,7 @@ import {
   setDocumentNonBlocking,
   deleteDocumentNonBlocking
 } from '@/firebase';
-import { collection, doc, query, orderBy, where, collectionGroup } from 'firebase/firestore';
+import { collection, doc, query, orderBy, where, collectionGroup, addDoc } from 'firebase/firestore';
 import { translations } from './translations';
 import { startOfDay, endOfDay } from 'date-fns';
 
@@ -69,7 +70,7 @@ export function useClinic() {
 
   const { data: medications = [], isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
 
-  // 5. Medication Dose History
+  // 5. Medication Dose History (Collection Group)
   const historyQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid), orderBy('recordedAt', 'desc'))
@@ -77,6 +78,46 @@ export function useClinic() {
   }, [db, user, shouldFetch]);
 
   const { data: history = [], isLoading: isHistoryLoading } = useCollection<DoseLog>(historyQuery);
+
+  // Automated Data Bootstrapping: Create sample medication and doseLog if none exist
+  useEffect(() => {
+    const bootstrapData = async () => {
+      if (shouldFetch && medications && medications.length === 0 && history && history.length === 0 && !isMedicationsLoading && !isHistoryLoading) {
+        try {
+          // 1. Create Sample Medication
+          const medRef = collection(db, 'users', user.uid, 'medicines');
+          const newMed = await addDoc(medRef, {
+            userId: user.uid,
+            name: "Sample Medication",
+            dosageAmount: 1,
+            dosageUnit: "pill",
+            times: ["08:00"],
+            startDate: new Date().toISOString(),
+            totalQuantity: 30,
+            remainingQuantity: 30,
+            refillThreshold: 5,
+            frequency: "daily"
+          });
+
+          // 2. Create Sample DoseLog in subcollection
+          const logRef = collection(db, 'users', user.uid, 'medicines', newMed.id, 'doseLogs');
+          await addDoc(logRef, {
+            userId: user.uid,
+            medicationId: newMed.id,
+            name: "Sample Medication",
+            status: "pending",
+            takenAt: new Date().toISOString(),
+            scheduledTime: new Date().toISOString(),
+            recordedAt: new Date().toISOString()
+          });
+        } catch (error) {
+          console.error("Failed to bootstrap sample data:", error);
+        }
+      }
+    };
+
+    bootstrapData();
+  }, [shouldFetch, medications, history, isMedicationsLoading, isHistoryLoading, user?.uid, db]);
 
   const t = (key: keyof typeof translations.ar) => {
     return translations.ar[key] || key;
@@ -179,6 +220,7 @@ export function useClinic() {
        if (clinicRef) updateDocumentNonBlocking(clinicRef, updates);
     },
     getTodayDoses: () => {
+      // Logic for today's doses can be added here
       return [];
     }
   };
