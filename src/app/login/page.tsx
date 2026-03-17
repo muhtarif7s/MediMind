@@ -39,11 +39,21 @@ export default function LoginPage() {
     const callbacks = {
       onError: (err: any) => {
         setIsSubmitting(false);
-        console.error('Auth error:', err);
+        let message = "Please check your credentials and try again.";
+        
+        // Handle specific Firebase Auth error codes for better UX
+        if (err.code === 'auth/invalid-credential') {
+          message = "Invalid email or password. If you don't have an account, please click 'Create Account' below.";
+        } else if (err.code === 'auth/email-already-in-use') {
+          message = "This email is already registered. Please log in instead.";
+        } else if (err.code === 'auth/weak-password') {
+          message = "Password should be at least 6 characters.";
+        }
+
         toast({
           variant: "destructive",
           title: "Authentication Failed",
-          description: err.message || "Please check your credentials and try again.",
+          description: message,
         });
       }
     };
@@ -127,7 +137,7 @@ export default function LoginPage() {
               disabled={isSubmitting}
               className="text-primary font-bold h-auto p-0"
             >
-              {isRegistering ? t('login') : t('register')}
+              {isRegistering ? "Log In" : "Create Account"}
             </Button>
           </div>
         </CardContent>

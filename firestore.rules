@@ -13,12 +13,16 @@ service cloud.firestore {
     }
 
     // Collection Group rules for 'doseLogs'
-    // This allows: query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
+    // Optimized for: query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{doseLogId} {
-      // For queries (list), the rule must be statically verifiable by the query filters.
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      // allow list is triggered by collectionGroup queries.
+      // We must ensure the query filter (userId == auth.uid) is present.
+      allow list: if isSignedIn() && (
+        request.query.limit <= 500 && 
+        (resource == null || resource.data.userId == request.auth.uid)
+      );
       
-      // For single document access (get), we can check both the data and the path.
+      // Allow single document access.
       allow get: if isSignedIn() && (
         resource.data.userId == request.auth.uid ||
         (path.size() >= 4 && path[1] == request.auth.uid)
@@ -37,6 +41,7 @@ service cloud.firestore {
 
     // User Profile & Hierarchical Rules
     match /users/{userId} {
+      // Users can only read/write their own profile.
       allow read, write: if isSignedIn() && request.auth.uid == userId;
 
       // Medicine Rules
