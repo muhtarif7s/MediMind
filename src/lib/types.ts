@@ -1,34 +1,27 @@
 
-export type DosageUnit = 'pill' | 'mg' | 'ml' | 'drop' | 'capsule' | 'injection';
+export type AppointmentStatus = 'pending' | 'attended' | 'no-show' | 'cancelled';
 
-export type DoseStatus = 'taken' | 'skipped' | 'missed' | 'pending';
-
-export interface Medication {
+export interface Patient {
   id: string;
+  clinicId: string;
   name: string;
-  dosageAmount: number;
-  dosageUnit: DosageUnit;
-  times: string[]; // HH:mm
-  startDate: string; // ISO
-  endDate?: string; // ISO
-  totalQuantity: number;
-  remainingQuantity: number;
-  refillThreshold: number;
-  frequency: 'daily' | 'weekdays' | 'interval';
-  intervalHours?: number;
+  phone: string;
+  notes?: string;
+  createdAt: string;
 }
 
-export interface DoseHistory {
+export interface Appointment {
   id: string;
-  medicationId: string;
-  scheduledTime: string; // ISO
-  status: DoseStatus;
-  recordedAt?: string; // ISO
+  clinicId: string;
+  patientId: string;
+  patientName: string;
+  dateTime: string; // ISO string
+  status: AppointmentStatus;
+  treatment?: string;
 }
 
-export interface UserProfile {
+export interface ClinicProfile {
+  id: string;
   name: string;
-  language: 'en' | 'ar';
-  notificationsEnabled: boolean;
-  theme: 'light' | 'dark';
+  phone?: string;
 }

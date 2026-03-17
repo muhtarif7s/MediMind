@@ -3,23 +3,22 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ClipboardList, BarChart3, Settings } from 'lucide-react';
+import { Home, Users, Calendar, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useMediMind } from '@/lib/store';
+import { useClinic } from '@/lib/store';
 
 export function NavBar() {
   const pathname = usePathname();
-  const { t } = useMediMind();
+  const { t } = useClinic();
 
   const navItems = [
-    { icon: Home, label: t('home'), href: '/' },
-    { icon: ClipboardList, label: t('meds'), href: '/medications' },
-    { icon: BarChart3, label: t('stats'), href: '/history' },
-    { icon: Settings, label: t('settings'), href: '/settings' },
+    { icon: LayoutDashboard, label: t('dashboard'), href: '/' },
+    { icon: Users, label: t('patients'), href: '/clients' },
+    { icon: Calendar, label: t('appointments'), href: '/appointments' },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-background/95 backdrop-blur-xl border-t h-[calc(4.5rem+env(safe-area-inset-bottom))] flex items-start justify-around px-4 z-50 pt-2 pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t h-20 flex items-center justify-around px-4 z-50">
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         const Icon = item.icon;
@@ -29,17 +28,12 @@ export function NavBar() {
             key={item.href} 
             href={item.href}
             className={cn(
-              "flex flex-col items-center gap-1 transition-all flex-1 h-full pt-1",
-              isActive ? "text-primary scale-105" : "text-muted-foreground active:scale-95"
+              "flex flex-col items-center gap-1 transition-all flex-1",
+              isActive ? "text-primary" : "text-slate-400"
             )}
           >
-            <div className={cn(
-              "p-2 rounded-2xl transition-colors",
-              isActive && "bg-primary/10 shadow-sm"
-            )}>
-              <Icon className={cn("h-6 w-6", isActive && "stroke-[2.5px]")} />
-            </div>
-            <span className="text-[10px] font-bold tracking-tight">{item.label}</span>
+            <Icon className={cn("h-6 w-6", isActive && "stroke-[2.5px]")} />
+            <span className="text-[10px] font-bold">{item.label}</span>
           </Link>
         );
       })}

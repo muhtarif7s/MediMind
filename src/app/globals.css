@@ -1,97 +1,39 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 204 100% 97%;
-    --foreground: 204 10% 10%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 204 10% 15%;
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 204 10% 15%;
-    --primary: 207 90% 77%;
-    --primary-foreground: 207 10% 10%;
-    --secondary: 207 86% 94%;
-    --secondary-foreground: 207 10% 15%;
-    --muted: 207 86% 94%;
-    --muted-foreground: 207 10% 40%;
-    --accent: 207 90% 68%;
-    --accent-foreground: 207 10% 10%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 199 89% 48%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 199 89% 95%;
+    --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 207 30% 90%;
-    --input: 207 30% 90%;
-    --ring: 207 90% 77%;
-    --chart-1: 207 90% 77%;
-    --chart-2: 207 90% 68%;
-    --chart-3: 199 89% 48%;
-    --chart-4: 190 90% 70%;
-    --chart-5: 200 80% 85%;
-    --radius: 1.25rem;
-  }
-
-  .dark {
-    --background: 204 50% 5%;
-    --foreground: 204 10% 98%;
-    --card: 204 40% 10%;
-    --card-foreground: 204 10% 98%;
-    --popover: 204 40% 10%;
-    --popover-foreground: 204 10% 98%;
-    --primary: 207 90% 77%;
-    --primary-foreground: 207 10% 10%;
-    --secondary: 204 30% 15%;
-    --secondary-foreground: 204 10% 98%;
-    --muted: 204 30% 15%;
-    --muted-foreground: 204 10% 65%;
-    --accent: 207 90% 68%;
-    --accent-foreground: 207 10% 10%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 204 30% 20%;
-    --input: 204 30% 20%;
-    --ring: 207 90% 77%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 32.1% 91.4%;
+    --input: 214.3 32.1% 91.4%;
+    --ring: 199 89% 48%;
+    --radius: 1rem;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-  }
-  
   body {
-    @apply bg-background text-foreground font-body min-h-screen;
-    touch-action: manipulation;
-    user-select: none;
-  }
-
-  /* Allow text selection in inputs and specific content */
-  input, textarea, [contenteditable="true"], .selectable {
-    user-select: text;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-headline;
-  }
-
-  /* Hide scrollbars for a cleaner app look */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    @apply font-arabic;
   }
 }
 
-.page-transition {
-  @apply animate-in fade-in duration-300;
-}
-
-/* Momentum scrolling for iOS */
-.scroll-container {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+.font-arabic {
+  font-family: 'Noto Sans Arabic', sans-serif;
 }
