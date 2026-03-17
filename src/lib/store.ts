@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
@@ -74,6 +73,7 @@ export function useMediMind() {
   const historyQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     // Collection group query requires specific security rules and an index (managed by Studio)
+    // The userId filter is critical for security rule validation.
     return query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid));
   }, [db, user]);
 
