@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMediMind } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -18,20 +18,30 @@ import { cn } from '@/lib/utils';
 export default function WelcomePage() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
-  const { t, profile } = useMediMind();
+  const { t, profile, user, isUserLoading } = useMediMind();
   const router = useRouter();
 
   const isRTL = profile.language === 'ar';
+
+  // Redirect to dashboard if user is already logged in
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/');
+    }
+  }, [user, isUserLoading, router]);
 
   const onSelect = useCallback(() => {
     if (!api) return;
     setCurrent(api.selectedScrollSnap());
   }, [api]);
 
-  useState(() => {
+  useEffect(() => {
     if (!api) return;
     api.on("select", onSelect);
-  });
+    return () => {
+      api.off("select", onSelect);
+    };
+  }, [api, onSelect]);
 
   const onboardingSteps = [
     {

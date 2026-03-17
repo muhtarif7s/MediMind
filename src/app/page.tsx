@@ -33,7 +33,8 @@ export default function Dashboard() {
   useEffect(() => {
     if (!isUserLoading) {
       if (!user) {
-        router.push('/login');
+        // Redirect new/unauthenticated users to the professional welcome experience
+        router.push('/welcome');
       } else if (!user.emailVerified) {
         // Enforce verification before accessing dashboard
         router.push('/login');

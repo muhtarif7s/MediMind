@@ -164,7 +164,7 @@ export const translations = {
     other: 'آخر',
     fileSelect: 'اختر الملف أو الصورة',
     uploadSuccess: 'تم رفع السجل بنجاح',
-    noRecords: 'لا توجد سجلات طبية مضافة لهذا المريض',
+    noRecords: 'لا توجد سجلات طبية مضاف لهذا المريض',
     forgotPassword: 'نسيت كلمة المرور؟',
     resetPassword: 'إعادة تعيين كلمة المرور',
     sendResetLink: 'إرسال رابط إعادة التعيين',
@@ -356,13 +356,13 @@ export const translations = {
     welcome2_desc: "Smart refill alerts and deep analysis of treatment adherence powered by Gemini.",
     welcome3_title: "Secure Medical Records",
     welcome3_desc: "Safely store X-rays and prescriptions in one organized, accessible place.",
-    getStarted: "Get Started",
+    getStarted: "Start Now",
     next: "Next",
     skip: "Skip"
   },
   fr: {
     appTitle: 'Dentiste Intelligent',
-    appSubtitle: 'Système Inégré de Gestion de Clinique Dentaire',
+    appSubtitle: 'Système Intégré de Gestion de Clinique Dentaire',
     login: 'Connexion',
     register: 'S\'inscrire',
     email: 'E-mail',
@@ -536,7 +536,7 @@ export const translations = {
     welcome2_desc: "Alertes intelligentes de recharge et analyse approfondie de l'observance thérapeutique via Gemini.",
     welcome3_title: "Dossiers Médicaux Sécurisés",
     welcome3_desc: "Stockez vos radios et ordonnances en toute sécurité dans un espace organisé et accessible.",
-    getStarted: "Commencer",
+    getStarted: "Commencer Maintenant",
     next: "Suivant",
     skip: "Passer"
   },
@@ -716,7 +716,7 @@ export const translations = {
     welcome2_desc: "Alertas inteligentes de rellenado y análisis profundo de adherencia con Gemini.",
     welcome3_title: "Registros Seguros",
     welcome3_desc: "Almacena radiografías y recetas de forma segura en un lugar accesible.",
-    getStarted: "Comenzar",
+    getStarted: "Empezar Ahora",
     next: "Siguiente",
     skip: "Saltar"
   },
@@ -896,7 +896,7 @@ export const translations = {
     welcome2_desc: "Intelligente Nachfüllwarnungen und tiefe Analyse der Therapietreue durch Gemini.",
     welcome3_title: "Sichere Krankenakten",
     welcome3_desc: "Speichern Sie Röntgenbilder und Rezepte sicher an einem organisierten Ort.",
-    getStarted: "Starten",
+    getStarted: "Jetzt Starten",
     next: "Weiter",
     skip: "Überspringen"
   }
