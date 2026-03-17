@@ -23,7 +23,7 @@ import { signOut } from 'firebase/auth';
 type LoginState = 'login' | 'signup' | 'verify-email' | 'verify-phone';
 
 const MAX_OTP_ATTEMPTS = 3;
-const OTP_RESEND_DELAY = 60; // seconds
+const COOLDOWN_DELAY = 60; // seconds
 
 export default function LoginPage() {
   const [authState, setAuthState] = useState<LoginState>('login');
@@ -34,6 +34,7 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<any>(null);
   const [timer, setTimer] = useState(0);
+  const [emailTimer, setEmailTimer] = useState(0);
   const [otpAttempts, setOtpAttempts] = useState(0);
   
   const { user, isUserLoading } = useUser();
@@ -41,9 +42,11 @@ export default function LoginPage() {
   const { toast } = useToast();
   const auth = useAuth();
   const router = useRouter();
+  
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const emailTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Countdown timer logic
+  // Countdown timer logic for OTP
   useEffect(() => {
     if (timer > 0) {
       timerRef.current = setInterval(() => {
@@ -57,9 +60,22 @@ export default function LoginPage() {
     };
   }, [timer]);
 
+  // Countdown timer logic for Email
+  useEffect(() => {
+    if (emailTimer > 0) {
+      emailTimerRef.current = setInterval(() => {
+        setEmailTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (emailTimer === 0 && emailTimerRef.current) {
+      clearInterval(emailTimerRef.current);
+    }
+    return () => {
+      if (emailTimerRef.current) clearInterval(emailTimerRef.current);
+    };
+  }, [emailTimer]);
+
   useEffect(() => {
     if (!isUserLoading && user) {
-      // Refresh user state to get latest verification info
       user.reload().then(() => {
         if (!user.emailVerified) {
           setAuthState('verify-email');
@@ -81,15 +97,17 @@ export default function LoginPage() {
         setIsSubmitting(false);
         if (authState === 'signup') {
           setAuthState('verify-email');
+          setEmailTimer(COOLDOWN_DELAY);
           toast({ title: t('registerSuccess'), description: t('checkEmail') });
         }
       },
       onError: (err: any) => {
         setIsSubmitting(false);
+        const errorMessage = err.code === 'auth/too-many-requests' ? t('tooManyRequests') : err.message;
         toast({ 
           variant: "destructive", 
           title: t('authError'), 
-          description: err.message
+          description: errorMessage
         });
       }
     };
@@ -110,11 +128,12 @@ export default function LoginPage() {
       const verifier = setupRecaptcha(auth, 'recaptcha-container');
       const result = await initiatePhoneSignIn(auth, phoneNumber, verifier);
       setConfirmationResult(result);
-      setTimer(OTP_RESEND_DELAY);
+      setTimer(COOLDOWN_DELAY);
       setOtpAttempts(0);
       toast({ title: t('otpSent') });
     } catch (err: any) {
-      toast({ variant: "destructive", title: t('authError'), description: err.message });
+      const errorMessage = err.code === 'auth/too-many-requests' ? t('tooManyRequests') : err.message;
+      toast({ variant: "destructive", title: t('authError'), description: errorMessage });
     } finally {
       setIsSubmitting(false);
     }
@@ -135,20 +154,30 @@ export default function LoginPage() {
     } catch (err: any) {
       const newAttempts = otpAttempts + 1;
       setOtpAttempts(newAttempts);
+      const errorMessage = err.code === 'auth/too-many-requests' ? t('tooManyRequests') : t('invalidOTP');
       toast({ 
         variant: "destructive", 
-        title: t('invalidOTP'),
-        description: newAttempts >= MAX_OTP_ATTEMPTS ? t('tooManyAttempts') : undefined
+        title: t('authError'),
+        description: newAttempts >= MAX_OTP_ATTEMPTS ? t('tooManyAttempts') : errorMessage
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleResendEmail = () => {
-    if (user) {
-      sendVerificationEmail(user);
+  const handleResendEmail = async () => {
+    if (emailTimer > 0 || !user) return;
+    
+    setIsSubmitting(true);
+    try {
+      await sendVerificationEmail(user);
+      setEmailTimer(COOLDOWN_DELAY);
       toast({ title: t('emailVerificationSent') });
+    } catch (err: any) {
+      const errorMessage = err.code === 'auth/too-many-requests' ? t('tooManyRequests') : err.message;
+      toast({ variant: "destructive", title: t('authError'), description: errorMessage });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -157,6 +186,7 @@ export default function LoginPage() {
     setAuthState('login');
     setConfirmationResult(null);
     setTimer(0);
+    setEmailTimer(0);
   };
 
   if (isUserLoading) return (
@@ -239,9 +269,14 @@ export default function LoginPage() {
                   {t('checkEmail')}
                 </p>
                 <div className="space-y-3">
-                  <Button onClick={handleResendEmail} variant="outline" className="w-full h-12 rounded-xl border-primary text-primary font-bold gap-2">
-                    <RefreshCw className="h-4 w-4" />
-                    {t('resendEmail')}
+                  <Button 
+                    onClick={handleResendEmail} 
+                    disabled={emailTimer > 0 || isSubmitting}
+                    variant="outline" 
+                    className="w-full h-12 rounded-xl border-primary text-primary font-bold gap-2"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${isSubmitting ? 'animate-spin' : ''}`} />
+                    {emailTimer > 0 ? t('waitOTP').replace('{seconds}', emailTimer.toString()) : t('resendEmail')}
                   </Button>
                   <Button onClick={() => window.location.reload()} className="w-full h-12 rounded-xl font-bold">
                     {t('signIn')}

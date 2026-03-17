@@ -58,7 +58,7 @@ export const translations = {
     attendanceRate: 'معدل الحضور',
     adherenceRate: 'معدل الالتزام بالأدوية',
     monthlyGrowth: 'النمو والنشاط',
-    last7Days: 'آخر ٧ أيام',
+    last7Days: 'آخر 7 أيام',
     activePatients: 'المرضى النشطين',
     viewAll: 'عرض الكل',
     dataManagement: 'إدارة البيانات',
@@ -150,6 +150,7 @@ export const translations = {
     resendOTP: 'إعادة إرسال الرمز',
     waitOTP: 'يرجى الانتظار {seconds} ثانية لإعادة الإرسال',
     tooManyAttempts: 'محاولات كثيرة جداً. تم حظر الحساب مؤقتاً.',
+    tooManyRequests: 'طلبات كثيرة جداً. يرجى الانتظار بضع دقائق والمحاولة مرة أخرى.',
     seconds: 'ثانية'
   },
   en: {
@@ -302,6 +303,7 @@ export const translations = {
     resendOTP: 'Resend OTP',
     waitOTP: 'Please wait {seconds}s to resend',
     tooManyAttempts: 'Too many attempts. Account temporarily locked.',
+    tooManyRequests: 'Too many requests. Please wait a few minutes and try again.',
     seconds: 's'
   },
   fr: {
@@ -454,6 +456,7 @@ export const translations = {
     resendOTP: 'Renvoyer l\'OTP',
     waitOTP: 'Attendez {seconds}s pour renvoyer',
     tooManyAttempts: 'Trop de tentatives. Compte temporairement bloqué.',
+    tooManyRequests: 'Trop de requêtes. Veuillez attendre quelques minutes et réessayer.',
     seconds: 's'
   },
   es: {
@@ -606,6 +609,7 @@ export const translations = {
     resendOTP: 'Reenviar OTP',
     waitOTP: 'Espera {seconds}s para reenviar',
     tooManyAttempts: 'Demasiados intentos. Cuenta bloqueada temporalmente.',
+    tooManyRequests: 'Demasiadas solicitudes. Espere unos minutos e inténtelo de nuevo.',
     seconds: 's'
   },
   de: {
@@ -755,9 +759,10 @@ export const translations = {
     appointmentInOneHour: 'Sie haben in 1 Stunde einen Termin mit {name}.',
     upcomingMedication: 'Medikamentenerinnerung',
     medicationInFiveMinutes: 'Sie haben eine Dosis von {name} in 5 Minuten.',
-    resendOTP: 'OTP erneut senden',
+    resendOTP: 'Erneut senden',
     waitOTP: 'Warten Sie {seconds}s zum Erneuern',
     tooManyAttempts: 'Zu viele Versuche. Konto vorübergehend gesperrt.',
+    tooManyRequests: 'Zu viele Anfragen. Bitte warten Sie einige Minuten und versuchen Sie es erneut.',
     seconds: 's'
   }
 };
