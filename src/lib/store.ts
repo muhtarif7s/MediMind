@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from 'react';
@@ -81,7 +82,7 @@ export function useClinic() {
   const { data: appointmentsData, isLoading: isAppointmentsLoading } = useCollection<Appointment>(appointmentsQuery);
   const appointments = appointmentsData || [];
 
-  // 4. User Medications (Used for prescriptions or dentist's own tracking)
+  // 4. User Medications
   const medicationsQuery = useMemoFirebase(() => {
     return shouldFetch
       ? query(collection(db, 'users', user.uid, 'medicines'), orderBy('name'))
@@ -104,38 +105,6 @@ export function useClinic() {
 
   const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseLog>(historyQuery);
   const history = historyData || [];
-
-  // Bootstrapping sample data for new accounts
-  useEffect(() => {
-    if (shouldFetch && !isMedicationsLoading && medications.length === 0) {
-      const medRef = collection(db, 'users', user.uid, 'medicines');
-      addDocumentNonBlocking(medRef, {
-        userId: user.uid,
-        name: 'Sample Medication',
-        dosageAmount: 1,
-        dosageUnit: 'pill',
-        times: ['08:00', '20:00'],
-        startDate: new Date().toISOString(),
-        totalQuantity: 30,
-        remainingQuantity: 30,
-        refillThreshold: 5,
-        frequency: 'daily'
-      }).then(docRef => {
-        if (docRef) {
-          const logRef = collection(db, 'users', user.uid, 'medicines', docRef.id, 'doseLogs');
-          addDocumentNonBlocking(logRef, {
-            userId: user.uid,
-            medicationId: docRef.id,
-            name: 'Sample Medication',
-            status: 'taken',
-            scheduledTime: new Date().toISOString(),
-            recordedAt: new Date().toISOString(),
-            takenAt: new Date().toISOString()
-          });
-        }
-      });
-    }
-  }, [shouldFetch, isMedicationsLoading, medications, db, user]);
 
   const t = (key: string) => {
     const arTranslations = translations.ar as Record<string, string>;
@@ -177,48 +146,6 @@ export function useClinic() {
     });
   };
 
-  const addMedication = (med: Omit<Medication, 'id' | 'userId'>) => {
-    if (!shouldFetch) return;
-    addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicines'), {
-      ...med,
-      userId: user.uid
-    });
-  };
-
-  const updateMedication = (id: string, updates: Partial<Medication>) => {
-    if (!shouldFetch) return;
-    updateDocumentNonBlocking(doc(db, 'users', user.uid, 'medicines', id), updates);
-  };
-
-  const deleteMedication = (id: string) => {
-    if (!shouldFetch) return;
-    deleteDocumentNonBlocking(doc(db, 'users', user.uid, 'medicines', id));
-  };
-
-  const logDose = (medId: string, scheduledTime: string, status: DoseStatus) => {
-    if (!shouldFetch) return;
-
-    const logRef = collection(db, 'users', user.uid, 'medicines', medId, 'doseLogs');
-
-    addDocumentNonBlocking(logRef, {
-      userId: user.uid,
-      medicationId: medId,
-      scheduledTime,
-      recordedAt: new Date().toISOString(),
-      takenAt: new Date().toISOString(),
-      status
-    });
-
-    if (status === 'taken') {
-      const med = medications.find(m => m.id === medId);
-      if (med) {
-        updateMedication(medId, {
-          remainingQuantity: Math.max(0, med.remainingQuantity - med.dosageAmount)
-        });
-      }
-    }
-  };
-
   const isLoaded =
     !isUserLoading &&
     (!user ||
@@ -237,7 +164,6 @@ export function useClinic() {
       theme: 'light',
       notificationsEnabled: true
     },
-    clinic: clinicData,
     patients,
     appointments,
     medications,
@@ -248,10 +174,6 @@ export function useClinic() {
     addAppointment,
     updateAppointmentStatus,
     getTodayAppointments,
-    addMedication,
-    updateMedication,
-    deleteMedication,
-    logDose,
     setProfile: (updates: Partial<ClinicProfile>) => {
       if (clinicRef) updateDocumentNonBlocking(clinicRef, updates);
     },

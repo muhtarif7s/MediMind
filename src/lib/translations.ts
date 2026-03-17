@@ -6,7 +6,7 @@ export const translations = {
     register: 'إنشاء حساب جديد',
     email: 'البريد الإلكتروني',
     password: 'كلمة المرور',
-    dashboard: 'لوحة التحكم',
+    dashboard: 'الرئيسية',
     patients: 'المرضى',
     appointments: 'المواعيد',
     addPatient: 'إضافة مريض جديد',
@@ -30,7 +30,7 @@ export const translations = {
     noPatients: 'لا يوجد مرضى مضافين حالياً',
     noAppointments: 'لا توجد مواعيد مجدولة اليوم',
     logout: 'تسجيل الخروج',
-    stats: 'إحصائيات المواعيد',
+    stats: 'الإحصائيات',
     totalPatients: 'إجمالي المرضى',
     searchPatients: 'البحث عن مريض...',
     dontHaveAccount: 'ليس لديك حساب؟ سجل الآن',
@@ -49,6 +49,11 @@ export const translations = {
     darkMode: 'الوضع الليلي',
     language: 'اللغة',
     about: 'عن التطبيق',
-    version: 'الإصدار'
+    version: 'الإصدار',
+    quickActions: 'إجراءات سريعة',
+    attendanceRate: 'معدل الحضور',
+    monthlyGrowth: 'النمو الشهري',
+    last7Days: 'آخر ٧ أيام',
+    activePatients: 'المرضى النشطين'
   }
 };
