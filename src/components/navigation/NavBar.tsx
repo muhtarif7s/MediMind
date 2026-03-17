@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -21,7 +22,7 @@ export function NavBar() {
   if (pathname === '/login') return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card/90 dark:bg-card/90 backdrop-blur-xl border-t h-[calc(4.5rem+env(safe-area-inset-bottom))] flex items-start justify-around px-2 z-50 pt-2 pb-safe-area-inset-bottom transition-all shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card/90 dark:bg-card/95 backdrop-blur-xl border-t h-[calc(4.5rem+env(safe-area-inset-bottom))] flex items-start justify-around px-2 z-50 pt-2 pb-safe-area-inset-bottom transition-all shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
       {navItems.map((item) => {
         const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
         const Icon = item.icon;
@@ -37,7 +38,7 @@ export function NavBar() {
           >
             <div className={cn(
               "p-2 rounded-2xl transition-all duration-300",
-              isActive ? "bg-primary/10" : "bg-transparent"
+              isActive ? "bg-primary/15" : "bg-transparent"
             )}>
               <Icon className={cn("h-6 w-6", isActive && "stroke-[2.5px] scale-110")} />
             </div>

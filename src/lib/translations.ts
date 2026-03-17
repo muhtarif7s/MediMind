@@ -128,7 +128,8 @@ export const translations = {
     hrs: 'ساعة',
     min: 'دقيقة',
     sec: 'ثانية',
-    signIn: 'تسجيل دخول'
+    signIn: 'تسجيل دخول',
+    goodMorning: 'صباح الخير'
   },
   en: {
     appTitle: 'Smart Dentist',
@@ -258,7 +259,8 @@ export const translations = {
     hrs: 'Hrs',
     min: 'Min',
     sec: 'Sec',
-    signIn: 'Sign In'
+    signIn: 'Sign In',
+    goodMorning: 'Good Morning'
   },
   fr: {
     appTitle: 'Dentiste Intelligent',
@@ -388,7 +390,8 @@ export const translations = {
     hrs: 'h',
     min: 'min',
     sec: 'sec',
-    signIn: 'Se connecter'
+    signIn: 'Se connecter',
+    goodMorning: 'Bonjour'
   },
   es: {
     appTitle: 'Dentista Inteligente',
@@ -518,7 +521,8 @@ export const translations = {
     hrs: 'h',
     min: 'min',
     sec: 'seg',
-    signIn: 'Iniciar sesión'
+    signIn: 'Iniciar sesión',
+    goodMorning: 'Buenos Días'
   },
   de: {
     appTitle: 'Smarter Zahnarzt',
@@ -648,6 +652,7 @@ export const translations = {
     hrs: 'Std.',
     min: 'Min.',
     sec: 'Sek.',
-    signIn: 'Anmelden'
+    signIn: 'Anmelden',
+    goodMorning: 'Guten Morgen'
   }
 };
