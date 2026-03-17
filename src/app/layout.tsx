@@ -27,7 +27,7 @@ function AppWrapper({ children }: { children: React.ReactNode }) {
   return (
     <main 
       dir={isRTL ? 'rtl' : 'ltr'} 
-      className="max-w-md mx-auto relative bg-background min-h-screen shadow-xl flex flex-col border-x"
+      className="max-w-md mx-auto relative bg-background min-h-screen flex flex-col border-x"
     >
       <div className="flex-1 flex flex-col">
         {children}
@@ -52,7 +52,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="font-body antialiased bg-background h-full">
+      <body className="font-body antialiased bg-background h-full overflow-x-hidden">
         <FirebaseClientProvider>
           <AppWrapper>
             {children}

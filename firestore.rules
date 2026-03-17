@@ -14,22 +14,15 @@ service cloud.firestore {
     // 1. Collection Group Rules (Critical for dose history sync)
     // This allows query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{logId} {
-      // For list operations (queries), Firestore validates the query filter against the rule.
-      // For get operations (direct read), it validates the document data.
       allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
-      
-      // Validation for writes ensures data integrity and ownership
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
     // 2. User Profile & Hierarchical Rules
     match /users/{userId} {
-      // Users can only read/write their own profile
       allow read, write: if isSignedIn() && request.auth.uid == userId;
 
-      // Recursive match for all subcollections under a user (medicines, doseLogs, etc.)
-      // Note: This also covers doseLogs when accessed via the hierarchical path.
       match /{allPaths=**} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
