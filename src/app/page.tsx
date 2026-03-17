@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useClinic } from '@/lib/store';
@@ -15,8 +16,26 @@ import { NextDoseCountdown } from '@/components/dashboard/NextDoseCountdown';
 import { TodayTimeline } from '@/components/dashboard/TodayTimeline';
 
 export default function Dashboard() {
-  const { user, isUserLoading, isLoaded, t, patients, getTodayAppointments, profile, getTodayDoses, logDose } = useClinic();
+  const { 
+    user, 
+    isUserLoading, 
+    isLoaded, 
+    t, 
+    patients, 
+    getTodayAppointments, 
+    profile, 
+    getTodayDoses, 
+    logDose, 
+    medications 
+  } = useClinic();
   const router = useRouter();
+
+  // Handle global theme synchronization based on profile preference
+  useEffect(() => {
+    if (isLoaded && profile?.theme) {
+      document.documentElement.classList.toggle('dark', profile.theme === 'dark');
+    }
+  }, [isLoaded, profile?.theme]);
 
   useEffect(() => {
     if (!isUserLoading && !user) router.push('/login');
@@ -36,7 +55,7 @@ export default function Dashboard() {
   const locale = profile.language === 'ar' ? ar : enUS;
 
   return (
-    <div className="flex flex-col h-screen pb-20 bg-background">
+    <div className="flex flex-col h-screen pb-20 bg-background transition-colors duration-300">
       <header className="p-6 bg-primary text-white rounded-b-[2.5rem] shadow-xl shadow-primary/20">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -66,7 +85,7 @@ export default function Dashboard() {
             </h3>
             <NextDoseCountdown medication={nextDose.med} scheduledTime={nextDose.time} />
           </section>
-        ) : medications.length > 0 && (
+        ) : medications && medications.length > 0 && (
           <section className="space-y-4">
             <Card className="border-none shadow-sm bg-accent/10 rounded-3xl p-6 text-center">
               <Pill className="h-8 w-8 text-accent mx-auto mb-2" />
