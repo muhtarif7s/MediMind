@@ -43,7 +43,7 @@ export default function LoginPage() {
         if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
           message = "Incorrect email or password. If you don't have an account, tap 'Create New Account' below.";
         } else if (err.code === 'auth/email-already-in-use') {
-          message = "This email is already registered. Please log in instead.";
+          message = "This email is already registered. Switching to Login.";
           setIsRegistering(false);
         } else if (err.code === 'auth/weak-password') {
           message = "Password must be at least 6 characters.";
@@ -68,14 +68,14 @@ export default function LoginPage() {
 
   if (isUserLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       <ScrollArea className="flex-1">
         <div className="flex flex-col p-6 items-center justify-start pt-12 pb-32 min-h-full">
           <div className="w-full max-w-sm space-y-8">
@@ -178,7 +178,7 @@ export default function LoginPage() {
         </div>
       </ScrollArea>
       
-      <div className="p-6 text-center border-t bg-background shrink-0">
+      <div className="p-6 text-center border-t bg-background shrink-0 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.3em]">
           MediMind Health Assistant • Secure v1.3.1
         </p>
