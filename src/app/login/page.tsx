@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Pill, Loader2, Mail, Lock, UserPlus, LogIn, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function LoginPage() {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -78,10 +77,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <ScrollArea className="h-screen w-full">
-        <div className="p-6 flex flex-col items-center justify-center min-h-screen py-12">
-          <div className="mb-10 flex flex-col items-center gap-3">
+    <div className="flex flex-col h-screen bg-background overflow-hidden">
+      <div className="flex-1 overflow-y-auto scroll-container">
+        <div className="p-6 flex flex-col items-center justify-center min-h-full py-12">
+          <div className="mb-8 flex flex-col items-center gap-3">
             <div className="p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/30 animate-in zoom-in duration-500">
               <Pill className="h-10 w-10 text-primary-foreground" />
             </div>
@@ -92,7 +91,7 @@ export default function LoginPage() {
           </div>
 
           <Card className="w-full max-w-sm border-none shadow-none bg-transparent">
-            <CardHeader className="text-center px-0 pb-8">
+            <CardHeader className="text-center px-0 pb-6">
               <CardTitle className="text-2xl font-bold">
                 {isRegistering ? "Join MediMind" : "Welcome Back"}
               </CardTitle>
@@ -103,7 +102,7 @@ export default function LoginPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="px-0">
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-2 px-1">
                     <Mail className="h-3 w-3" /> Email Address
@@ -116,7 +115,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={isSubmitting}
-                    className="h-14 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary text-base"
+                    className="h-12 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary text-base"
                   />
                 </div>
                 <div className="space-y-2">
@@ -131,34 +130,34 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={isSubmitting}
-                    className="h-14 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary text-base"
+                    className="h-12 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary text-base"
                   />
                 </div>
                 
                 <Button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="w-full h-15 rounded-2xl text-lg font-bold mt-6 shadow-xl shadow-primary/20 transition-all active:scale-[0.98] py-8"
+                  className="w-full h-14 rounded-2xl text-lg font-bold mt-4 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
                 >
                   {isSubmitting ? (
                     <Loader2 className="h-6 w-6 animate-spin" />
                   ) : (
                     <div className="flex items-center gap-2">
-                      {isRegistering ? <UserPlus className="h-6 w-6" /> : <LogIn className="h-6 w-6" />}
+                      {isRegistering ? <UserPlus className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
                       {isRegistering ? "Create Account" : "Sign In"}
                     </div>
                   )}
                 </Button>
               </form>
 
-              <div className="mt-12 flex flex-col items-center gap-8">
+              <div className="mt-8 flex flex-col items-center gap-6">
                 <div className="w-full flex items-center gap-4 py-2">
                   <div className="h-[1px] bg-border flex-1"></div>
                   <span className="text-[10px] uppercase font-bold text-muted-foreground/50 tracking-tighter">or switch mode</span>
                   <div className="h-[1px] bg-border flex-1"></div>
                 </div>
 
-                <div className="text-center space-y-5 w-full">
+                <div className="text-center space-y-4 w-full">
                   <p className="text-sm font-medium text-muted-foreground">
                     {isRegistering ? "Already using MediMind?" : "New to our platform?"}
                   </p>
@@ -167,7 +166,7 @@ export default function LoginPage() {
                     type="button"
                     onClick={() => setIsRegistering(!isRegistering)}
                     disabled={isSubmitting}
-                    className="w-full h-14 rounded-2xl border-primary/30 text-primary font-bold hover:bg-primary/5 px-6 flex items-center justify-center gap-2 transition-all active:scale-95 bg-background"
+                    className="w-full h-12 rounded-2xl border-primary/30 text-primary font-bold hover:bg-primary/5 px-6 flex items-center justify-center gap-2 transition-all active:scale-95 bg-background"
                   >
                     {isRegistering ? "Sign In to your Account" : "Create New Account"}
                     <ArrowRight className="h-4 w-4" />
@@ -177,13 +176,13 @@ export default function LoginPage() {
             </CardContent>
           </Card>
           
-          <div className="mt-16 text-center pb-12">
+          <div className="mt-12 text-center pb-8">
             <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.3em]">
               MediMind Health Assistant • Secure v1.3.1
             </p>
           </div>
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }
