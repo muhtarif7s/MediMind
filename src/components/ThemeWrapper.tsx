@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from 'react';
@@ -12,7 +13,13 @@ export function ThemeWrapper() {
   useEffect(() => {
     if (isLoaded && profile?.theme) {
       const isDark = profile.theme === 'dark';
-      document.documentElement.classList.toggle('dark', isDark);
+      
+      // Apply theme to the root html element
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
       
       // Update meta theme color for mobile status bars
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');

@@ -28,14 +28,12 @@ import {
   orderBy,
   where,
   collectionGroup,
-  addDoc
 } from 'firebase/firestore';
 import { translations } from './translations';
-import { useEffect } from 'react';
 
 /**
  * Main store hook for the Smart Dentist & MediMind features.
- * Operates purely on live Firestore data with automated bootstrapping.
+ * Operates purely on live Firestore data.
  */
 export function useClinic() {
   const { user, isUserLoading } = useUser();
@@ -103,76 +101,6 @@ export function useClinic() {
         !isAppointmentsLoading &&
         !isMedicationsLoading &&
         !isHistoryLoading));
-
-  // Bootstrapping Logic
-  useEffect(() => {
-    if (shouldFetch && isLoaded && user) {
-      // Bootstrap Profile & Settings
-      if (!userProfileData) {
-        setDocumentNonBlocking(doc(db, 'users', user.uid), {
-          userId: user.uid,
-          name: user.displayName || 'طبيب',
-          email: user.email || '',
-          language: 'ar',
-          theme: 'light',
-          notificationsEnabled: true,
-          createdAt: new Date().toISOString()
-        }, { merge: true });
-      }
-
-      // Phase 2 & 3: Default Medicines and DoseLogs
-      if (medications.length === 0 && !isMedicationsLoading) {
-        const defaultMeds = [
-          { name: "Paracetamol", dosageAmount: 1, dosageUnit: "pill", times: ["08:00"], totalQuantity: 30 },
-          { name: "Vitamin C", dosageAmount: 1, dosageUnit: "pill", times: ["09:00"], totalQuantity: 30 },
-          { name: "Ibuprofen", dosageAmount: 1, dosageUnit: "pill", times: ["20:00"], totalQuantity: 30 },
-        ];
-        defaultMeds.forEach(async (med) => {
-          const medRef = await addDoc(collection(db, 'users', user.uid, 'medicines'), {
-            ...med,
-            userId: user.uid,
-            remainingQuantity: med.totalQuantity,
-            refillThreshold: 5,
-            frequency: 'daily',
-            startDate: new Date().toISOString()
-          });
-
-          // Add initial pending log
-          addDoc(collection(db, 'users', user.uid, 'medicines', medRef.id, 'doseLogs'), {
-            userId: user.uid,
-            medicationId: medRef.id,
-            name: med.name,
-            status: "pending",
-            scheduledTime: new Date().toISOString(),
-            recordedAt: new Date().toISOString(),
-          });
-        });
-      }
-
-      // Phase 4: Sample Patient and Appointment
-      if (patients.length === 0 && !isPatientsLoading) {
-        addDoc(collection(db, 'users', user.uid, 'patients'), {
-          name: "John Doe",
-          age: 30,
-          clinicId: user.uid,
-          phone: "123-456-7890",
-          createdAt: new Date().toISOString()
-        }).then((pRef) => {
-          const todayAtTen = new Date();
-          todayAtTen.setHours(10, 0, 0, 0);
-          
-          addDoc(collection(db, 'users', user.uid, 'appointments'), {
-            clinicId: user.uid,
-            patientId: pRef.id,
-            patientName: "John Doe",
-            dateTime: todayAtTen.toISOString(),
-            status: "pending",
-            treatment: "General Checkup"
-          });
-        });
-      }
-    }
-  }, [shouldFetch, isLoaded, userProfileData, medications.length, patients.length, db, user]);
 
   // Translation helper
   const t = (key: string) => {
