@@ -14,9 +14,8 @@ import {
   setDocumentNonBlocking,
   deleteDocumentNonBlocking
 } from '@/firebase';
-import { collection, doc, query, orderBy, where, collectionGroup, addDoc } from 'firebase/firestore';
+import { collection, doc, query, orderBy, where, collectionGroup, addDoc, startOfDay, endOfDay } from 'firebase/firestore';
 import { translations } from './translations';
-import { startOfDay, endOfDay } from 'date-fns';
 
 export function useClinic() {
   const { user, isUserLoading } = useUser();
@@ -50,7 +49,8 @@ export function useClinic() {
       : null;
   }, [db, user, shouldFetch]);
   
-  const { data: patients = [], isLoading: isPatientsLoading } = useCollection<Patient>(patientsQuery);
+  const { data: patientsData, isLoading: isPatientsLoading } = useCollection<Patient>(patientsQuery);
+  const patients = patientsData || [];
 
   // 3. Clinic Appointments
   const appointmentsQuery = useMemoFirebase(() => {
@@ -59,34 +59,43 @@ export function useClinic() {
       : null;
   }, [db, user, shouldFetch]);
 
-  const { data: appointments = [], isLoading: isAppointmentsLoading } = useCollection<Appointment>(appointmentsQuery);
+  const { data: appointmentsData, isLoading: isAppointmentsLoading } = useCollection<Appointment>(appointmentsQuery);
+  const appointments = appointmentsData || [];
 
-  // 4. Personal Medications (MediMind features)
+  // 4. Personal Medications
   const medicationsQuery = useMemoFirebase(() => {
     return shouldFetch 
       ? query(collection(db, 'users', user.uid, 'medicines'), orderBy('name'))
       : null;
   }, [db, user, shouldFetch]);
 
-  const { data: medications = [], isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
+  const { data: medicationsData, isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
+  const medications = medicationsData || [];
 
   // 5. Medication Dose History (Collection Group)
   const historyQuery = useMemoFirebase(() => {
     return shouldFetch
-      ? query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid), orderBy('recordedAt', 'desc'))
+      ? query(
+          collectionGroup(db, 'doseLogs'), 
+          where('userId', '==', user.uid), 
+          orderBy('recordedAt', 'desc')
+        )
       : null;
   }, [db, user, shouldFetch]);
 
-  const { data: history = [], isLoading: isHistoryLoading } = useCollection<DoseLog>(historyQuery);
+  const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseLog>(historyQuery);
+  const history = historyData || [];
 
-  // Automated Data Bootstrapping: Create sample medication and doseLog if none exist
+  // Automated Data Bootstrapping
   useEffect(() => {
     const bootstrapData = async () => {
-      if (shouldFetch && medications && medications.length === 0 && history && history.length === 0 && !isMedicationsLoading && !isHistoryLoading) {
+      if (!shouldFetch || isMedicationsLoading || isHistoryLoading) return;
+
+      // Check if user already has data to avoid duplication
+      if (medications.length === 0 && history.length === 0) {
         try {
-          // 1. Create Sample Medication
           const medRef = collection(db, 'users', user.uid, 'medicines');
-          const newMed = await addDoc(medRef, {
+          const newMedDoc = await addDoc(medRef, {
             userId: user.uid,
             name: "Sample Medication",
             dosageAmount: 1,
@@ -99,16 +108,16 @@ export function useClinic() {
             frequency: "daily"
           });
 
-          // 2. Create Sample DoseLog in subcollection
-          const logRef = collection(db, 'users', user.uid, 'medicines', newMed.id, 'doseLogs');
+          // Create Sample DoseLog in subcollection
+          const logRef = collection(db, 'users', user.uid, 'medicines', newMedDoc.id, 'doseLogs');
           await addDoc(logRef, {
             userId: user.uid,
-            medicationId: newMed.id,
+            medicationId: newMedDoc.id,
             name: "Sample Medication",
             status: "pending",
             takenAt: new Date().toISOString(),
-            scheduledTime: new Date().toISOString(),
-            recordedAt: new Date().toISOString()
+            recordedAt: new Date().toISOString(),
+            scheduledTime: new Date().toISOString()
           });
         } catch (error) {
           console.error("Failed to bootstrap sample data:", error);
@@ -123,7 +132,6 @@ export function useClinic() {
     return translations.ar[key] || key;
   };
 
-  // Helper actions
   const addPatient = (patient: Omit<Patient, 'id' | 'clinicId' | 'createdAt'>) => {
     if (!shouldFetch) return;
     addDocumentNonBlocking(collection(db, 'clinics', user.uid, 'patients'), {
@@ -149,15 +157,15 @@ export function useClinic() {
   };
 
   const getTodayAppointments = () => {
-    const today = startOfDay(new Date());
-    const tonight = endOfDay(new Date());
-    return (appointments || []).filter(a => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    return appointments.filter(a => {
       const d = new Date(a.dateTime);
-      return d >= today && d <= tonight;
+      return d >= start && d <= end;
     });
   };
 
-  // Medication Actions
   const addMedication = (med: Omit<Medication, 'id' | 'userId'>) => {
     if (!shouldFetch) return;
     addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicines'), {
@@ -184,6 +192,7 @@ export function useClinic() {
       medicationId: medId,
       scheduledTime,
       recordedAt: new Date().toISOString(),
+      takenAt: new Date().toISOString(),
       status
     });
 
@@ -202,10 +211,10 @@ export function useClinic() {
     isUserLoading,
     profile: clinicData || { name: 'دكتور', language: 'ar', theme: 'light', notificationsEnabled: true },
     clinic: clinicData,
-    patients: patients || [],
-    appointments: appointments || [],
-    medications: medications || [],
-    history: history || [],
+    patients,
+    appointments,
+    medications,
+    history,
     isLoaded,
     t,
     addPatient,
@@ -220,7 +229,6 @@ export function useClinic() {
        if (clinicRef) updateDocumentNonBlocking(clinicRef, updates);
     },
     getTodayDoses: () => {
-      // Logic for today's doses can be added here
       return [];
     }
   };
