@@ -40,17 +40,8 @@ export function useClinic() {
         theme: 'light',
         notificationsEnabled: true
       }, { merge: true });
-
-      // Bootstrap sample data for doseLogs as requested
-      const logRef = doc(collection(db, 'users', user.uid, 'medicines', 'sample-med', 'doseLogs'));
-      setDocumentNonBlocking(logRef, {
-        userId: user.uid,
-        name: "Sample Medication",
-        status: "pending",
-        takenAt: new Date().toISOString()
-      }, { merge: true });
     }
-  }, [shouldFetch, clinicRef, isClinicLoading, clinicData, user, db]);
+  }, [shouldFetch, clinicRef, isClinicLoading, clinicData, user]);
 
   // 2. Clinic Patients
   const patientsQuery = useMemoFirebase(() => {
@@ -189,6 +180,7 @@ export function useClinic() {
        if (clinicRef) updateDocumentNonBlocking(clinicRef, updates);
     },
     getTodayDoses: () => {
+      // Logic for calculating today's doses based on medication schedules
       return [];
     }
   };

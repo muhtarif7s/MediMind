@@ -33,7 +33,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-// Required for static export with dynamic routes
+// Required for static export with dynamic routes in Capacitor/Next.js
 export function generateStaticParams() {
   return [];
 }
@@ -120,7 +120,6 @@ export default function MedicationDetailPage() {
       </header>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6 pb-10 no-scrollbar">
-        {/* Quick Info */}
         <div className="grid grid-cols-2 gap-4">
           <Card className="border-none shadow-sm bg-primary/5">
             <CardContent className="p-4 flex items-center gap-3">
@@ -146,7 +145,6 @@ export default function MedicationDetailPage() {
           </Card>
         </div>
 
-        {/* Stock Status */}
         <Card className="border-none shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -182,7 +180,6 @@ export default function MedicationDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Schedule */}
         <div className="space-y-3">
           <h3 className="text-sm font-bold flex items-center gap-2">
             <Calendar className="h-4 w-4" /> Daily Schedule
