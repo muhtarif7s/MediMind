@@ -13,42 +13,27 @@ service cloud.firestore {
     }
 
     // Collection Group rules for 'doseLogs'
-    // Optimized for: query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
+    // Required for query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{doseLogId} {
-      // allow list is triggered by collectionGroup queries.
-      // We must ensure the query filter (userId == auth.uid) is present.
-      allow list: if isSignedIn() && (
-        request.query.limit <= 500 && 
-        (resource == null || resource.data.userId == request.auth.uid)
-      );
+      // Allow reading and listing if the document belongs to the signed-in user.
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
       
-      // Allow single document access.
-      allow get: if isSignedIn() && (
-        resource.data.userId == request.auth.uid ||
-        (path.size() >= 4 && path[1] == request.auth.uid)
-      );
-      
-      // Allow creation if the data identifies the current user.
-      allow create: if isSignedIn() && (
-        request.resource.data.userId == request.auth.uid
-      );
+      // Allow creation if the new document identifies the current user.
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       
       // Allow updates/deletes if the existing document belongs to the user.
-      allow update, delete: if isSignedIn() && (
-        resource.data.userId == request.auth.uid
-      );
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
     // User Profile & Hierarchical Rules
     match /users/{userId} {
-      // Users can only read/write their own profile.
+      // Users can only read/write their own profile and everything underneath it.
       allow read, write: if isSignedIn() && request.auth.uid == userId;
 
-      // Medicine Rules
+      // Nested collections benefit from the parent userId match
       match /medicines/{medicineId} {
         allow read, write: if isSignedIn() && request.auth.uid == userId;
 
-        // Nested DoseLog Rules (direct subcollection access)
         match /doseLogs/{doseLogId} {
           allow read, write: if isSignedIn() && request.auth.uid == userId;
         }

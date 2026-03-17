@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
 import { initiateEmailSignIn, initiateEmailSignUp } from '@/firebase/non-blocking-login';
@@ -10,8 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { translations } from '@/lib/translations';
-import { Pill, Loader2, AlertCircle } from 'lucide-react';
-import { useEffect } from 'react';
+import { Pill, Loader2, Mail, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
@@ -34,25 +33,29 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) return;
+    
     setIsSubmitting(true);
 
     const callbacks = {
       onError: (err: any) => {
         setIsSubmitting(false);
-        let message = "Please check your credentials and try again.";
+        console.error('Auth Error:', err);
         
-        // Handle specific Firebase Auth error codes for better UX
+        let message = "An error occurred. Please try again.";
         if (err.code === 'auth/invalid-credential') {
-          message = "Invalid email or password. If you don't have an account, please click 'Create Account' below.";
+          message = "Incorrect email or password. If you don't have an account, switch to 'Create Account'.";
         } else if (err.code === 'auth/email-already-in-use') {
           message = "This email is already registered. Please log in instead.";
         } else if (err.code === 'auth/weak-password') {
-          message = "Password should be at least 6 characters.";
+          message = "Password must be at least 6 characters.";
+        } else if (err.code === 'auth/invalid-email') {
+          message = "Please enter a valid email address.";
         }
 
         toast({
           variant: "destructive",
-          title: "Authentication Failed",
+          title: "Auth Failed",
           description: message,
         });
       }
@@ -63,6 +66,9 @@ export default function LoginPage() {
     } else {
       initiateEmailSignIn(auth, email, password, callbacks);
     }
+    
+    // Safety timeout to reset submitting state if no response
+    setTimeout(() => setIsSubmitting(false), 10000);
   };
 
   if (isUserLoading) {
@@ -74,23 +80,32 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background items-center justify-center p-6">
-      <div className="mb-8 flex flex-col items-center gap-2">
-        <div className="p-4 bg-primary rounded-3xl shadow-xl shadow-primary/20">
-          <Pill className="h-10 w-10 text-primary-foreground" />
+    <div className="flex flex-col h-screen bg-background items-center justify-center p-6 overflow-hidden">
+      <div className="mb-12 flex flex-col items-center gap-3">
+        <div className="p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/30 animate-in zoom-in duration-500">
+          <Pill className="h-12 w-12 text-primary-foreground" />
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-primary mt-2">MediMind</h1>
+        <div className="text-center">
+          <h1 className="text-4xl font-extrabold tracking-tight text-foreground">MediMind</h1>
+          <p className="text-sm font-medium text-muted-foreground mt-1">Smart Health Companion</p>
+        </div>
       </div>
 
       <Card className="w-full max-w-sm border-none shadow-none bg-transparent">
-        <CardHeader className="text-center px-0">
-          <CardTitle className="text-2xl font-bold">{isRegistering ? t('register') : t('login')}</CardTitle>
-          <CardDescription>{isRegistering ? t('authSubtitle') : t('authWelcome')}</CardDescription>
+        <CardHeader className="text-center px-0 pb-8">
+          <CardTitle className="text-2xl font-bold">{isRegistering ? "Create Your Account" : "Welcome Back"}</CardTitle>
+          <CardDescription className="text-xs">
+            {isRegistering 
+              ? "Join MediMind to track your medications securely." 
+              : "Sign in to access your medication schedule."}
+          </CardDescription>
         </CardHeader>
         <CardContent className="px-0">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">{t('email')}</Label>
+              <Label htmlFor="email" className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
+                <Mail className="h-3 w-3" /> Email Address
+              </Label>
               <Input 
                 id="email" 
                 type="email" 
@@ -99,49 +114,60 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isSubmitting}
-                className="h-12 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary"
+                className="h-14 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary text-base"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">{t('password')}</Label>
+              <Label htmlFor="password" className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
+                <Lock className="h-3 w-3" /> Password
+              </Label>
               <Input 
                 id="password" 
                 type="password" 
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={isSubmitting}
-                className="h-12 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary"
+                className="h-14 rounded-2xl bg-card border-none shadow-sm focus:ring-2 focus:ring-primary text-base"
               />
             </div>
+            
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="w-full h-14 rounded-2xl text-lg font-bold mt-6 shadow-lg shadow-primary/20"
+              className="w-full h-14 rounded-2xl text-lg font-bold mt-8 shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
             >
               {isSubmitting ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-6 w-6 animate-spin" />
               ) : (
-                isRegistering ? t('register') : t('login')
+                isRegistering ? "Get Started" : "Sign In"
               )}
             </Button>
           </form>
 
-          <div className="mt-8 flex flex-col items-center gap-2">
-            <p className="text-sm text-muted-foreground">
-              {isRegistering ? t('hasAccount') : t('noAccount')}
+          <div className="mt-10 flex flex-col items-center gap-3">
+            <p className="text-xs font-medium text-muted-foreground">
+              {isRegistering ? "Already have an account?" : "Don't have an account yet?"}
             </p>
             <Button 
-              variant="link" 
-              onClick={() => setIsRegistering(!isRegistering)}
+              variant="outline" 
+              onClick={() => {
+                setIsRegistering(!isRegistering);
+                toast({ title: isRegistering ? "Switching to Login" : "Switching to Registration", duration: 1500 });
+              }}
               disabled={isSubmitting}
-              className="text-primary font-bold h-auto p-0"
+              className="w-full h-12 rounded-2xl font-bold border-2 border-primary/20 text-primary hover:bg-primary/5 hover:text-primary transition-colors"
             >
-              {isRegistering ? "Log In" : "Create Account"}
+              {isRegistering ? "Log In Instead" : "Create New Account"}
             </Button>
           </div>
         </CardContent>
       </Card>
+      
+      <p className="mt-auto text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.2em]">
+        MediMind • Version 1.2
+      </p>
     </div>
   );
 }
