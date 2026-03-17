@@ -142,7 +142,9 @@ export const translations = {
     otpSent: 'تم إرسال الرمز بنجاح',
     phoneVerified: 'تم التحقق من الهاتف بنجاح',
     invalidOTP: 'رمز غير صحيح، حاول مرة أخرى',
-    emailNotVerified: 'بريدك الإلكتروني غير موثق بعد'
+    emailNotVerified: 'بريدك الإلكتروني غير موثق بعد',
+    appointmentReminder: 'تذكير بموعد',
+    appointmentInOneHour: 'لديك موعد مع {name} بعد ساعة من الآن.'
   },
   en: {
     appTitle: 'Smart Dentist',
@@ -286,7 +288,9 @@ export const translations = {
     otpSent: 'OTP sent successfully',
     phoneVerified: 'Phone verified successfully',
     invalidOTP: 'Invalid OTP, try again',
-    emailNotVerified: 'Email not verified yet'
+    emailNotVerified: 'Email not verified yet',
+    appointmentReminder: 'Appointment Reminder',
+    appointmentInOneHour: 'You have an appointment with {name} in 1 hour.'
   },
   fr: {
     appTitle: 'Dentiste Intelligent',
@@ -430,7 +434,9 @@ export const translations = {
     otpSent: 'OTP envoyé avec succès',
     phoneVerified: 'Téléphone vérifié',
     invalidOTP: 'OTP invalide',
-    emailNotVerified: 'E-mail non vérifié'
+    emailNotVerified: 'E-mail non vérifié',
+    appointmentReminder: 'Rappel de rendez-vous',
+    appointmentInOneHour: 'Vous avez rendez-vous avec {name} dans 1 heure.'
   },
   es: {
     appTitle: 'Dentista Inteligente',
@@ -574,7 +580,9 @@ export const translations = {
     otpSent: 'OTP enviado con éxito',
     phoneVerified: 'Teléfono verificado',
     invalidOTP: 'OTP inválido',
-    emailNotVerified: 'Correo no verificado'
+    emailNotVerified: 'Correo no verificado',
+    appointmentReminder: 'Recordatorio de cita',
+    appointmentInOneHour: 'Tienes una cita con {name} en 1 hora.'
   },
   de: {
     appTitle: 'Smarter Zahnarzt',
@@ -718,6 +726,8 @@ export const translations = {
     otpSent: 'OTP erfolgreich gesendet',
     phoneVerified: 'Telefon verifiziert',
     invalidOTP: 'Ungültiges OTP',
-    emailNotVerified: 'E-Mail nicht verifiziert'
+    emailNotVerified: 'E-Mail nicht verifiziert',
+    appointmentReminder: 'Terminerinnerung',
+    appointmentInOneHour: 'Sie haben in 1 Stunde einen Termin mit {name}.'
   }
 };
