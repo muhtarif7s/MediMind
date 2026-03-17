@@ -3,6 +3,13 @@ export type AppointmentStatus = 'pending' | 'attended' | 'no-show' | 'cancelled'
 export type DoseStatus = 'pending' | 'taken' | 'skipped' | 'missed';
 export type DosageUnit = 'pill' | 'mg' | 'ml' | 'drop' | 'capsule' | 'injection';
 
+export interface UserProfile {
+  userId: string;
+  name: string;
+  email: string;
+  createdAt: string;
+}
+
 export interface Patient {
   id: string;
   clinicId: string;

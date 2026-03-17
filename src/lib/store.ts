@@ -9,7 +9,8 @@ import {
   AppointmentStatus,
   Medication,
   DoseLog,
-  DoseStatus
+  DoseStatus,
+  UserProfile
 } from './types';
 import {
   useUser,
@@ -37,6 +38,29 @@ export function useClinic() {
   const db = useFirestore();
 
   const shouldFetch = !!user && !isUserLoading;
+
+  // 0. User Profile (users collection)
+  const userProfileRef = useMemoFirebase(() => {
+    return shouldFetch ? doc(db, 'users', user.uid) : null;
+  }, [db, user, shouldFetch]);
+
+  const { data: userProfileData, isLoading: isUserProfileLoading } = useDoc<UserProfile>(userProfileRef);
+
+  // Auto-bootstrap user profile
+  useEffect(() => {
+    if (shouldFetch && userProfileRef && !isUserProfileLoading && !userProfileData) {
+      setDocumentNonBlocking(
+        userProfileRef,
+        {
+          userId: user.uid,
+          name: user.displayName || 'مستخدم جديد',
+          email: user.email || '',
+          createdAt: new Date().toISOString()
+        },
+        { merge: true }
+      );
+    }
+  }, [shouldFetch, userProfileRef, isUserProfileLoading, userProfileData, user]);
 
   // 1. Clinic Profile
   const clinicRef = useMemoFirebase(() => {
@@ -149,7 +173,8 @@ export function useClinic() {
   const isLoaded =
     !isUserLoading &&
     (!user ||
-      (!isClinicLoading &&
+      (!isUserProfileLoading &&
+        !isClinicLoading &&
         !isPatientsLoading &&
         !isAppointmentsLoading &&
         !isMedicationsLoading &&
@@ -158,6 +183,7 @@ export function useClinic() {
   return {
     user,
     isUserLoading,
+    userProfile: userProfileData,
     profile: clinicData || {
       name: 'دكتور',
       language: 'ar',
