@@ -18,14 +18,11 @@ service cloud.firestore {
     // 1. Collection Group Rules (Must be top-level for queries)
     // This allows query(collectionGroup(db, 'doseLogs'), where('userId', '==', auth.uid))
     match /{path=**}/doseLogs/{doseLogId} {
-      // For collection group queries, the 'resource' variable represents documents in the query result.
-      // We authorize based on the denormalized userId field which must match the filter.
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
-      
-      // For direct gets via path
-      allow get: if isSignedIn() && (
-        resource.data.userId == request.auth.uid ||
-        path[1] == request.auth.uid // Path segments: /users/{userId}/medicines/{medId}/doseLogs/{logId}
+      // For collection group queries, we authorize based on the userId field.
+      // We use 'read' to cover both 'get' and 'list' operations.
+      allow read: if isSignedIn() && (
+        (resource != null && resource.data.userId == request.auth.uid) ||
+        (resource == null) // Allow query planning even if no documents exist yet
       );
       
       // Write operations
@@ -43,7 +40,7 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
 
         match /doseLogs/{doseLogId} {
-          // Fallback path-based access
+          // Path-based access for direct reads
           allow read, write: if isOwner(userId);
         }
       }
