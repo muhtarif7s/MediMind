@@ -1,4 +1,5 @@
 
+export type UserRole = 'doctor' | 'patient' | 'admin';
 export type AppointmentStatus = 'pending' | 'attended' | 'no-show' | 'cancelled';
 export type DoseStatus = 'pending' | 'taken' | 'skipped' | 'missed';
 export type DosageUnit = 'pill' | 'mg' | 'ml' | 'drop' | 'capsule' | 'injection';
@@ -8,6 +9,7 @@ export interface UserProfile {
   userId: string;
   name: string;
   email: string;
+  role: UserRole;
   phone?: string;
   language: 'ar' | 'en' | 'fr' | 'es' | 'de';
   theme: 'light' | 'dark';

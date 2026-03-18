@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -9,7 +10,8 @@ import {
   DoseLog,
   DoseStatus,
   UserProfile,
-  PatientRecord
+  PatientRecord,
+  UserRole
 } from './types';
 import {
   useUser,
@@ -38,14 +40,13 @@ import { logger } from './logger';
 
 /**
  * Main clinical store hook.
- * Optimized for performance and offline support.
+ * Enhanced with RBAC awareness and strict data validation.
  */
 export function useClinic() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
-  // Monitor network status
   useEffect(() => {
     const handleStatus = () => setIsOnline(navigator.onLine);
     window.addEventListener('online', handleStatus);
@@ -58,7 +59,7 @@ export function useClinic() {
 
   const shouldFetch = !!user && !isUserLoading;
 
-  // 1. Data Subscriptions (Memoized & Limited for Performance)
+  // 1. Data Subscriptions
   const userProfileRef = useMemoFirebase(() => shouldFetch ? doc(db, 'users', user.uid) : null, [db, user, shouldFetch]);
   const { data: userProfileData, isLoading: isUserProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
@@ -81,7 +82,7 @@ export function useClinic() {
   const medications = medicationsData || [];
 
   const historyQuery = useMemoFirebase(() => 
-    shouldFetch ? query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid), orderBy('recordedAt', 'desc'), limit(50)) : null, 
+    shouldFetch ? query(collectionGroup(db, 'doseLogs'), where('userId', '==', user?.uid), orderBy('recordedAt', 'desc'), limit(50)) : null, 
   [db, user, shouldFetch]);
   const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseLog>(historyQuery);
   const history = historyData || [];
@@ -95,12 +96,14 @@ export function useClinic() {
   };
 
   /**
-   * Safe execution wrapper for mutations. 
-   * Catches runtime errors and emits them globally.
+   * Safe execution wrapper for mutations with data validation.
    */
-  const executeSafe = <T extends any[]>(fn: (...args: T) => void) => {
+  const executeSafe = <T extends any[]>(fn: (...args: T) => void, validation?: (...args: T) => boolean) => {
     return (...args: T) => {
       try {
+        if (validation && !validation(...args)) {
+          throw new Error('Data validation failed');
+        }
         fn(...args);
       } catch (err: any) {
         logger.error('StoreAction', err.message);
@@ -109,15 +112,18 @@ export function useClinic() {
     };
   };
 
-  // --- Clinical Actions (Offline-Safe Non-Blocking) ---
-  const addPatient = executeSafe((patient: Omit<Patient, 'id' | 'clinicId' | 'createdAt'>) => {
-    if (!shouldFetch) return;
-    addDocumentNonBlocking(collection(db, 'users', user.uid, 'patients'), {
-      ...patient,
-      clinicId: user.uid,
-      createdAt: new Date().toISOString()
-    });
-  });
+  // --- Clinical Actions ---
+  const addPatient = executeSafe(
+    (patient: Omit<Patient, 'id' | 'clinicId' | 'createdAt'>) => {
+      if (!shouldFetch) return;
+      addDocumentNonBlocking(collection(db, 'users', user.uid, 'patients'), {
+        ...patient,
+        clinicId: user.uid,
+        createdAt: new Date().toISOString()
+      });
+    },
+    (p) => !!p.name && p.name.length >= 2
+  );
 
   const addPatientRecord = executeSafe((patientId: string, record: Omit<PatientRecord, 'id' | 'createdAt'>) => {
     if (!shouldFetch) return;
@@ -127,14 +133,17 @@ export function useClinic() {
     });
   });
 
-  const addAppointment = executeSafe((app: Omit<Appointment, 'id' | 'clinicId' | 'status'>) => {
-    if (!shouldFetch) return;
-    addDocumentNonBlocking(collection(db, 'users', user.uid, 'appointments'), {
-      ...app,
-      clinicId: user.uid,
-      status: 'pending'
-    });
-  });
+  const addAppointment = executeSafe(
+    (app: Omit<Appointment, 'id' | 'clinicId' | 'status'>) => {
+      if (!shouldFetch) return;
+      addDocumentNonBlocking(collection(db, 'users', user.uid, 'appointments'), {
+        ...app,
+        clinicId: user.uid,
+        status: 'pending'
+      });
+    },
+    (app) => !!app.dateTime
+  );
 
   const updateAppointmentStatus = executeSafe((id: string, status: AppointmentStatus) => {
     if (!shouldFetch) return;
@@ -177,6 +186,7 @@ export function useClinic() {
       ...updates,
       userId: user?.uid,
       email: user?.email,
+      role: userProfileData?.role || 'doctor',
       createdAt: userProfileData?.createdAt || new Date().toISOString()
     }, { merge: true });
   });
@@ -185,7 +195,7 @@ export function useClinic() {
     user,
     isUserLoading,
     isOnline,
-    profile: userProfileData || { userId: user?.uid || '', name: 'طبيب', email: user?.email || '', language: 'ar', theme: 'light', notificationsEnabled: true, createdAt: new Date().toISOString() },
+    profile: userProfileData || { userId: user?.uid || '', name: 'طبيب', email: user?.email || '', role: 'doctor' as UserRole, language: 'ar', theme: 'light', notificationsEnabled: true, createdAt: new Date().toISOString() },
     patients,
     appointments,
     medications,
@@ -205,14 +215,14 @@ export function useClinic() {
     },
     setProfile,
     addMedication,
-    updateMedication: executeSafe((id: string, updates: Partial<Medication>) => {
+    updateMedication: (id: string, updates: Partial<Medication>) => {
       if (!shouldFetch) return;
       updateDocumentNonBlocking(doc(db, 'users', user.uid, 'medicines', id), updates);
-    }),
-    deleteMedication: executeSafe((id: string) => {
+    },
+    deleteMedication: (id: string) => {
       if (!shouldFetch) return;
       deleteDocumentNonBlocking(doc(db, 'users', user.uid, 'medicines', id));
-    }),
+    },
     logDose,
     getTodayDoses: () => {
       const todayDoses: Array<{ med: Medication; time: string; status: DoseStatus }> = [];
@@ -225,6 +235,15 @@ export function useClinic() {
         });
       });
       return todayDoses.sort((a, b) => a.time.localeCompare(b.time));
+    },
+    clearPatients: () => {
+      patients.forEach(p => deleteDocumentNonBlocking(doc(db, 'users', user!.uid, 'patients', p.id)));
+    },
+    clearAppointments: () => {
+      appointments.forEach(a => deleteDocumentNonBlocking(doc(db, 'users', user!.uid, 'appointments', a.id)));
+    },
+    clearMedications: () => {
+      medications.forEach(m => deleteDocumentNonBlocking(doc(db, 'users', user!.uid, 'medicines', m.id)));
     }
   };
 }

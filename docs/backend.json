@@ -5,92 +5,44 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
       "type": "object",
-      "description": "Stores user-specific settings, preferences, and basic identifying information.",
+      "description": "Stores user-specific settings, roles, and preferences.",
       "properties": {
-        "userId": {
-          "type": "string",
-          "description": "Unique identifier for the user (e.g., Firebase Auth UID)."
-        },
-        "name": {
-          "type": "string",
-          "description": "The user's display name."
-        },
-        "email": {
-          "type": "string",
-          "description": "The user's email address.",
-          "format": "email"
-        },
-        "phone": {
-          "type": "string",
-          "description": "The user's contact phone number."
-        },
-        "language": {
-          "type": "string",
-          "description": "Default language for the interface (e.g., 'ar', 'en').",
-          "default": "ar"
-        },
-        "theme": {
-          "type": "string",
-          "description": "UI theme preference ('light' or 'dark').",
-          "default": "light"
-        },
-        "notificationsEnabled": {
-          "type": "boolean",
-          "description": "Whether push notifications/reminders are active.",
-          "default": true
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the user profile was created.",
-          "format": "date-time"
-        }
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["doctor", "patient", "admin"], "default": "doctor" },
+        "phone": { "type": "string" },
+        "language": { "type": "string", "default": "ar" },
+        "theme": { "type": "string", "default": "light" },
+        "notificationsEnabled": { "type": "boolean", "default": true },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "userId",
-        "name",
-        "email",
-        "createdAt"
-      ]
+      "required": ["userId", "name", "email", "role", "createdAt"]
     },
     "Patient": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Patient",
       "type": "object",
-      "description": "Represents a patient in the clinic.",
       "properties": {
-        "name": { "type": "string" },
-        "age": { "type": "number" },
+        "name": { "type": "string", "minLength": 2 },
+        "age": { "type": "number", "minimum": 0 },
         "clinicId": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" },
         "phone": { "type": "string" },
-        "notes": { "type": "string" }
-      },
-      "required": ["name", "clinicId", "createdAt"]
-    },
-    "PatientRecord": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "PatientRecord",
-      "type": "object",
-      "description": "A medical record attached to a patient (e.g. X-ray, Prescription).",
-      "properties": {
-        "title": { "type": "string" },
-        "type": { "type": "string", "enum": ["x-ray", "prescription", "report", "other"] },
-        "fileData": { "type": "string", "description": "Base64 encoded file data or image URI." },
+        "notes": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["title", "type", "fileData", "createdAt"]
+      "required": ["name", "clinicId", "createdAt"]
     },
     "Appointment": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Appointment",
       "type": "object",
-      "description": "Represents a dental appointment.",
       "properties": {
         "clinicId": { "type": "string" },
         "patientId": { "type": "string" },
         "patientName": { "type": "string" },
         "dateTime": { "type": "string", "format": "date-time" },
-        "status": { "type": "string", "enum": ["pending", "attended", "no-show", "cancelled"], "default": "pending" },
+        "status": { "type": "string", "enum": ["pending", "attended", "no-show", "cancelled"] },
         "treatment": { "type": "string" }
       },
       "required": ["clinicId", "dateTime", "status"]
@@ -99,144 +51,30 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Medication",
       "type": "object",
-      "description": "Represents a medication schedule and inventory for a user.",
       "properties": {
-        "userId": {
-          "type": "string",
-          "description": "The unique identifier of the user who owns this medication."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the medication."
-        },
-        "dosageAmount": {
-          "type": "number",
-          "description": "The amount of medication per dose."
-        },
-        "dosageUnit": {
-          "type": "string",
-          "description": "The unit of the dosage (e.g., 'pill', 'mg')."
-        },
-        "times": {
-          "type": "array",
-          "description": "List of times (HH:mm) when the medication should be taken.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "startDate": {
-          "type": "string",
-          "description": "The date when the medication schedule starts.",
-          "format": "date-time"
-        },
-        "totalQuantity": {
-          "type": "number",
-          "description": "The initial total quantity of medication."
-        },
-        "remainingQuantity": {
-          "type": "number",
-          "description": "The current remaining quantity of medication."
-        },
-        "refillThreshold": {
-          "type": "number",
-          "description": "The threshold quantity at which a refill alert is triggered."
-        },
-        "frequency": {
-          "type": "string",
-          "description": "The frequency of medication intake (e.g., 'daily')."
-        }
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "dosageAmount": { "type": "number" },
+        "dosageUnit": { "type": "string" },
+        "times": { "type": "array", "items": { "type": "string" } },
+        "totalQuantity": { "type": "number" },
+        "remainingQuantity": { "type": "number" },
+        "refillThreshold": { "type": "number" }
       },
-      "required": [
-        "userId",
-        "name",
-        "dosageAmount",
-        "dosageUnit",
-        "times",
-        "startDate",
-        "totalQuantity",
-        "remainingQuantity",
-        "refillThreshold",
-        "frequency"
-      ]
-    },
-    "DoseLog": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "DoseLog",
-      "type": "object",
-      "description": "Records an instance of a medication dose being taken, missed, or skipped.",
-      "properties": {
-        "userId": {
-          "type": "string",
-          "description": "The unique identifier of the user who took the dose."
-        },
-        "medicationId": {
-          "type": "string",
-          "description": "The ID of the medication this log refers to."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the medication at the time of the log."
-        },
-        "status": {
-          "type": "string",
-          "description": "The status of the dose (e.g., 'taken', 'missed').",
-          "enum": ["taken", "missed", "skipped", "pending"]
-        },
-        "scheduledTime": {
-          "type": "string",
-          "description": "The original time the dose was scheduled for.",
-          "format": "date-time"
-        },
-        "recordedAt": {
-          "type": "string",
-          "description": "The time the status was recorded.",
-          "format": "date-time"
-        },
-        "takenAt": {
-          "type": "string",
-          "description": "The actual time the medication was taken (if applicable).",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "userId",
-        "medicationId",
-        "name",
-        "status",
-        "scheduledTime",
-        "recordedAt"
-      ]
+      "required": ["userId", "name", "dosageAmount", "totalQuantity", "remainingQuantity"]
     }
   },
   "auth": {
-    "providers": [
-      "password"
-    ]
+    "providers": ["password"]
   },
   "firestore": {
     "/users/{userId}": {
       "schema": { "$ref": "#/backend/entities/UserProfile" },
-      "description": "Stores individual user profiles including settings."
+      "description": "User profiles with role-based access."
     },
     "/users/{userId}/medicines/{medicineId}": {
       "schema": { "$ref": "#/backend/entities/Medication" },
-      "description": "Individual medications for a user."
-    },
-    "/users/{userId}/medicines/{medicineId}/doseLogs/{doseLogId}": {
-      "schema": { "$ref": "#/backend/entities/DoseLog" },
-      "description": "Logs for each dose of a medication."
-    },
-    "/users/{userId}/patients/{patientId}": {
-      "schema": { "$ref": "#/backend/entities/Patient" },
-      "description": "User clinic patients."
-    },
-    "/users/{userId}/patients/{patientId}/records/{recordId}": {
-      "schema": { "$ref": "#/backend/entities/PatientRecord" },
-      "description": "Medical records for a specific patient."
-    },
-    "/users/{userId}/appointments/{appointmentId}": {
-      "schema": { "$ref": "#/backend/entities/Appointment" },
-      "description": "User clinic appointments."
+      "description": "User medications."
     }
   }
 }
