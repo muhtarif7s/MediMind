@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useCallback, useEffect } from 'react';
@@ -22,7 +21,6 @@ export function WelcomeView() {
   const { t, profile } = useMediMind();
   const router = useRouter();
 
-  // Determine RTL based on current language
   const isRTL = (profile?.language || 'ar') === 'ar';
 
   const onSelect = useCallback(() => {
@@ -38,7 +36,6 @@ export function WelcomeView() {
     };
   }, [api, onSelect]);
 
-  // Unified image source with direct fallback verification
   const getStepImage = (id: string) => {
     return PlaceHolderImages.find(img => img.id === id)?.imageUrl;
   };
@@ -80,7 +77,6 @@ export function WelcomeView() {
 
   return (
     <div className="h-screen w-full flex flex-col bg-slate-950 overflow-hidden relative" dir={isRTL ? 'rtl' : 'ltr'}>
-      {/* Background Animated Gradients */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className={cn(
           "absolute -top-1/4 -left-1/4 w-[150%] h-[150%] bg-gradient-to-br opacity-20 blur-[100px] transition-all duration-1000",
@@ -112,7 +108,7 @@ export function WelcomeView() {
         >
           <CarouselContent className="h-full">
             {onboardingSteps.map((step, index) => (
-              <CarouselItem key={index} className="h-full flex flex-col items-center justify-center px-8 text-center space-y-12">
+              <CarouselItem key={index} className="h-full flex flex-col items-center justify-center px-8 text-center space-y-8 md:space-y-12">
                 <div className="relative group">
                   <div className={cn(
                     "absolute inset-0 bg-gradient-to-tr opacity-25 blur-3xl rounded-full scale-125",
@@ -125,26 +121,23 @@ export function WelcomeView() {
                         alt={step.title}
                         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                         data-ai-hint="medical clinic"
-                        onError={(e) => {
-                          // Fallback if image fails to load
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
                       />
-                    ) : null}
-                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/40">
-                      <step.icon className="h-24 w-24 text-white/5" />
-                    </div>
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center bg-slate-800">
+                         <step.icon className="h-20 w-20 text-white/10" />
+                      </div>
+                    )}
                   </div>
                   <div className="absolute -bottom-6 -inline-end-6 h-20 w-20 bg-white/5 backdrop-blur-2xl border border-white/20 rounded-[2rem] flex items-center justify-center shadow-2xl z-20">
                     <step.icon className={cn("h-10 w-10", step.iconColor)} />
                   </div>
                 </div>
 
-                <div className="space-y-6 max-w-sm animate-in slide-in-from-bottom-8 duration-700 delay-200">
-                  <h2 className="text-3xl md:text-5xl font-extrabold text-white leading-tight tracking-tight drop-shadow-sm">
+                <div className="space-y-4 md:space-y-6 max-w-sm animate-in slide-in-from-bottom-8 duration-700 delay-200">
+                  <h2 className="text-3xl md:text-5xl font-extrabold text-white leading-tight tracking-tight drop-shadow-sm px-2">
                     {step.title}
                   </h2>
-                  <p className="text-sm md:text-lg text-white/60 leading-relaxed font-semibold">
+                  <p className="text-sm md:text-lg text-white/60 leading-relaxed font-semibold px-4">
                     {step.description}
                   </p>
                 </div>
