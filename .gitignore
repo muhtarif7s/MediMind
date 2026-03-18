@@ -36,3 +36,4 @@ next-env.d.ts
 
 # SECURITY: Ignore Firebase Config with sensitive keys
 src/firebase/config.ts
+src/firebase/config.ts
