@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMediMind } from '@/lib/store';
+import { useClinic } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import {
@@ -18,7 +18,7 @@ import Link from 'next/link';
 export function WelcomeView() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
-  const { t, profile } = useMediMind();
+  const { t, profile } = useClinic();
   const router = useRouter();
 
   const isRTL = (profile?.language || 'ar') === 'ar';

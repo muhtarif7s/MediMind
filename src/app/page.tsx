@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useClinic } from '@/lib/store';
@@ -32,12 +31,10 @@ export default function RootPage() {
   } = useClinic();
   const router = useRouter();
 
-  // Handle mounting to avoid hydration mismatches and SSR errors
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Show a blank loading state or placeholder during SSR and initial hydration
   if (!mounted || isUserLoading || !isLoaded) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
@@ -46,7 +43,7 @@ export default function RootPage() {
     );
   }
 
-  // If no user is authenticated, show the Welcome/Onboarding experience
+  // If no user is authenticated, show the Welcome experience directly
   if (!user) {
     return <WelcomeView />;
   }
@@ -61,7 +58,6 @@ export default function RootPage() {
     );
   }
 
-  // Authenticated Dashboard View
   const todayApps = getTodayAppointments();
   const todayDoses = getTodayDoses();
   const nextDose = todayDoses.find(d => d.status === 'pending');
@@ -98,7 +94,6 @@ export default function RootPage() {
       </header>
 
       <ScrollArea className="flex-1 p-6 space-y-8 no-scrollbar">
-        {/* PERSONAL HEALTH SECTION */}
         {nextDose ? (
           <section className="space-y-4">
             <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">
@@ -115,7 +110,6 @@ export default function RootPage() {
           </section>
         )}
 
-        {/* CLINICAL QUICK ACTIONS */}
         <section className="space-y-4">
           <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">
             {t('quickActions')}
@@ -140,7 +134,6 @@ export default function RootPage() {
           </div>
         </section>
 
-        {/* STATS OVERVIEW */}
         <div className="grid grid-cols-2 gap-4">
           <Card className="border-none shadow-sm bg-muted/20 rounded-3xl">
             <CardContent className="p-4 flex flex-col items-center text-center">
@@ -156,7 +149,6 @@ export default function RootPage() {
           </Card>
         </div>
 
-        {/* DAILY MEDICATION TIMELINE */}
         {todayDoses.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between px-1">
@@ -172,7 +164,6 @@ export default function RootPage() {
           </section>
         )}
 
-        {/* TODAY'S CLINICAL SCHEDULE */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <h3 className="font-bold text-foreground flex items-center gap-2 text-start">
