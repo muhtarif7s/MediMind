@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
@@ -45,6 +46,22 @@ import { logger } from './logger';
 export function useClinic() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
+  const [isOnline, setIsOnline] = useState(true);
+
+  // Network Status Tracking
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsOnline(window.navigator.onLine);
+      const handleOnline = () => setIsOnline(true);
+      const handleOffline = () => setIsOnline(false);
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
+  }, []);
 
   const shouldFetch = !!user && !isUserLoading;
 
@@ -190,6 +207,7 @@ export function useClinic() {
   return {
     user,
     isUserLoading,
+    isOnline,
     profile: userProfileData || { 
       userId: user?.uid || '', 
       name: 'طبيب', 
