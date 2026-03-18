@@ -2,6 +2,7 @@
 
 import { Medication, DoseStatus } from '@/lib/types';
 import { format, parseISO } from 'date-fns';
+import { ar, enUS, fr, es, de } from 'date-fns/locale';
 import { CheckCircle2, Circle, XCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -14,13 +15,18 @@ interface TimelineProps {
 
 export function TodayTimeline({ doses, onAction }: TimelineProps) {
   const { t, profile } = useMediMind();
+  
+  const localeMap = { ar, en: enUS, fr, es, de };
+  const locale = (localeMap as any)[profile.language] || ar;
   const isRTL = profile.language === 'ar';
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold">{t('todaysTimeline')}</h3>
-        <span className="text-xs text-muted-foreground font-medium">{format(new Date(), 'EEEE, MMMM do')}</span>
+        <span className="text-xs text-muted-foreground font-medium">
+          {format(new Date(), 'EEEE, MMMM do', { locale })}
+        </span>
       </div>
 
       <div className={cn(
@@ -46,7 +52,9 @@ export function TodayTimeline({ doses, onAction }: TimelineProps) {
 
               <div className="flex flex-col gap-1 text-start">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold text-muted-foreground">{format(doseTime, 'hh:mm a')}</p>
+                  <p className="text-xs font-bold text-muted-foreground">
+                    {format(doseTime, 'hh:mm a', { locale })}
+                  </p>
                   {dose.status === 'pending' && (
                     <div className="flex gap-2">
                       <Button 

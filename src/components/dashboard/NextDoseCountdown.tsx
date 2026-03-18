@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Medication } from '@/lib/types';
 import { parseISO, differenceInSeconds, format } from 'date-fns';
-import { ar, enUS } from 'date-fns/locale';
+import { ar, enUS, fr, es, de } from 'date-fns/locale';
 import { Card, CardContent } from "@/components/ui/card";
 import { Pill, Clock, AlertCircle } from "lucide-react";
 import { useMediMind } from '@/lib/store';
@@ -16,7 +16,9 @@ interface NextDoseProps {
 export function NextDoseCountdown({ medication, scheduledTime }: NextDoseProps) {
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const { t, profile } = useMediMind();
-  const locale = profile.language === 'ar' ? ar : enUS;
+  
+  const localeMap = { ar, en: enUS, fr, es, de };
+  const locale = (localeMap as any)[profile.language] || ar;
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -51,7 +53,7 @@ export function NextDoseCountdown({ medication, scheduledTime }: NextDoseProps) 
         </div>
         <h2 className="text-2xl font-bold mb-1">{medication.name}</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          {medication.dosageAmount} {t(medication.dosageUnit as any)} at {format(parseISO(scheduledTime), 'hh:mm a', { locale })}
+          {medication.dosageAmount} {t(medication.dosageUnit as any)} {t('at')} {format(parseISO(scheduledTime), 'hh:mm a', { locale })}
         </p>
         
         {!isDue ? (

@@ -177,7 +177,8 @@ export const translations = {
     getStarted: "ابدأ الآن",
     next: "التالي",
     skip: "تخطي",
-    offlineMode: 'أنت تعمل في وضع عدم الاتصال بالإنترنت'
+    offlineMode: 'أنت تعمل في وضع عدم الاتصال بالإنترنت',
+    at: 'في'
   },
   en: {
     appTitle: 'Smart Dentist',
@@ -357,7 +358,8 @@ export const translations = {
     getStarted: "Start Now",
     next: "Next",
     skip: "Skip",
-    offlineMode: 'You are working offline'
+    offlineMode: 'You are working offline',
+    at: 'at'
   },
   fr: {
     appTitle: 'Dentiste Intelligent',
@@ -537,7 +539,8 @@ export const translations = {
     getStarted: "Commencer Maintenant",
     next: "Suivant",
     skip: "Passer",
-    offlineMode: 'Vous travaillez hors ligne'
+    offlineMode: 'Vous travaillez hors ligne',
+    at: 'à'
   },
   es: {
     appTitle: 'Dentista Inteligente',
@@ -716,7 +719,8 @@ export const translations = {
     getStarted: "Empezar Ahora",
     next: "Siguiente",
     skip: "Saltar",
-    offlineMode: 'Estás trabajando sin conexión'
+    offlineMode: 'Estás trabajando sin conexión',
+    at: 'a las'
   },
   de: {
     appTitle: 'Smarter Zahnarzt',
@@ -896,6 +900,7 @@ export const translations = {
     getStarted: "Jetzt Starten",
     next: "Weiter",
     skip: "Passer",
-    offlineMode: 'Sie arbeiten offline'
+    offlineMode: 'Sie arbeiten offline',
+    at: 'um'
   }
 };
