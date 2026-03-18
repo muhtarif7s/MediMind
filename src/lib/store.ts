@@ -31,7 +31,6 @@ import {
   query,
   orderBy,
   where,
-  collectionGroup,
   limit,
 } from 'firebase/firestore';
 import { translations } from './translations';
@@ -43,22 +42,25 @@ import { requestNotificationToken, setupForegroundListener } from '@/firebase/me
 /**
  * Main clinical store hook.
  * Enhanced with RBAC awareness, offline persistence, and FCM messaging.
+ * Scopes all data strictly under users/{userId} to prevent permission issues.
  */
 export function useClinic() {
   const { user, isUserLoading } = useUser();
-  const { messaging, analytics } = useFirebase();
+  const { messaging } = useFirebase();
   const db = useFirestore();
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
   // --- Network Status ---
   useEffect(() => {
     const handleStatus = () => setIsOnline(navigator.onLine);
-    window.addEventListener('online', handleStatus);
-    window.addEventListener('offline', handleStatus);
-    return () => {
-      window.removeEventListener('online', handleStatus);
-      window.removeEventListener('offline', handleStatus);
-    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', handleStatus);
+      window.addEventListener('offline', handleStatus);
+      return () => {
+        window.removeEventListener('online', handleStatus);
+        window.removeEventListener('offline', handleStatus);
+      };
+    }
   }, []);
 
   // --- FCM Setup ---
@@ -67,8 +69,6 @@ export function useClinic() {
       setupForegroundListener(messaging);
       requestNotificationToken(messaging).then(token => {
         if (token) {
-          // In a real app, you'd save this token to the user's profile in Firestore
-          // to trigger push notifications from the backend.
           logger.debug('Store', 'FCM Token ready for profile update');
         }
       });
@@ -77,45 +77,54 @@ export function useClinic() {
 
   const shouldFetch = !!user && !isUserLoading;
 
-  // 1. Data Subscriptions
+  // --- Firestore Data Subscriptions ---
+  
+  // 1. User Profile
   const userProfileRef = useMemoFirebase(() => shouldFetch ? doc(db, 'users', user.uid) : null, [db, user, shouldFetch]);
   const { data: userProfileData, isLoading: isUserProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
+  // 2. Patients (Scoped to Doctor UID)
   const patientsQuery = useMemoFirebase(() => 
     shouldFetch ? query(collection(db, 'users', user.uid, 'patients'), orderBy('createdAt', 'desc'), limit(100)) : null, 
   [db, user, shouldFetch]);
   const { data: patientsData, isLoading: isPatientsLoading } = useCollection<Patient>(patientsQuery);
   const patients = patientsData || [];
 
+  // 3. Appointments (Scoped to Doctor UID)
   const appointmentsQuery = useMemoFirebase(() => 
     shouldFetch ? query(collection(db, 'users', user.uid, 'appointments'), orderBy('dateTime', 'asc')) : null, 
   [db, user, shouldFetch]);
   const { data: appointmentsData, isLoading: isAppointmentsLoading } = useCollection<Appointment>(appointmentsQuery);
   const appointments = appointmentsData || [];
 
+  // 4. Medications (Scoped to User UID)
   const medicationsQuery = useMemoFirebase(() => 
     shouldFetch ? query(collection(db, 'users', user.uid, 'medicines'), orderBy('name')) : null, 
   [db, user, shouldFetch]);
   const { data: medicationsData, isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
   const medications = medicationsData || [];
 
+  // 5. Dose History (Moved from collectionGroup to direct subcollection for security stability)
   const historyQuery = useMemoFirebase(() => 
-    shouldFetch ? query(collectionGroup(db, 'doseLogs'), where('userId', '==', user?.uid), orderBy('recordedAt', 'desc'), limit(50)) : null, 
+    shouldFetch ? query(collection(db, 'users', user.uid, 'doseLogs'), orderBy('recordedAt', 'desc'), limit(50)) : null, 
   [db, user, shouldFetch]);
   const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseLog>(historyQuery);
   const history = historyData || [];
 
   const isLoaded = !isUserLoading && (!user || (!isUserProfileLoading && !isPatientsLoading && !isAppointmentsLoading && !isMedicationsLoading && !isHistoryLoading));
 
+  // --- Translation Helper ---
   const t = useCallback((key: string) => {
     const lang = userProfileData?.language || 'ar';
     const dict = (translations as any)[lang] || translations.en;
     return dict[key] || key;
   }, [userProfileData?.language]);
 
+  // --- Defensive Action Wrapper ---
   const executeSafe = <T extends any[]>(fn: (...args: T) => void, validation?: (...args: T) => boolean) => {
     return (...args: T) => {
       try {
+        if (!user) throw new Error('Unauthenticated action denied');
         if (validation && !validation(...args)) {
           throw new Error('Data validation failed');
         }
@@ -128,9 +137,10 @@ export function useClinic() {
   };
 
   // --- Clinical Actions ---
+
   const addPatient = executeSafe(
     (patient: Omit<Patient, 'id' | 'clinicId' | 'createdAt'>) => {
-      if (!shouldFetch) return;
+      if (!user) return;
       addDocumentNonBlocking(collection(db, 'users', user.uid, 'patients'), {
         ...patient,
         clinicId: user.uid,
@@ -141,7 +151,7 @@ export function useClinic() {
   );
 
   const addPatientRecord = executeSafe((patientId: string, record: Omit<PatientRecord, 'id' | 'createdAt'>) => {
-    if (!shouldFetch) return;
+    if (!user) return;
     addDocumentNonBlocking(collection(db, 'users', user.uid, 'patients', patientId, 'records'), {
       ...record,
       createdAt: new Date().toISOString()
@@ -150,7 +160,7 @@ export function useClinic() {
 
   const addAppointment = executeSafe(
     (app: Omit<Appointment, 'id' | 'clinicId' | 'status'>) => {
-      if (!shouldFetch) return;
+      if (!user) return;
       addDocumentNonBlocking(collection(db, 'users', user.uid, 'appointments'), {
         ...app,
         clinicId: user.uid,
@@ -161,12 +171,12 @@ export function useClinic() {
   );
 
   const updateAppointmentStatus = executeSafe((id: string, status: AppointmentStatus) => {
-    if (!shouldFetch) return;
+    if (!user) return;
     updateDocumentNonBlocking(doc(db, 'users', user.uid, 'appointments', id), { status });
   });
 
   const addMedication = executeSafe((med: Omit<Medication, 'id' | 'userId'>) => {
-    if (!shouldFetch) return;
+    if (!user) return;
     addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicines'), {
       ...med,
       userId: user.uid
@@ -174,11 +184,12 @@ export function useClinic() {
   });
 
   const logDose = executeSafe((medId: string, scheduledTime: string, status: DoseStatus) => {
-    if (!shouldFetch) return;
+    if (!user) return;
     const med = medications.find(m => m.id === medId);
     if (!med) return;
 
-    addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicines', medId, 'doseLogs'), {
+    // Fixed path: doseLogs are now strictly scoped under the user for permission stability
+    addDocumentNonBlocking(collection(db, 'users', user.uid, 'doseLogs'), {
       userId: user.uid,
       medicationId: medId,
       name: med.name,
@@ -196,11 +207,11 @@ export function useClinic() {
   });
 
   const setProfile = executeSafe((updates: Partial<UserProfile>) => {
-    if (!userProfileRef) return;
+    if (!userProfileRef || !user) return;
     setDocumentNonBlocking(userProfileRef, {
       ...updates,
-      userId: user?.uid,
-      email: user?.email,
+      userId: user.uid,
+      email: user.email,
       role: userProfileData?.role || 'doctor',
       createdAt: userProfileData?.createdAt || new Date().toISOString()
     }, { merge: true });
@@ -210,7 +221,16 @@ export function useClinic() {
     user,
     isUserLoading,
     isOnline,
-    profile: userProfileData || { userId: user?.uid || '', name: 'طبيب', email: user?.email || '', role: 'doctor' as UserRole, language: 'ar', theme: 'light', notificationsEnabled: true, createdAt: new Date().toISOString() },
+    profile: userProfileData || { 
+      userId: user?.uid || '', 
+      name: 'طبيب', 
+      email: user?.email || '', 
+      role: 'doctor' as UserRole, 
+      language: 'ar', 
+      theme: 'light', 
+      notificationsEnabled: true, 
+      createdAt: new Date().toISOString() 
+    },
     patients,
     appointments,
     medications,
@@ -219,7 +239,8 @@ export function useClinic() {
     t,
     addPatient,
     addPatientRecord,
-    getPatientRecordsQuery: (patientId: string) => shouldFetch ? query(collection(db, 'users', user.uid, 'patients', patientId, 'records'), orderBy('createdAt', 'desc'), limit(20)) : null,
+    getPatientRecordsQuery: (patientId: string) => 
+      shouldFetch ? query(collection(db, 'users', user.uid, 'patients', patientId, 'records'), orderBy('createdAt', 'desc'), limit(20)) : null,
     addAppointment,
     updateAppointmentStatus,
     getTodayAppointments: () => {
@@ -231,17 +252,19 @@ export function useClinic() {
     setProfile,
     addMedication,
     updateMedication: (id: string, updates: Partial<Medication>) => {
-      if (!shouldFetch) return;
+      if (!user) return;
       updateDocumentNonBlocking(doc(db, 'users', user.uid, 'medicines', id), updates);
     },
     deleteMedication: (id: string) => {
-      if (!shouldFetch) return;
+      if (!user) return;
       deleteDocumentNonBlocking(doc(db, 'users', user.uid, 'medicines', id));
     },
     logDose,
     getTodayDoses: () => {
       const todayDoses: Array<{ med: Medication; time: string; status: DoseStatus }> = [];
-      const todayStr = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+      
       medications.forEach(med => {
         med.times.forEach(time => {
           const scheduledTime = `${todayStr}T${time}:00`;
@@ -252,16 +275,17 @@ export function useClinic() {
       return todayDoses.sort((a, b) => a.time.localeCompare(b.time));
     },
     clearPatients: () => {
-      patients.forEach(p => deleteDocumentNonBlocking(doc(db, 'users', user!.uid, 'patients', p.id)));
+      if (!user) return;
+      patients.forEach(p => deleteDocumentNonBlocking(doc(db, 'users', user.uid, 'patients', p.id)));
     },
     clearAppointments: () => {
-      appointments.forEach(a => deleteDocumentNonBlocking(doc(db, 'users', user!.uid, 'appointments', a.id)));
+      if (!user) return;
+      appointments.forEach(a => deleteDocumentNonBlocking(doc(db, 'users', user.uid, 'appointments', a.id)));
     },
     clearMedications: () => {
-      medications.forEach(m => deleteDocumentNonBlocking(doc(db, 'users', user!.uid, 'medicines', m.id)));
+      if (!user) return;
+      medications.forEach(m => deleteDocumentNonBlocking(doc(db, 'users', user.uid, 'medicines', m.id)));
     },
-    analytics,
-    messaging
   };
 }
 
