@@ -53,6 +53,20 @@
   body {
     @apply font-arabic bg-background text-foreground transition-colors duration-300 antialiased min-h-screen overflow-x-hidden;
     -webkit-tap-highlight-color: transparent;
+    
+    /* Global Copy Lock */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection in form inputs and textareas for usability */
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
   }
 }
 
