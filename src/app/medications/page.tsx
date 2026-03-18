@@ -33,7 +33,7 @@ export default function MedicationsPage() {
     <div className="flex flex-col h-screen pb-20" dir={isRTL ? 'rtl' : 'ltr'}>
       <header className="p-6 bg-background space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">{t('medications')}</h1>
+          <h2 className="text-2xl font-bold">{t('medications')}</h2>
           <Link href="/medications/add">
             <Button size="icon" className="rounded-full h-10 w-10 shadow-lg">
               <Plus className="h-6 w-6" />

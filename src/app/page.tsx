@@ -14,8 +14,9 @@ import { ar, enUS } from 'date-fns/locale';
 import Link from 'next/link';
 import { NextDoseCountdown } from '@/components/dashboard/NextDoseCountdown';
 import { TodayTimeline } from '@/components/dashboard/TodayTimeline';
+import { WelcomeView } from '@/components/welcome/WelcomeView';
 
-export default function Dashboard() {
+export default function RootPage() {
   const { 
     user, 
     isUserLoading, 
@@ -30,19 +31,8 @@ export default function Dashboard() {
   } = useClinic();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!isUserLoading) {
-      if (!user) {
-        // Redirect new/unauthenticated users to the professional welcome experience
-        router.push('/welcome');
-      } else if (!user.emailVerified) {
-        // Enforce verification before accessing dashboard
-        router.push('/login');
-      }
-    }
-  }, [user, isUserLoading, router]);
-
-  if (isUserLoading || !isLoaded || !user?.emailVerified) {
+  // If auth is still loading, show a professional centered loader
+  if (isUserLoading || !isLoaded) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -50,6 +40,23 @@ export default function Dashboard() {
     );
   }
 
+  // If no user is authenticated, show the Welcome/Onboarding experience directly
+  // This ensures new users always see the professional welcome screens first.
+  if (!user) {
+    return <WelcomeView />;
+  }
+
+  // If the user is logged in but not verified, they must complete verification via the Login screen
+  if (!user.emailVerified) {
+    router.push('/login');
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Authenticated Dashboard View
   const todayApps = getTodayAppointments();
   const todayDoses = getTodayDoses();
   const nextDose = todayDoses.find(d => d.status === 'pending');
@@ -63,7 +70,7 @@ export default function Dashboard() {
             <div className="p-2 bg-white/20 rounded-xl">
               <Stethoscope className="h-6 w-6" />
             </div>
-            <h1 className="text-xl font-bold">{t('appTitle')}</h1>
+            <h2 className="text-xl font-bold">{t('appTitle')}</h2>
           </div>
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-white/70" />
@@ -148,7 +155,7 @@ export default function Dashboard() {
         {todayDoses.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between px-1">
-              <h3 className="font-bold text-foreground flex items-center gap-2">
+              <h3 className="font-bold text-foreground flex items-center gap-2 text-start">
                 <Pill className="h-4 w-4 text-primary" />
                 {t('dailySchedule')}
               </h3>
@@ -163,7 +170,7 @@ export default function Dashboard() {
         {/* TODAY'S CLINICAL SCHEDULE */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <h3 className="font-bold text-foreground flex items-center gap-2">
+            <h3 className="font-bold text-foreground flex items-center gap-2 text-start">
               <Activity className="h-4 w-4 text-primary" />
               {t('todayAppointments')}
             </h3>
