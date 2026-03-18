@@ -12,6 +12,7 @@
         "email": { "type": "string", "format": "email" },
         "role": { "type": "string", "enum": ["doctor", "patient", "admin"], "default": "doctor" },
         "phone": { "type": "string" },
+        "fcmToken": { "type": "string", "description": "Firebase Cloud Messaging token for push notifications." },
         "language": { "type": "string", "default": "ar" },
         "theme": { "type": "string", "default": "light" },
         "notificationsEnabled": { "type": "boolean", "default": true },

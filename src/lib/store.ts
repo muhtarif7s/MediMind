@@ -45,7 +45,7 @@ const PAGE_SIZE = 15;
 
 /**
  * Main clinical store hook.
- * Optimized with pagination, offline support, and role-based validation.
+ * Optimized with pagination, offline support, role-based validation, and FCM.
  */
 export function useClinic() {
   const { user, isUserLoading } = useUser();
@@ -283,6 +283,15 @@ export function useClinic() {
     }, { merge: true });
   });
 
+  const saveFcmToken = useCallback((token: string) => {
+    if (!user || !userProfileRef) return;
+    // Only update if it's different
+    if (userProfileData?.fcmToken !== token) {
+      updateDocumentNonBlocking(userProfileRef, { fcmToken: token });
+      logger.info('Messaging', 'FCM token updated in profile');
+    }
+  }, [user, userProfileRef, userProfileData?.fcmToken]);
+
   return {
     user,
     isUserLoading,
@@ -320,6 +329,7 @@ export function useClinic() {
       return appointments.filter(a => { const d = new Date(a.dateTime); return d >= start && d <= end; });
     },
     setProfile,
+    saveFcmToken,
     addMedication,
     updateMedication: (id: string, updates: Partial<Medication>) => {
       if (!user) return;

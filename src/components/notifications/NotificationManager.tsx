@@ -4,25 +4,47 @@
 import { useEffect, useRef } from 'react';
 import { useMediMind } from '@/lib/store';
 import { parseISO, isSameMinute, format, differenceInMinutes, addMinutes } from 'date-fns';
+import { useFirebase } from '@/firebase';
+import { requestNotificationToken, setupForegroundListener } from '@/firebase/messaging';
+import { logger } from '@/lib/logger';
 
 /**
  * Global Notification Manager component.
- * Monitors appointments and medications to trigger local push notifications.
+ * Monitors appointments and medications to trigger local push notifications,
+ * and manages Firebase Cloud Messaging (FCM) token registration.
  */
 export function NotificationManager() {
-  const { getTodayDoses, appointments, profile, isLoaded, t } = useMediMind();
+  const { getTodayDoses, appointments, profile, isLoaded, t, saveFcmToken } = useMediMind();
+  const { messaging } = useFirebase();
   const lastNotifiedMinute = useRef<string | null>(null);
   const notifiedEvents = useRef<Set<string>>(new Set());
+  const hasRegisteredFCM = useRef(false);
 
+  // 1. FCM Token Registration & Messaging Setup
   useEffect(() => {
-    // Request permission on mount if supported and enabled
-    if (typeof window !== 'undefined' && 'Notification' in window && isLoaded) {
-      if (Notification.permission === 'default' && profile.notificationsEnabled) {
-        Notification.requestPermission();
-      }
-    }
-  }, [profile.notificationsEnabled, isLoaded]);
+    if (!profile.notificationsEnabled || !isLoaded || !messaging || hasRegisteredFCM.current) return;
 
+    const initializeMessaging = async () => {
+      try {
+        const token = await requestNotificationToken(messaging);
+        if (token) {
+          saveFcmToken(token);
+          hasRegisteredFCM.current = true;
+          logger.info('NotificationManager', 'FCM token registered successfully');
+        }
+
+        // Setup foreground listener
+        const unsubscribe = setupForegroundListener(messaging);
+        return unsubscribe;
+      } catch (err) {
+        logger.error('NotificationManager', 'Failed to initialize messaging', err);
+      }
+    };
+
+    initializeMessaging();
+  }, [profile.notificationsEnabled, isLoaded, messaging, saveFcmToken]);
+
+  // 2. Local Reminder Monitoring
   useEffect(() => {
     if (!profile.notificationsEnabled || !isLoaded) return;
 
@@ -33,7 +55,7 @@ export function NotificationManager() {
       // Don't notify multiple times for the exact same event type in the same minute
       if (lastNotifiedMinute.current === currentMinute) return;
 
-      // 1. Check Medications
+      // --- Check Medications ---
       const doses = getTodayDoses();
       
       doses.forEach(dose => {
@@ -68,7 +90,7 @@ export function NotificationManager() {
         }
       });
 
-      // 2. Check Appointments (1 hour before)
+      // --- Check Appointments (1 hour before) ---
       (appointments || []).forEach(app => {
         if (app.status !== 'pending') return;
         
@@ -92,9 +114,9 @@ export function NotificationManager() {
       lastNotifiedMinute.current = currentMinute;
     };
 
-    // Check on interval
-    const interval = setInterval(checkReminders, 15000); // Check every 15 seconds
-    checkReminders(); // Immediate check
+    // Check on interval (every 15 seconds)
+    const interval = setInterval(checkReminders, 15000);
+    checkReminders(); // Immediate check on mount/update
 
     return () => clearInterval(interval);
   }, [getTodayDoses, appointments, profile.notificationsEnabled, isLoaded, t]);

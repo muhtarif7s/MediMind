@@ -11,6 +11,7 @@ export interface UserProfile {
   email: string;
   role: UserRole;
   phone?: string;
+  fcmToken?: string;
   language: 'ar' | 'en' | 'fr' | 'es' | 'de';
   theme: 'light' | 'dark';
   notificationsEnabled: boolean;
