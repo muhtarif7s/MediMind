@@ -1,41 +1,29 @@
-'use client';
-import { FirestorePermissionError, AppError } from '@/firebase/errors';
+class EventEmitter {
+    private events: { [key: string]: Function[] } = {};
 
-/**
- * Defines the shape of all possible events and their corresponding payload types.
- */
-export interface AppEvents {
-  'permission-error': FirestorePermissionError;
-  'app-error': AppError;
-  'network-error': AppError;
-  'auth-error': AppError;
+    on(event: string, listener: Function) {
+        if (!this.events[event]) {
+            this.events[event] = [];
+        }
+        this.events[event].push(listener);
+    }
+
+    off(event: string, listener: Function) {
+        if (!this.events[event]) return;
+
+        const index = this.events[event].indexOf(listener);
+        if (index > -1) {
+            this.events[event].splice(index, 1);
+        }
+    }
+
+    emit(event: string, ...args: any[]) {
+        if (!this.events[event]) return;
+
+        this.events[event].forEach(listener => {
+            listener(...args);
+        });
+    }
 }
 
-type Callback<T> = (data: T) => void;
-
-function createEventEmitter<T extends Record<string, any>>() {
-  const events: { [K in keyof T]?: Array<Callback<T[K]>> } = {};
-
-  return {
-    on<K extends keyof T>(eventName: K, callback: Callback<T[K]>) {
-      if (!events[eventName]) {
-        events[eventName] = [];
-      }
-      events[eventName]?.push(callback);
-    },
-    off<K extends keyof T>(eventName: K, callback: Callback<T[K]>) {
-      if (!events[eventName]) {
-        return;
-      }
-      events[eventName] = events[eventName]?.filter(cb => cb !== callback);
-    },
-    emit<K extends keyof T>(eventName: K, data: T[K]) {
-      if (!events[eventName]) {
-        return;
-      }
-      events[eventName]?.forEach(callback => callback(data));
-    },
-  };
-}
-
-export const errorEmitter = createEventEmitter<AppEvents>();
+export const errorEmitter = new EventEmitter();

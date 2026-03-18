@@ -1,39 +1,51 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { requestNotificationToken } from '@/firebase/messaging';
+import { useFirebase } from '@/firebase/provider';
 
-/**
- * An invisible component that listens for globally emitted 'permission-error' events.
- * It throws any received error to be caught by Next.js's global-error.tsx.
- */
 export function FirebaseErrorListener() {
-  // Use the specific error type for the state for type safety.
-  const [error, setError] = useState<FirestorePermissionError | null>(null);
+  const [notificationError, setNotificationError] = useState(false);
+  const { messaging } = useFirebase();
 
   useEffect(() => {
-    // The callback now expects a strongly-typed error, matching the event payload.
-    const handleError = (error: FirestorePermissionError) => {
-      // Set error in state to trigger a re-render.
-      setError(error);
+    const handlePermissionError = (error: { type: string }) => {
+      if (error.type === 'notification') {
+        setNotificationError(true);
+      }
     };
 
-    // The typed emitter will enforce that the callback for 'permission-error'
-    // matches the expected payload type (FirestorePermissionError).
-    errorEmitter.on('permission-error', handleError);
+    errorEmitter.on('permission-error', handlePermissionError);
 
-    // Unsubscribe on unmount to prevent memory leaks.
     return () => {
-      errorEmitter.off('permission-error', handleError);
+      errorEmitter.off('permission-error', handlePermissionError);
     };
   }, []);
 
-  // On re-render, if an error exists in state, throw it.
-  if (error) {
-    throw error;
+  const handleEnableNotifications = () => {
+    if (!messaging) return;
+    requestNotificationToken(messaging).then(() => {
+      setNotificationError(false);
+    });
+  };
+
+  if (notificationError) {
+    return (
+      <Alert className="m-4">
+        <AlertTitle>تم تعطيل الإشعارات</AlertTitle>
+        <AlertDescription>
+          للحصول على أفضل تجربة، يرجى تمكين الإشعارات.
+        </AlertDescription>
+        <Button onClick={handleEnableNotifications} className="mt-4">
+          تمكين الإشعارات
+        </Button>
+      </Alert>
+    );
   }
 
-  // This component renders nothing.
   return null;
 }

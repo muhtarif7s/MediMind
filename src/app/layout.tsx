@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { ThemeWrapper } from '@/components/ThemeWrapper';
 import { NotificationManager } from '@/components/notifications/NotificationManager';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 export const metadata: Metadata = {
   title: 'طبيب الأسنان الذكي',
@@ -31,6 +32,7 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <ThemeWrapper />
           <NotificationManager />
+          <FirebaseErrorListener />
           <div className="max-w-md mx-auto relative bg-background min-h-screen flex flex-col border-x shadow-xl pb-safe-area-inset-bottom">
             {children}
           </div>

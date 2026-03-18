@@ -3,17 +3,23 @@
 
 import { Messaging, getToken, onMessage } from 'firebase/messaging';
 import { logger } from '@/lib/logger';
+import { errorEmitter } from './error-emitter';
 
 /**
  * Requests notification permission and retrieves the FCM token.
  */
 export async function requestNotificationToken(messaging: Messaging | null) {
-  if (!messaging || typeof window === 'undefined') return null;
+  if (!messaging || typeof window === 'undefined' || !('Notification' in window)) {
+    return null;
+  }
 
   try {
-    // Standard web notification permission request
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
+    let currentPermission = Notification.permission;
+    if (currentPermission === 'default') {
+      currentPermission = await Notification.requestPermission();
+    }
+
+    if (currentPermission === 'granted') {
       const token = await getToken(messaging, {
         // This is a placeholder. In a production environment, you would 
         // generate a real VAPID key in the Firebase Console.
@@ -22,12 +28,14 @@ export async function requestNotificationToken(messaging: Messaging | null) {
       
       if (token) {
         logger.info('Messaging', 'FCM Token generated', { token });
+        console.log('FCM Token:', token);
         return token;
       } else {
         logger.warn('Messaging', 'No registration token available. Request permission to generate one.');
       }
     } else {
       logger.warn('Messaging', 'Notification permission denied by user.');
+      errorEmitter.emit('permission-error', { type: 'notification' });
     }
   } catch (err) {
     logger.error('Messaging', 'An error occurred while retrieving token', err);
