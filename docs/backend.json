@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "UserProfile": {
@@ -34,6 +33,18 @@
       },
       "required": ["name", "clinicId", "createdAt"]
     },
+    "PatientRecord": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PatientRecord",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "type": { "type": "string", "enum": ["x-ray", "prescription", "report", "other"] },
+        "fileData": { "type": "string", "description": "Base64 encoded file or image data." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "type", "fileData", "createdAt"]
+    },
     "Appointment": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Appointment",
@@ -63,6 +74,21 @@
         "refillThreshold": { "type": "number" }
       },
       "required": ["userId", "name", "dosageAmount", "totalQuantity", "remainingQuantity"]
+    },
+    "DoseLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DoseLog",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "medicationId": { "type": "string" },
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "taken", "skipped", "missed"] },
+        "scheduledTime": { "type": "string", "format": "date-time" },
+        "recordedAt": { "type": "string", "format": "date-time" },
+        "takenAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "medicationId", "status", "scheduledTime", "recordedAt"]
     }
   },
   "auth": {
@@ -73,9 +99,25 @@
       "schema": { "$ref": "#/backend/entities/UserProfile" },
       "description": "User profiles with role-based access."
     },
+    "/users/{userId}/patients/{patientId}": {
+      "schema": { "$ref": "#/backend/entities/Patient" },
+      "description": "Clinical patients."
+    },
+    "/users/{userId}/patients/{patientId}/records/{recordId}": {
+      "schema": { "$ref": "#/backend/entities/PatientRecord" },
+      "description": "Medical records for patients (X-rays, reports)."
+    },
+    "/users/{userId}/appointments/{appId}": {
+      "schema": { "$ref": "#/backend/entities/Appointment" },
+      "description": "Clinical appointments."
+    },
     "/users/{userId}/medicines/{medicineId}": {
       "schema": { "$ref": "#/backend/entities/Medication" },
       "description": "User medications."
+    },
+    "/users/{userId}/doseLogs/{logId}": {
+      "schema": { "$ref": "#/backend/entities/DoseLog" },
+      "description": "History of medication adherence."
     }
   }
 }
