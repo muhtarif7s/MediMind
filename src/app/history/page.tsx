@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMediMind } from '@/lib/store';
@@ -6,7 +5,7 @@ import { NavBar } from '@/components/navigation/NavBar';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { CheckCircle2, XCircle, Activity, Loader2, LogIn } from 'lucide-react';
+import { CheckCircle2, XCircle, Activity, Loader2, LogIn, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
@@ -28,10 +27,10 @@ function HistorySkeleton() {
 }
 
 export default function HistoryPage() {
-  const { user, history, isLoaded, isUserLoading, t, profile } = useMediMind();
+  const { user, history, isLoaded, isHistoryLoading, loadMoreHistory, hasMoreHistory, t, profile } = useMediMind();
   const router = useRouter();
 
-  if (isUserLoading || !isLoaded) {
+  if (!isLoaded && history.length === 0) {
     return <HistorySkeleton />;
   }
 
@@ -67,76 +66,93 @@ export default function HistoryPage() {
         <p className="text-xs text-muted-foreground">{t('trackProgress')}</p>
       </header>
 
-      <ScrollArea className="flex-1 px-6 space-y-6">
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Card className="border-none shadow-sm bg-primary/10 rounded-3xl">
-            <CardContent className="p-4 flex flex-col items-center">
-              <Activity className="h-5 w-5 text-primary mb-2" />
-              <span className="text-2xl font-bold">{adherence}%</span>
-              <span className="text-[10px] text-muted-foreground uppercase font-bold">{t('adherenceRate')}</span>
+      <ScrollArea className="flex-1 px-6">
+        <div className="space-y-6 pb-6">
+          <div className="grid grid-cols-2 gap-4">
+            <Card className="border-none shadow-sm bg-primary/10 rounded-3xl">
+              <CardContent className="p-4 flex flex-col items-center">
+                <Activity className="h-5 w-5 text-primary mb-2" />
+                <span className="text-2xl font-bold">{adherence}%</span>
+                <span className="text-[10px] text-muted-foreground uppercase font-bold">{t('adherenceRate')}</span>
+              </CardContent>
+            </Card>
+            <Card className="border-none shadow-sm bg-accent/10 rounded-3xl">
+              <CardContent className="p-4 flex flex-col items-center">
+                <CheckCircle2 className="h-5 w-5 text-accent mb-2" />
+                <span className="text-2xl font-bold">{takenCount}</span>
+                <span className="text-[10px] text-muted-foreground uppercase font-bold">{t('totalTaken')}</span>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="border-none shadow-sm rounded-3xl">
+            <CardHeader className="pb-2 text-start">
+              <CardTitle className="text-sm font-bold">{t('overview')}</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[200px] w-full">
+              {totalCompleted > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend verticalAlign="bottom" height={36}/>
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center text-muted-foreground text-sm opacity-50">
+                  {t('noHistoryData')}
+                </div>
+              )}
             </CardContent>
           </Card>
-          <Card className="border-none shadow-sm bg-accent/10 rounded-3xl">
-            <CardContent className="p-4 flex flex-col items-center">
-              <CheckCircle2 className="h-5 w-5 text-accent mb-2" />
-              <span className="text-2xl font-bold">{takenCount}</span>
-              <span className="text-[10px] text-muted-foreground uppercase font-bold">{t('totalTaken')}</span>
-            </CardContent>
-          </Card>
-        </div>
 
-        <Card className="border-none shadow-sm mb-6 rounded-3xl">
-          <CardHeader className="pb-2 text-start">
-            <CardTitle className="text-sm font-bold">{t('overview')}</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[200px] w-full">
-            {totalCompleted > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend verticalAlign="bottom" height={36}/>
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground text-sm opacity-50">
-                {t('noHistoryData')}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="space-y-4 pb-6">
-          <h3 className="font-bold text-sm text-start">{t('recentHistory')}</h3>
-          <div className="space-y-3">
-            {history.slice(-5).reverse().map(log => (
-              <div key={log.id} className="flex items-center justify-between p-3 rounded-2xl bg-card border shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-xl ${log.status === 'taken' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
-                    {log.status === 'taken' ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                  </div>
-                  <div className="text-start">
-                    <p className="text-xs font-bold capitalize">{t(log.status as any)}</p>
-                    <p className="text-[10px] text-muted-foreground">{t('recordedAt')} {new Date(log.recordedAt || '').toLocaleTimeString()}</p>
+          <div className="space-y-4 pb-6">
+            <h3 className="font-bold text-sm text-start">{t('recentHistory')}</h3>
+            <div className="space-y-3">
+              {history.map(log => (
+                <div key={log.id} className="flex items-center justify-between p-3 rounded-2xl bg-card border shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-xl ${log.status === 'taken' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
+                      {log.status === 'taken' ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                    </div>
+                    <div className="text-start">
+                      <p className="text-xs font-bold capitalize">{log.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{t(log.status as any)} • {new Date(log.recordedAt || '').toLocaleTimeString()}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            {history.length === 0 && (
-              <div className="text-center py-10 opacity-30">
-                <p className="text-xs">{t('noHistoryData')}</p>
-              </div>
-            )}
+              ))}
+
+              {hasMoreHistory && (
+                <div className="py-2 flex justify-center">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={loadMoreHistory} 
+                    disabled={isHistoryLoading}
+                    className="gap-2 text-xs font-bold text-primary rounded-xl"
+                  >
+                    {isHistoryLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><ChevronDown className="h-4 w-4" /> {t('viewAll')}</>}
+                  </Button>
+                </div>
+              )}
+
+              {history.length === 0 && (
+                <div className="text-center py-10 opacity-30">
+                  <p className="text-xs">{t('noHistoryData')}</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </ScrollArea>

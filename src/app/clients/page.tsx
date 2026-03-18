@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -24,7 +23,7 @@ function ListSkeleton() {
 }
 
 export default function PatientsPage() {
-  const { patients, addPatient, t, isLoaded } = useClinic();
+  const { patients, addPatient, loadMorePatients, hasMorePatients, isPatientsLoading, t, isLoaded } = useClinic();
   const [search, setSearch] = useState('');
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,7 +40,6 @@ export default function PatientsPage() {
     setIsSubmitting(true);
     addPatient(formData);
     
-    // Slight delay for feedback
     setTimeout(() => {
       setFormData({ name: '', phone: '', notes: '' });
       setIsAddOpen(false);
@@ -111,10 +109,10 @@ export default function PatientsPage() {
       </header>
 
       <ScrollArea className="flex-1 p-6">
-        {!isLoaded ? (
+        {!isLoaded && patients.length === 0 ? (
           <ListSkeleton />
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 pb-6">
             {filtered.map(patient => (
               <Link key={patient.id} href={`/clients/${patient.id}`}>
                 <Card className="border shadow-sm bg-card rounded-2xl active:scale-[0.98] transition-all group overflow-hidden">
@@ -133,6 +131,21 @@ export default function PatientsPage() {
                 </Card>
               </Link>
             ))}
+            
+            {hasMorePatients && !search && (
+              <div className="py-4 flex justify-center">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={loadMorePatients} 
+                  disabled={isPatientsLoading}
+                  className="rounded-xl font-bold text-primary"
+                >
+                  {isPatientsLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('viewAll')}
+                </Button>
+              </div>
+            )}
+
             {filtered.length === 0 && (
               <div className="py-20 text-center text-muted animate-in fade-in zoom-in duration-500">
                 <Users className="h-12 w-12 mx-auto mb-4 opacity-20" />

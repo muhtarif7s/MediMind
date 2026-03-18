@@ -1,10 +1,9 @@
-
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore, Firestore, enableIndexedDbPersistence, getDocs, query, limit, startAfter, collection, doc } from 'firebase/firestore';
 import { getAnalytics, Analytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
 import { getMessaging, Messaging, isSupported as isMessagingSupported } from 'firebase/messaging';
 

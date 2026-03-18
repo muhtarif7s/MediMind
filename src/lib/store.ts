@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Patient,
   Appointment,
@@ -19,7 +18,6 @@ import {
   useCollection,
   useDoc,
   useMemoFirebase,
-  useFirebase,
   updateDocumentNonBlocking,
   addDocumentNonBlocking,
   setDocumentNonBlocking,
@@ -32,21 +30,37 @@ import {
   orderBy,
   where,
   limit,
+  getDocs,
+  startAfter,
+  QueryDocumentSnapshot,
+  DocumentData,
 } from 'firebase/firestore';
 import { translations } from './translations';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { AppError } from '@/firebase/errors';
 import { logger } from './logger';
 
+const PAGE_SIZE = 15;
+
 /**
  * Main clinical store hook.
- * Enhanced with RBAC awareness and error protection.
- * Scopes all data strictly under users/{userId} for security.
+ * Optimized with pagination and one-time fetching for large datasets.
  */
 export function useClinic() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const [isOnline, setIsOnline] = useState(true);
+
+  // --- Local Data States (for paginated/one-time data) ---
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [history, setHistory] = useState<DoseLog[]>([]);
+  const [isPatientsLoadingOnce, setIsPatientsLoadingOnce] = useState(false);
+  const [isHistoryLoadingOnce, setIsHistoryLoadingOnce] = useState(false);
+  const [hasMorePatients, setHasMorePatients] = useState(true);
+  const [hasMoreHistory, setHasMoreHistory] = useState(true);
+  
+  const lastPatientDoc = useRef<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const lastHistoryDoc = useRef<QueryDocumentSnapshot<DocumentData> | null>(null);
 
   // Network Status Tracking
   useEffect(() => {
@@ -65,41 +79,97 @@ export function useClinic() {
 
   const shouldFetch = !!user && !isUserLoading;
 
-  // --- Firestore Data Subscriptions ---
+  // --- Real-time Subscriptions (for data that needs immediate sync) ---
   
-  // 1. User Profile
+  // 1. User Profile (Real-time)
   const userProfileRef = useMemoFirebase(() => shouldFetch ? doc(db, 'users', user.uid) : null, [db, user, shouldFetch]);
   const { data: userProfileData, isLoading: isUserProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
-  // 2. Patients (Scoped to Doctor UID)
-  const patientsQuery = useMemoFirebase(() => 
-    shouldFetch ? query(collection(db, 'users', user.uid, 'patients'), orderBy('createdAt', 'desc'), limit(100)) : null, 
-  [db, user, shouldFetch]);
-  const { data: patientsData, isLoading: isPatientsLoading } = useCollection<Patient>(patientsQuery);
-  const patients = patientsData || [];
-
-  // 3. Appointments (Scoped to Doctor UID)
+  // 2. Appointments (Real-time for clinical coordination)
   const appointmentsQuery = useMemoFirebase(() => 
     shouldFetch ? query(collection(db, 'users', user.uid, 'appointments'), orderBy('dateTime', 'asc')) : null, 
   [db, user, shouldFetch]);
   const { data: appointmentsData, isLoading: isAppointmentsLoading } = useCollection<Appointment>(appointmentsQuery);
   const appointments = appointmentsData || [];
 
-  // 4. Medications (Scoped to User UID)
+  // 3. Medications (Real-time for inventory/dosing sync)
   const medicationsQuery = useMemoFirebase(() => 
     shouldFetch ? query(collection(db, 'users', user.uid, 'medicines'), orderBy('name')) : null, 
   [db, user, shouldFetch]);
   const { data: medicationsData, isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
   const medications = medicationsData || [];
 
-  // 5. Dose History
-  const historyQuery = useMemoFirebase(() => 
-    shouldFetch ? query(collection(db, 'users', user.uid, 'doseLogs'), orderBy('recordedAt', 'desc'), limit(50)) : null, 
-  [db, user, shouldFetch]);
-  const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseLog>(historyQuery);
-  const history = historyData || [];
+  // --- One-time Paginated Fetching (for performance optimization) ---
 
-  const isLoaded = !isUserLoading && (!user || (!isUserProfileLoading && !isPatientsLoading && !isAppointmentsLoading && !isMedicationsLoading && !isHistoryLoading));
+  const fetchPatients = useCallback(async (isLoadMore = false) => {
+    if (!shouldFetch || isPatientsLoadingOnce) return;
+    if (isLoadMore && !hasMorePatients) return;
+
+    setIsPatientsLoadingOnce(true);
+    try {
+      let q = query(
+        collection(db, 'users', user.uid, 'patients'), 
+        orderBy('createdAt', 'desc'), 
+        limit(PAGE_SIZE)
+      );
+
+      if (isLoadMore && lastPatientDoc.current) {
+        q = query(q, startAfter(lastPatientDoc.current));
+      }
+
+      const snapshot = await getDocs(q);
+      const newPatients = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Patient));
+      
+      lastPatientDoc.current = snapshot.docs[snapshot.docs.length - 1] || null;
+      setHasMorePatients(snapshot.docs.length === PAGE_SIZE);
+      
+      setPatients(prev => isLoadMore ? [...prev, ...newPatients] : newPatients);
+    } catch (err: any) {
+      logger.error('Store', 'Failed to fetch patients', err);
+    } finally {
+      setIsPatientsLoadingOnce(false);
+    }
+  }, [db, user, shouldFetch, isPatientsLoadingOnce, hasMorePatients]);
+
+  const fetchHistory = useCallback(async (isLoadMore = false) => {
+    if (!shouldFetch || isHistoryLoadingOnce) return;
+    if (isLoadMore && !hasMoreHistory) return;
+
+    setIsHistoryLoadingOnce(true);
+    try {
+      let q = query(
+        collection(db, 'users', user.uid, 'doseLogs'), 
+        orderBy('recordedAt', 'desc'), 
+        limit(PAGE_SIZE)
+      );
+
+      if (isLoadMore && lastHistoryDoc.current) {
+        q = query(q, startAfter(lastHistoryDoc.current));
+      }
+
+      const snapshot = await getDocs(q);
+      const newHistory = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as DoseLog));
+      
+      lastHistoryDoc.current = snapshot.docs[snapshot.docs.length - 1] || null;
+      setHasMoreHistory(snapshot.docs.length === PAGE_SIZE);
+      
+      setHistory(prev => isLoadMore ? [...prev, ...newHistory] : newHistory);
+    } catch (err: any) {
+      logger.error('Store', 'Failed to fetch history', err);
+    } finally {
+      setIsHistoryLoadingOnce(false);
+    }
+  }, [db, user, shouldFetch, isHistoryLoadingOnce, hasMoreHistory]);
+
+  // Initial Data Load
+  useEffect(() => {
+    if (shouldFetch) {
+      fetchPatients();
+      fetchHistory();
+    }
+  }, [shouldFetch]);
+
+  const isLoaded = !isUserLoading && (!user || (!isUserProfileLoading && !isAppointmentsLoading && !isMedicationsLoading));
 
   // --- Translation Helper ---
   const t = useCallback((key: string) => {
@@ -127,13 +197,18 @@ export function useClinic() {
   // --- Clinical Actions ---
 
   const addPatient = executeSafe(
-    (patient: Omit<Patient, 'id' | 'clinicId' | 'createdAt'>) => {
+    (patientData: Omit<Patient, 'id' | 'clinicId' | 'createdAt'>) => {
       if (!user) return;
-      addDocumentNonBlocking(collection(db, 'users', user.uid, 'patients'), {
-        ...patient,
+      const newPatientRef = doc(collection(db, 'users', user.uid, 'patients'));
+      const newPatient: Patient = {
+        ...patientData,
+        id: newPatientRef.id,
         clinicId: user.uid,
         createdAt: new Date().toISOString()
-      });
+      };
+      setDocumentNonBlocking(newPatientRef, newPatient, { merge: true });
+      // Optimistic Update
+      setPatients(prev => [newPatient, ...prev]);
     },
     (p) => !!p.name && p.name.length >= 2
   );
@@ -176,7 +251,9 @@ export function useClinic() {
     const med = medications.find(m => m.id === medId);
     if (!med) return;
 
-    addDocumentNonBlocking(collection(db, 'users', user.uid, 'doseLogs'), {
+    const newLogRef = doc(collection(db, 'users', user.uid, 'doseLogs'));
+    const newLog: DoseLog = {
+      id: newLogRef.id,
       userId: user.uid,
       medicationId: medId,
       name: med.name,
@@ -184,7 +261,12 @@ export function useClinic() {
       scheduledTime,
       recordedAt: new Date().toISOString(),
       takenAt: status === 'taken' ? new Date().toISOString() : null
-    });
+    };
+
+    setDocumentNonBlocking(newLogRef, newLog, { merge: true });
+    
+    // Optimistic Update for History
+    setHistory(prev => [newLog, ...prev]);
 
     if (status === 'taken') {
       updateDocumentNonBlocking(doc(db, 'users', user.uid, 'medicines', medId), {
@@ -225,6 +307,10 @@ export function useClinic() {
     isLoaded,
     t,
     addPatient,
+    fetchPatients: () => fetchPatients(false),
+    loadMorePatients: () => fetchPatients(true),
+    isPatientsLoading: isPatientsLoadingOnce,
+    hasMorePatients,
     addPatientRecord,
     getPatientRecordsQuery: (patientId: string) => 
       shouldFetch ? query(collection(db, 'users', user.uid, 'patients', patientId, 'records'), orderBy('createdAt', 'desc'), limit(20)) : null,
@@ -247,6 +333,9 @@ export function useClinic() {
       deleteDocumentNonBlocking(doc(db, 'users', user.uid, 'medicines', id));
     },
     logDose,
+    loadMoreHistory: () => fetchHistory(true),
+    isHistoryLoading: isHistoryLoadingOnce,
+    hasMoreHistory,
     getTodayDoses: () => {
       const todayDoses: Array<{ med: Medication; time: string; status: DoseStatus }> = [];
       const now = new Date();
@@ -255,6 +344,7 @@ export function useClinic() {
       medications.forEach(med => {
         med.times.forEach(time => {
           const scheduledTime = `${todayStr}T${time}:00`;
+          // Find log in history state
           const log = history.find(h => h.medicationId === med.id && h.scheduledTime === scheduledTime);
           todayDoses.push({ med, time: scheduledTime, status: log ? log.status : 'pending' });
         });
@@ -264,6 +354,7 @@ export function useClinic() {
     clearPatients: () => {
       if (!user) return;
       patients.forEach(p => deleteDocumentNonBlocking(doc(db, 'users', user.uid, 'patients', p.id)));
+      setPatients([]);
     },
     clearAppointments: () => {
       if (!user) return;
