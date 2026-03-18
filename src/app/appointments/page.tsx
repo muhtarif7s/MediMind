@@ -12,10 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Clock, Check, X, Ban, Calendar as CalendarIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { format } from 'date-fns';
-import { ar } from 'date-fns/locale';
+import { ar, enUS, fr, es, de } from 'date-fns/locale';
 
 export default function AppointmentsPage() {
-  const { appointments, patients, addAppointment, updateAppointmentStatus, t, isLoaded } = useClinic();
+  const { appointments, patients, addAppointment, updateAppointmentStatus, t, isLoaded, profile } = useClinic();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [formData, setFormData] = useState({ patientId: '', dateTime: '', treatment: '' });
 
@@ -37,6 +37,9 @@ export default function AppointmentsPage() {
     setFormData({ patientId: '', dateTime: '', treatment: '' });
   };
 
+  const localeMap = { ar, en: enUS, fr, es, de };
+  const locale = localeMap[profile.language] || ar;
+
   return (
     <div className="flex flex-col h-screen pb-20 bg-background transition-colors">
       <header className="p-6 bg-card border-b flex items-center justify-between">
@@ -48,15 +51,15 @@ export default function AppointmentsPage() {
               {t('bookAppointment')}
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-xs rounded-[2rem] bg-card border" dir="rtl">
+          <DialogContent className="max-w-xs rounded-[2rem] bg-card border" dir={profile.language === 'ar' ? 'rtl' : 'ltr'}>
             <DialogHeader>
-              <DialogTitle className="text-right text-foreground">{t('bookAppointment')}</DialogTitle>
+              <DialogTitle className="text-start text-foreground">{t('bookAppointment')}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 text-right pt-4">
+            <form onSubmit={handleSubmit} className="space-y-4 text-start pt-4">
               <div className="space-y-2">
                 <Label className="text-foreground">{t('selectPatient')}</Label>
                 <Select onValueChange={v => setFormData({...formData, patientId: v})}>
-                  <SelectTrigger className="h-12 rounded-xl text-right bg-background border-input">
+                  <SelectTrigger className="h-12 rounded-xl text-start bg-background border-input">
                     <SelectValue placeholder={t('selectPatient')} />
                   </SelectTrigger>
                   <SelectContent className="bg-card">
@@ -95,11 +98,11 @@ export default function AppointmentsPage() {
             <Card key={app.id} className="border shadow-sm bg-card rounded-2xl overflow-hidden">
               <CardContent className="p-4 space-y-4">
                 <div className="flex justify-between items-start">
-                  <div className="text-right">
+                  <div className="text-start">
                     <p className="font-bold text-foreground">{app.patientName}</p>
-                    <p className="text-[10px] text-muted-foreground flex items-center justify-end gap-1">
-                      {format(new Date(app.dateTime), 'EEEE d MMMM, hh:mm a', { locale: ar })}
+                    <p className="text-[10px] text-muted-foreground flex items-center justify-start gap-1">
                       <Clock className="h-3 w-3" />
+                      {format(new Date(app.dateTime), 'EEEE d MMMM, hh:mm a', { locale })}
                     </p>
                   </div>
                   <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${
@@ -128,7 +131,7 @@ export default function AppointmentsPage() {
                       className="text-[10px] h-9 rounded-xl border-amber-100 text-amber-700 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/10 dark:border-amber-900/30 dark:text-amber-400"
                       onClick={() => updateAppointmentStatus(app.id, 'no-show')}
                     >
-                      <X className="h-3 w-3 ml-1" /> {t('noShow')}
+                      <X className="h-3 w-3 ml-1" /> {t('no-show')}
                     </Button>
                     <Button 
                       size="sm" 
