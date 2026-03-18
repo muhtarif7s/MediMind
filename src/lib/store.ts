@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -44,14 +45,14 @@ const PAGE_SIZE = 15;
 
 /**
  * Main clinical store hook.
- * Optimized with pagination and one-time fetching for large datasets.
+ * Optimized with pagination, offline support, and role-based validation.
  */
 export function useClinic() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const [isOnline, setIsOnline] = useState(true);
 
-  // --- Local Data States (for paginated/one-time data) ---
+  // --- Local Data States ---
   const [patients, setPatients] = useState<Patient[]>([]);
   const [history, setHistory] = useState<DoseLog[]>([]);
   const [isPatientsLoadingOnce, setIsPatientsLoadingOnce] = useState(false);
@@ -79,27 +80,27 @@ export function useClinic() {
 
   const shouldFetch = !!user && !isUserLoading;
 
-  // --- Real-time Subscriptions (for data that needs immediate sync) ---
+  // --- Real-time Subscriptions ---
   
   // 1. User Profile (Real-time)
   const userProfileRef = useMemoFirebase(() => shouldFetch ? doc(db, 'users', user.uid) : null, [db, user, shouldFetch]);
   const { data: userProfileData, isLoading: isUserProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
-  // 2. Appointments (Real-time for clinical coordination)
+  // 2. Appointments (Real-time)
   const appointmentsQuery = useMemoFirebase(() => 
     shouldFetch ? query(collection(db, 'users', user.uid, 'appointments'), orderBy('dateTime', 'asc')) : null, 
   [db, user, shouldFetch]);
   const { data: appointmentsData, isLoading: isAppointmentsLoading } = useCollection<Appointment>(appointmentsQuery);
   const appointments = appointmentsData || [];
 
-  // 3. Medications (Real-time for inventory/dosing sync)
+  // 3. Medications (Real-time)
   const medicationsQuery = useMemoFirebase(() => 
     shouldFetch ? query(collection(db, 'users', user.uid, 'medicines'), orderBy('name')) : null, 
   [db, user, shouldFetch]);
   const { data: medicationsData, isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
   const medications = medicationsData || [];
 
-  // --- One-time Paginated Fetching (for performance optimization) ---
+  // --- Paginated Fetching ---
 
   const fetchPatients = useCallback(async (isLoadMore = false) => {
     if (!shouldFetch || isPatientsLoadingOnce) return;
@@ -161,7 +162,6 @@ export function useClinic() {
     }
   }, [db, user, shouldFetch, isHistoryLoadingOnce, hasMoreHistory]);
 
-  // Initial Data Load
   useEffect(() => {
     if (shouldFetch) {
       fetchPatients();
@@ -178,18 +178,18 @@ export function useClinic() {
     return dict[key] || key;
   }, [userProfileData?.language]);
 
-  // --- Defensive Action Wrapper ---
+  // --- Security & Validation Action Wrapper ---
   const executeSafe = <T extends any[]>(fn: (...args: T) => void, validation?: (...args: T) => boolean) => {
     return (...args: T) => {
       try {
         if (!user) throw new Error('Unauthenticated action denied');
         if (validation && !validation(...args)) {
-          throw new Error('Data validation failed');
+          throw new AppError('Data validation failed. Please check your inputs.', 'store/validation-failed', 'ClinicStore');
         }
         fn(...args);
       } catch (err: any) {
         logger.error('StoreAction', err.message);
-        errorEmitter.emit('app-error', new AppError(err.message, 'store/action-failed', 'ClinicStore'));
+        errorEmitter.emit('app-error', err instanceof AppError ? err : new AppError(err.message, 'store/action-failed', 'ClinicStore'));
       }
     };
   };
@@ -207,10 +207,9 @@ export function useClinic() {
         createdAt: new Date().toISOString()
       };
       setDocumentNonBlocking(newPatientRef, newPatient, { merge: true });
-      // Optimistic Update
       setPatients(prev => [newPatient, ...prev]);
     },
-    (p) => !!p.name && p.name.length >= 2
+    (p) => !!p.name && p.name.length >= 2 && !!p.phone
   );
 
   const addPatientRecord = executeSafe((patientId: string, record: Omit<PatientRecord, 'id' | 'createdAt'>) => {
@@ -230,7 +229,7 @@ export function useClinic() {
         status: 'pending'
       });
     },
-    (app) => !!app.dateTime
+    (app) => !!app.dateTime && !!app.patientId
   );
 
   const updateAppointmentStatus = executeSafe((id: string, status: AppointmentStatus) => {
@@ -244,7 +243,7 @@ export function useClinic() {
       ...med,
       userId: user.uid
     });
-  });
+  }, (med) => !!med.name && med.dosageAmount > 0);
 
   const logDose = executeSafe((medId: string, scheduledTime: string, status: DoseStatus) => {
     if (!user) return;
@@ -264,8 +263,6 @@ export function useClinic() {
     };
 
     setDocumentNonBlocking(newLogRef, newLog, { merge: true });
-    
-    // Optimistic Update for History
     setHistory(prev => [newLog, ...prev]);
 
     if (status === 'taken') {
@@ -344,7 +341,6 @@ export function useClinic() {
       medications.forEach(med => {
         med.times.forEach(time => {
           const scheduledTime = `${todayStr}T${time}:00`;
-          // Find log in history state
           const log = history.find(h => h.medicationId === med.id && h.scheduledTime === scheduledTime);
           todayDoses.push({ med, time: scheduledTime, status: log ? log.status : 'pending' });
         });

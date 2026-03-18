@@ -13,35 +13,85 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == uid;
     }
 
-    function getUserRole(uid) {
-      return get(/databases/$(database)/documents/users/$(uid)).data.role;
+    function getUserData(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data;
     }
 
     function isAdmin() {
-      return isSignedIn() && getUserRole(request.auth.uid) == 'admin';
+      return isSignedIn() && getUserData(request.auth.uid).role == 'admin';
     }
 
     function isDoctor() {
-      return isSignedIn() && getUserRole(request.auth.uid) == 'doctor';
+      return isSignedIn() && getUserData(request.auth.uid).role == 'doctor';
     }
 
-    // --- User Profile Rules ---
+    // --- Data Validation Helpers ---
+    
+    function isValidPatient(data) {
+      return data.name is string && data.name.size() >= 2
+          && data.phone is string
+          && data.clinicId == request.auth.uid;
+    }
+
+    function isValidAppointment(data) {
+      return data.patientId is string
+          && data.dateTime is string
+          && data.status in ['pending', 'attended', 'no-show', 'cancelled']
+          && data.clinicId == request.auth.uid;
+    }
+
+    function isValidMedication(data) {
+      return data.name is string
+          && data.dosageAmount is number
+          && data.dosageUnit in ['pill', 'mg', 'ml', 'drop', 'capsule', 'injection']
+          && data.userId == request.auth.uid;
+    }
+
+    // --- User Profile & Clinical Data Rules ---
     match /users/{userId} {
+      // Profiles are readable/writable by owner or admin
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin();
       allow delete: if isAdmin();
 
-      // Subcollections are strictly owner-only or admin
-      match /{allPaths=**} {
-        allow read, write: if isOwner(userId) || isAdmin();
+      // Patients Subcollection
+      match /patients/{patientId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId) && isValidPatient(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+        
+        // Medical Records for Patients
+        match /records/{recordId} {
+          allow read, write: if isOwner(userId) || isAdmin();
+        }
+      }
+
+      // Appointments Subcollection
+      match /appointments/{appId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId) && isValidAppointment(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      // Medications Subcollection
+      match /medicines/{medId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId) && isValidMedication(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      // Dose Logs (History) Subcollection
+      match /doseLogs/{logId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId) && request.resource.data.userId == userId;
+        allow delete: if isOwner(userId) || isAdmin();
       }
     }
 
-    // --- Collection Group Rules for Analytics ---
-    match /{path=**}/doseLogs/{doseLogId} {
-      // Queries MUST be filtered by userId to prevent cross-user leakage
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    // --- Global Analytics Access (Optional/Future) ---
+    match /{path=**}/public_stats/{statId} {
+      allow read: if true;
     }
 
     // Default deny for all other paths
