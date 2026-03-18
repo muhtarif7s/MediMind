@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useCallback, useEffect } from 'react';
@@ -37,12 +38,17 @@ export function WelcomeView() {
     };
   }, [api, onSelect]);
 
+  // Unified image source with direct fallback verification
+  const getStepImage = (id: string) => {
+    return PlaceHolderImages.find(img => img.id === id)?.imageUrl;
+  };
+
   const onboardingSteps = [
     {
       title: t('welcome1_title'),
       description: t('welcome1_desc'),
       icon: Stethoscope,
-      image: PlaceHolderImages.find(img => img.id === 'welcome-clinic')?.imageUrl,
+      image: getStepImage('welcome-clinic'),
       color: "from-blue-600 to-cyan-500",
       iconColor: "text-blue-400"
     },
@@ -50,7 +56,7 @@ export function WelcomeView() {
       title: t('welcome2_title'),
       description: t('welcome2_desc'),
       icon: BrainCircuit,
-      image: PlaceHolderImages.find(img => img.id === 'welcome-ai')?.imageUrl,
+      image: getStepImage('welcome-ai'),
       color: "from-purple-600 to-indigo-500",
       iconColor: "text-purple-400"
     },
@@ -58,7 +64,7 @@ export function WelcomeView() {
       title: t('welcome3_title'),
       description: t('welcome3_desc'),
       icon: ShieldCheck,
-      image: PlaceHolderImages.find(img => img.id === 'welcome-records')?.imageUrl,
+      image: getStepImage('welcome-records'),
       color: "from-emerald-600 to-teal-500",
       iconColor: "text-emerald-400"
     }
@@ -106,36 +112,39 @@ export function WelcomeView() {
         >
           <CarouselContent className="h-full">
             {onboardingSteps.map((step, index) => (
-              <CarouselItem key={index} className="h-full flex flex-col items-center justify-center px-8 text-center space-y-10">
+              <CarouselItem key={index} className="h-full flex flex-col items-center justify-center px-8 text-center space-y-12">
                 <div className="relative group">
                   <div className={cn(
                     "absolute inset-0 bg-gradient-to-tr opacity-25 blur-3xl rounded-full scale-125",
                     step.color
                   )} />
-                  <div className="relative h-64 w-64 md:h-80 md:w-80 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white/5 animate-in fade-in zoom-in duration-700">
+                  <div className="relative h-64 w-64 md:h-80 md:w-80 rounded-[3.5rem] overflow-hidden shadow-2xl border-4 border-white/10 bg-slate-900/50 animate-in fade-in zoom-in duration-700">
                     {step.image ? (
                       <img 
                         src={step.image} 
                         alt={step.title}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                         data-ai-hint="medical clinic"
+                        onError={(e) => {
+                          // Fallback if image fails to load
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
                       />
-                    ) : (
-                      <div className="h-full w-full bg-slate-900 flex items-center justify-center">
-                        <step.icon className="h-20 w-20 text-white/10" />
-                      </div>
-                    )}
+                    ) : null}
+                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/40">
+                      <step.icon className="h-24 w-24 text-white/5" />
+                    </div>
                   </div>
-                  <div className="absolute -bottom-6 -inline-end-6 h-20 w-20 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] flex items-center justify-center shadow-2xl">
+                  <div className="absolute -bottom-6 -inline-end-6 h-20 w-20 bg-white/5 backdrop-blur-2xl border border-white/20 rounded-[2rem] flex items-center justify-center shadow-2xl z-20">
                     <step.icon className={cn("h-10 w-10", step.iconColor)} />
                   </div>
                 </div>
 
                 <div className="space-y-6 max-w-sm animate-in slide-in-from-bottom-8 duration-700 delay-200">
-                  <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight tracking-tight">
+                  <h2 className="text-3xl md:text-5xl font-extrabold text-white leading-tight tracking-tight drop-shadow-sm">
                     {step.title}
                   </h2>
-                  <p className="text-sm md:text-base text-white/50 leading-relaxed font-medium">
+                  <p className="text-sm md:text-lg text-white/60 leading-relaxed font-semibold">
                     {step.description}
                   </p>
                 </div>
@@ -152,7 +161,7 @@ export function WelcomeView() {
               key={i} 
               className={cn(
                 "h-1.5 transition-all duration-500 rounded-full",
-                current === i ? "w-10 bg-primary" : "w-2 bg-white/10"
+                current === i ? "w-10 bg-primary shadow-[0_0_10px_rgba(14,165,233,0.5)]" : "w-2 bg-white/10"
               )} 
             />
           ))}
