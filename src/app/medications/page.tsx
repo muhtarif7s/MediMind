@@ -32,10 +32,10 @@ export default function MedicationsPage() {
   const isRTL = profile.language === 'ar';
 
   return (
-    <div className="flex flex-col h-screen pb-20 animate-page-enter" dir={isRTL ? 'rtl' : 'ltr'}>
-      <header className="p-6 bg-background space-y-4 pt-safe-area-inset-top">
+    <div className="flex flex-col h-screen pb-20 bg-background transition-colors animate-page-enter" dir={isRTL ? 'rtl' : 'ltr'}>
+      <header className="p-6 bg-card border-b space-y-4 pt-safe-area-inset-top">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">{t('medications')}</h2>
+          <h2 className="text-2xl font-bold text-foreground">{t('medications')}</h2>
           <Link href="/medications/add">
             <Button size="icon" className="rounded-full h-10 w-10 shadow-lg active:scale-90 transition-transform">
               <Plus className="h-6 w-6" />
@@ -45,7 +45,7 @@ export default function MedicationsPage() {
         <div className="relative">
           <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
           <Input 
-            className={`${isRTL ? 'pr-10' : 'pl-10'} h-12 bg-muted/50 border-none rounded-2xl`} 
+            className={`${isRTL ? 'pr-10' : 'pl-10'} h-12 bg-background border-input rounded-2xl text-foreground`} 
             placeholder={t('searchMedications')} 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -53,7 +53,7 @@ export default function MedicationsPage() {
         </div>
       </header>
 
-      <ScrollArea className="flex-1 px-6">
+      <ScrollArea className="flex-1 p-6">
         <div className="pb-10">
           {!isLoaded || isUserLoading ? (
             <ListSkeleton />
