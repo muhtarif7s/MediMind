@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useClinic } from '@/lib/store';
@@ -7,13 +8,36 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Loader2, Calendar, Users, Activity, Stethoscope, Plus, ChevronRight, Pill, ShieldCheck } from 'lucide-react';
+import { Calendar, Users, Activity, Stethoscope, Plus, ChevronRight, Pill, ShieldCheck, Skeleton } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 import Link from 'next/link';
 import { NextDoseCountdown } from '@/components/dashboard/NextDoseCountdown';
 import { TodayTimeline } from '@/components/dashboard/TodayTimeline';
 import { WelcomeView } from '@/components/welcome/WelcomeView';
+
+function DashboardSkeleton() {
+  return (
+    <div className="flex flex-col h-screen bg-background">
+      <div className="h-48 bg-muted animate-pulse rounded-b-[2.5rem]" />
+      <div className="p-6 space-y-8">
+        <div className="space-y-4">
+          <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+          <div className="h-40 bg-muted rounded-3xl animate-pulse" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="h-24 bg-muted rounded-3xl animate-pulse" />
+          <div className="h-24 bg-muted rounded-3xl animate-pulse" />
+        </div>
+        <div className="space-y-4">
+          <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+          <div className="h-20 bg-muted rounded-3xl animate-pulse" />
+          <div className="h-20 bg-muted rounded-3xl animate-pulse" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function RootPage() {
   const [mounted, setMounted] = useState(false);
@@ -35,12 +59,10 @@ export default function RootPage() {
     setMounted(true);
   }, []);
 
-  if (!mounted || isUserLoading || !isLoaded) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+  if (!mounted) return null;
+
+  if (isUserLoading || !isLoaded) {
+    return <DashboardSkeleton />;
   }
 
   // If no user is authenticated, show the Welcome experience directly
@@ -51,11 +73,7 @@ export default function RootPage() {
   // If the user is logged in but not verified, they must complete verification
   if (!user.emailVerified) {
     router.push('/login');
-    return (
-      <div className="h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const todayApps = getTodayAppointments();
@@ -87,7 +105,7 @@ export default function RootPage() {
             </Button>
           </div>
         </div>
-        <div className="space-y-1">
+        <div className="space-y-1 text-start">
           <p className="text-sm opacity-80">{t('welcome')}</p>
           <p className="text-2xl font-bold">{profile?.name || t('doctor')}</p>
         </div>
@@ -96,7 +114,7 @@ export default function RootPage() {
       <ScrollArea className="flex-1 p-6 space-y-8 no-scrollbar">
         {nextDose ? (
           <section className="space-y-4">
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">
+            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 text-start">
               {t('nextDose')}
             </h3>
             <NextDoseCountdown medication={nextDose.med} scheduledTime={nextDose.time} />
@@ -111,7 +129,7 @@ export default function RootPage() {
         )}
 
         <section className="space-y-4">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 text-start">
             {t('quickActions')}
           </h3>
           <div className="grid grid-cols-2 gap-4">
