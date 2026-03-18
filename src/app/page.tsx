@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2, Calendar, Users, Activity, Stethoscope, Plus, ChevronRight, Pill, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
@@ -17,6 +17,7 @@ import { TodayTimeline } from '@/components/dashboard/TodayTimeline';
 import { WelcomeView } from '@/components/welcome/WelcomeView';
 
 export default function RootPage() {
+  const [mounted, setMounted] = useState(false);
   const { 
     user, 
     isUserLoading, 
@@ -31,8 +32,13 @@ export default function RootPage() {
   } = useClinic();
   const router = useRouter();
 
-  // If auth is still loading, show a professional centered loader
-  if (isUserLoading || !isLoaded) {
+  // Handle mounting to avoid hydration mismatches and SSR errors
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Show a blank loading state or placeholder during SSR and initial hydration
+  if (!mounted || isUserLoading || !isLoaded) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -40,13 +46,12 @@ export default function RootPage() {
     );
   }
 
-  // If no user is authenticated, show the Welcome/Onboarding experience directly
-  // This ensures new users always see the professional welcome screens first.
+  // If no user is authenticated, show the Welcome/Onboarding experience
   if (!user) {
     return <WelcomeView />;
   }
 
-  // If the user is logged in but not verified, they must complete verification via the Login screen
+  // If the user is logged in but not verified, they must complete verification
   if (!user.emailVerified) {
     router.push('/login');
     return (
