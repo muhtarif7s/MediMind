@@ -1,4 +1,3 @@
-
 import './globals.css';
 import { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster";
@@ -25,7 +24,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="theme-color" content="#0ea5e9" />
+        <meta name="theme-color" content="#08668d" />
       </head>
       <body className="font-arabic antialiased bg-background text-foreground min-h-screen">
         <FirebaseClientProvider>
