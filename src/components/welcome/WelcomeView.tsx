@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useCallback, useEffect } from 'react';
@@ -12,7 +11,7 @@ import {
   CarouselItem,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import { ChevronRight, Stethoscope, BrainCircuit, ShieldCheck, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Stethoscope, BrainCircuit, ShieldCheck, ArrowRight, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -91,8 +90,16 @@ export function WelcomeView() {
         </Link>
       </header>
 
-      <div className="flex-1 flex flex-col relative z-10">
-        <Carousel setApi={setApi} className="w-full h-full">
+      <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
+        <Carousel 
+          setApi={setApi} 
+          opts={{ 
+            direction: isRTL ? 'rtl' : 'ltr',
+            align: 'start',
+            containScroll: 'trimSnaps'
+          }} 
+          className="w-full h-full"
+        >
           <CarouselContent className="h-full">
             {onboardingSteps.map((step, index) => (
               <CarouselItem key={index} className="h-full flex flex-col items-center justify-center px-8 text-center space-y-8">
@@ -108,7 +115,7 @@ export function WelcomeView() {
                       className="h-full w-full object-cover"
                     />
                   </div>
-                  <div className="absolute -bottom-4 -right-4 h-16 w-16 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center justify-center shadow-xl">
+                  <div className="absolute -bottom-4 -inline-end-4 h-16 w-16 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center justify-center shadow-xl">
                     <step.icon className="h-8 w-8 text-white" />
                   </div>
                 </div>
