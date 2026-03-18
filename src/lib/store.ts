@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
@@ -37,43 +36,15 @@ import { translations } from './translations';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { AppError } from '@/firebase/errors';
 import { logger } from './logger';
-import { requestNotificationToken, setupForegroundListener } from '@/firebase/messaging';
 
 /**
  * Main clinical store hook.
- * Enhanced with RBAC awareness, offline persistence, and FCM messaging.
- * Scopes all data strictly under users/{userId} to prevent permission issues.
+ * Enhanced with RBAC awareness and error protection.
+ * Scopes all data strictly under users/{userId} for security.
  */
 export function useClinic() {
   const { user, isUserLoading } = useUser();
-  const { messaging } = useFirebase();
   const db = useFirestore();
-  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
-
-  // --- Network Status ---
-  useEffect(() => {
-    const handleStatus = () => setIsOnline(navigator.onLine);
-    if (typeof window !== 'undefined') {
-      window.addEventListener('online', handleStatus);
-      window.addEventListener('offline', handleStatus);
-      return () => {
-        window.removeEventListener('online', handleStatus);
-        window.removeEventListener('offline', handleStatus);
-      };
-    }
-  }, []);
-
-  // --- FCM Setup ---
-  useEffect(() => {
-    if (user && messaging && !isUserLoading) {
-      setupForegroundListener(messaging);
-      requestNotificationToken(messaging).then(token => {
-        if (token) {
-          logger.debug('Store', 'FCM Token ready for profile update');
-        }
-      });
-    }
-  }, [user, messaging, isUserLoading]);
 
   const shouldFetch = !!user && !isUserLoading;
 
@@ -104,7 +75,7 @@ export function useClinic() {
   const { data: medicationsData, isLoading: isMedicationsLoading } = useCollection<Medication>(medicationsQuery);
   const medications = medicationsData || [];
 
-  // 5. Dose History (Moved from collectionGroup to direct subcollection for security stability)
+  // 5. Dose History
   const historyQuery = useMemoFirebase(() => 
     shouldFetch ? query(collection(db, 'users', user.uid, 'doseLogs'), orderBy('recordedAt', 'desc'), limit(50)) : null, 
   [db, user, shouldFetch]);
@@ -188,7 +159,6 @@ export function useClinic() {
     const med = medications.find(m => m.id === medId);
     if (!med) return;
 
-    // Fixed path: doseLogs are now strictly scoped under the user for permission stability
     addDocumentNonBlocking(collection(db, 'users', user.uid, 'doseLogs'), {
       userId: user.uid,
       medicationId: medId,
@@ -220,7 +190,6 @@ export function useClinic() {
   return {
     user,
     isUserLoading,
-    isOnline,
     profile: userProfileData || { 
       userId: user?.uid || '', 
       name: 'طبيب', 

@@ -45,7 +45,7 @@ export function GlobalErrorListener() {
           action: <ShieldAlert className="h-4 w-4" />,
         });
       } else {
-        // Unexpected runtime error -> show toast but don't crash unless critical
+        // Unexpected runtime error -> show toast
         toast({
           variant: "destructive",
           title: "Application Error",

@@ -1,5 +1,5 @@
 /**
- * @fileOverview Centralized logging utility for Smart Dentist & MediMind.
+ * @fileOverview Centralized logging utility for Smart Dentist.
  * Provides structured logging for debugging and error tracking.
  */
 
@@ -66,10 +66,6 @@ class Logger {
 
   public getLogs(): LogEntry[] {
     return [...this.logs];
-  }
-
-  public clearLogs() {
-    this.logs = [];
   }
 }
 
