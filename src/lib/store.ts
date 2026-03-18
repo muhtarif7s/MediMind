@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
@@ -18,6 +19,7 @@ import {
   useCollection,
   useDoc,
   useMemoFirebase,
+  useFirebase,
   updateDocumentNonBlocking,
   addDocumentNonBlocking,
   setDocumentNonBlocking,
@@ -36,16 +38,19 @@ import { translations } from './translations';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { AppError } from '@/firebase/errors';
 import { logger } from './logger';
+import { requestNotificationToken, setupForegroundListener } from '@/firebase/messaging';
 
 /**
  * Main clinical store hook.
- * Enhanced with RBAC awareness, strict data validation, and 100% translation sync.
+ * Enhanced with RBAC awareness, offline persistence, and FCM messaging.
  */
 export function useClinic() {
   const { user, isUserLoading } = useUser();
+  const { messaging, analytics } = useFirebase();
   const db = useFirestore();
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
+  // --- Network Status ---
   useEffect(() => {
     const handleStatus = () => setIsOnline(navigator.onLine);
     window.addEventListener('online', handleStatus);
@@ -55,6 +60,20 @@ export function useClinic() {
       window.removeEventListener('offline', handleStatus);
     };
   }, []);
+
+  // --- FCM Setup ---
+  useEffect(() => {
+    if (user && messaging && !isUserLoading) {
+      setupForegroundListener(messaging);
+      requestNotificationToken(messaging).then(token => {
+        if (token) {
+          // In a real app, you'd save this token to the user's profile in Firestore
+          // to trigger push notifications from the backend.
+          logger.debug('Store', 'FCM Token ready for profile update');
+        }
+      });
+    }
+  }, [user, messaging, isUserLoading]);
 
   const shouldFetch = !!user && !isUserLoading;
 
@@ -88,17 +107,12 @@ export function useClinic() {
 
   const isLoaded = !isUserLoading && (!user || (!isUserProfileLoading && !isPatientsLoading && !isAppointmentsLoading && !isMedicationsLoading && !isHistoryLoading));
 
-  // Memoized translation helper that handles both authenticated and unauthenticated states
   const t = useCallback((key: string) => {
-    // Default to 'ar' if no profile is available (e.g. during onboarding)
     const lang = userProfileData?.language || 'ar';
     const dict = (translations as any)[lang] || translations.en;
     return dict[key] || key;
   }, [userProfileData?.language]);
 
-  /**
-   * Safe execution wrapper for mutations with data validation.
-   */
   const executeSafe = <T extends any[]>(fn: (...args: T) => void, validation?: (...args: T) => boolean) => {
     return (...args: T) => {
       try {
@@ -245,7 +259,9 @@ export function useClinic() {
     },
     clearMedications: () => {
       medications.forEach(m => deleteDocumentNonBlocking(doc(db, 'users', user!.uid, 'medicines', m.id)));
-    }
+    },
+    analytics,
+    messaging
   };
 }
 

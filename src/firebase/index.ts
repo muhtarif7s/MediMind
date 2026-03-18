@@ -1,49 +1,69 @@
+
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getAnalytics, Analytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
+import { getMessaging, Messaging, isSupported as isMessagingSupported } from 'firebase/messaging';
 
 export interface FirebaseServices {
   firebaseApp: FirebaseApp;
   auth: Auth;
   firestore: Firestore;
+  analytics: Analytics | null;
+  messaging: Messaging | null;
 }
 
 /**
- * Initializes Firebase services with offline persistence enabled for Firestore.
+ * Initializes Firebase services with offline persistence and production monitoring.
  */
 export function initializeFirebase(): FirebaseServices {
+  let app: FirebaseApp;
+  let db: Firestore;
+  let auth: Auth;
+  let analytics: Analytics | null = null;
+  let messaging: Messaging | null = null;
+
   if (!getApps().length) {
-    const firebaseApp = initializeApp(firebaseConfig);
-    const db = getFirestore(firebaseApp);
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
     
     // Enable offline persistence for the browser
     if (typeof window !== 'undefined') {
       enableIndexedDbPersistence(db).catch((err) => {
         if (err.code === 'failed-precondition') {
-          // Multiple tabs open, persistence can only be enabled in one tab at a time.
           console.warn('Persistence failed: Multiple tabs open');
         } else if (err.code === 'unimplemented') {
-          // The current browser doesn't support all of the features required to enable persistence
           console.warn('Persistence failed: Browser not supported');
         }
       });
+
+      // Initialize Analytics
+      isAnalyticsSupported().then(supported => {
+        if (supported) analytics = getAnalytics(app);
+      });
+
+      // Initialize Messaging
+      isMessagingSupported().then(supported => {
+        if (supported) messaging = getMessaging(app);
+      });
     }
 
-    return {
-      firebaseApp,
-      auth: getAuth(firebaseApp),
-      firestore: db
-    };
+    auth = getAuth(app);
+  } else {
+    app = getApp();
+    db = getFirestore(app);
+    auth = getAuth(app);
   }
 
-  const app = getApp();
   return {
     firebaseApp: app,
-    auth: getAuth(app),
-    firestore: getFirestore(app)
+    auth,
+    firestore: db,
+    analytics,
+    messaging
   };
 }
 
