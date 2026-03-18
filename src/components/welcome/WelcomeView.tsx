@@ -22,7 +22,7 @@ export function WelcomeView() {
   const router = useRouter();
 
   // Determine RTL based on current language
-  const isRTL = profile?.language === 'ar';
+  const isRTL = (profile?.language || 'ar') === 'ar';
 
   const onSelect = useCallback(() => {
     if (!api) return;
@@ -43,21 +43,24 @@ export function WelcomeView() {
       description: t('welcome1_desc'),
       icon: Stethoscope,
       image: PlaceHolderImages.find(img => img.id === 'welcome-clinic')?.imageUrl,
-      color: "from-blue-600 to-cyan-500"
+      color: "from-blue-600 to-cyan-500",
+      iconColor: "text-blue-400"
     },
     {
       title: t('welcome2_title'),
       description: t('welcome2_desc'),
       icon: BrainCircuit,
       image: PlaceHolderImages.find(img => img.id === 'welcome-ai')?.imageUrl,
-      color: "from-purple-600 to-indigo-500"
+      color: "from-purple-600 to-indigo-500",
+      iconColor: "text-purple-400"
     },
     {
       title: t('welcome3_title'),
       description: t('welcome3_desc'),
       icon: ShieldCheck,
       image: PlaceHolderImages.find(img => img.id === 'welcome-records')?.imageUrl,
-      color: "from-emerald-600 to-teal-500"
+      color: "from-emerald-600 to-teal-500",
+      iconColor: "text-emerald-400"
     }
   ];
 
@@ -103,29 +106,36 @@ export function WelcomeView() {
         >
           <CarouselContent className="h-full">
             {onboardingSteps.map((step, index) => (
-              <CarouselItem key={index} className="h-full flex flex-col items-center justify-center px-8 text-center space-y-8">
+              <CarouselItem key={index} className="h-full flex flex-col items-center justify-center px-8 text-center space-y-10">
                 <div className="relative group">
                   <div className={cn(
-                    "absolute inset-0 bg-gradient-to-tr opacity-20 blur-2xl rounded-full scale-110",
+                    "absolute inset-0 bg-gradient-to-tr opacity-25 blur-3xl rounded-full scale-125",
                     step.color
                   )} />
-                  <div className="relative h-64 w-64 md:h-80 md:w-80 rounded-[3rem] overflow-hidden shadow-2xl border border-white/10 animate-in fade-in zoom-in duration-700">
-                    <img 
-                      src={step.image} 
-                      alt={step.title}
-                      className="h-full w-full object-cover"
-                    />
+                  <div className="relative h-64 w-64 md:h-80 md:w-80 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white/5 animate-in fade-in zoom-in duration-700">
+                    {step.image ? (
+                      <img 
+                        src={step.image} 
+                        alt={step.title}
+                        className="h-full w-full object-cover"
+                        data-ai-hint="medical clinic"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-slate-900 flex items-center justify-center">
+                        <step.icon className="h-20 w-20 text-white/10" />
+                      </div>
+                    )}
                   </div>
-                  <div className="absolute -bottom-4 -inline-end-4 h-16 w-16 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center justify-center shadow-xl">
-                    <step.icon className="h-8 w-8 text-white" />
+                  <div className="absolute -bottom-6 -inline-end-6 h-20 w-20 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] flex items-center justify-center shadow-2xl">
+                    <step.icon className={cn("h-10 w-10", step.iconColor)} />
                   </div>
                 </div>
 
-                <div className="space-y-4 max-w-sm animate-in slide-in-from-bottom-8 duration-700 delay-200">
-                  <h2 className="text-3xl font-bold text-white leading-tight">
+                <div className="space-y-6 max-w-sm animate-in slide-in-from-bottom-8 duration-700 delay-200">
+                  <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight tracking-tight">
                     {step.title}
                   </h2>
-                  <p className="text-sm text-white/60 leading-relaxed">
+                  <p className="text-sm md:text-base text-white/50 leading-relaxed font-medium">
                     {step.description}
                   </p>
                 </div>
@@ -135,14 +145,14 @@ export function WelcomeView() {
         </Carousel>
       </div>
 
-      <footer className="p-10 flex flex-col items-center space-y-8 z-20">
-        <div className="flex gap-2">
+      <footer className="p-10 flex flex-col items-center space-y-10 z-20">
+        <div className="flex gap-2.5">
           {onboardingSteps.map((_, i) => (
             <div 
               key={i} 
               className={cn(
-                "h-1.5 transition-all duration-300 rounded-full",
-                current === i ? "w-8 bg-primary" : "w-1.5 bg-white/20"
+                "h-1.5 transition-all duration-500 rounded-full",
+                current === i ? "w-10 bg-primary" : "w-2 bg-white/10"
               )} 
             />
           ))}
@@ -150,13 +160,13 @@ export function WelcomeView() {
 
         <Button 
           onClick={handleNext}
-          className="w-full h-14 rounded-2xl bg-white text-slate-950 hover:bg-white/90 font-bold text-lg shadow-xl active:scale-[0.98] transition-all group"
+          className="w-full h-16 rounded-[2rem] bg-white text-slate-950 hover:bg-white/90 font-bold text-xl shadow-2xl shadow-white/5 active:scale-[0.97] transition-all group"
         >
           {current === onboardingSteps.length - 1 ? t('getStarted') : t('next')}
           {isRTL ? (
-            <ArrowLeft className="mr-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="mr-2 h-6 w-6 group-hover:-translate-x-1.5 transition-transform" />
           ) : (
-            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="ml-2 h-6 w-6 group-hover:translate-x-1.5 transition-transform" />
           )}
         </Button>
       </footer>
