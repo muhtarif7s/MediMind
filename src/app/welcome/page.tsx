@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMediMind } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -92,13 +93,9 @@ export default function WelcomePage() {
           </div>
           <span className="font-bold text-white tracking-tight">{t('appTitle')}</span>
         </div>
-        <Button 
-          variant="ghost" 
-          className="text-white/60 hover:text-white font-bold text-xs"
-          onClick={() => router.push('/login')}
-        >
+        <Link href="/login" className="text-white/60 hover:text-white font-bold text-xs">
           {t('skip')}
-        </Button>
+        </Link>
       </header>
 
       <div className="flex-1 flex flex-col relative z-10">

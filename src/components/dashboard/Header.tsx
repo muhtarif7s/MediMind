@@ -22,10 +22,10 @@ export function Header({ userName }: { userName: string }) {
         </div>
       </div>
       <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" aria-label="Search">
           <Search className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary relative">
+        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary relative" aria-label="Notifications">
           <Bell className="h-5 w-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full"></span>
         </Button>
