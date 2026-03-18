@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import {
   Patient,
   Appointment,
@@ -28,6 +29,7 @@ import {
   orderBy,
   where,
   collectionGroup,
+  limit,
 } from 'firebase/firestore';
 import { translations } from './translations';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -35,20 +37,33 @@ import { AppError } from '@/firebase/errors';
 import { logger } from './logger';
 
 /**
- * Main store hook with global error safety wrappers.
+ * Main clinical store hook.
+ * Optimized for performance and offline support.
  */
 export function useClinic() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  // Monitor network status
+  useEffect(() => {
+    const handleStatus = () => setIsOnline(navigator.onLine);
+    window.addEventListener('online', handleStatus);
+    window.addEventListener('offline', handleStatus);
+    return () => {
+      window.removeEventListener('online', handleStatus);
+      window.removeEventListener('offline', handleStatus);
+    };
+  }, []);
 
   const shouldFetch = !!user && !isUserLoading;
 
-  // 1. Data Subscriptions
+  // 1. Data Subscriptions (Memoized & Limited for Performance)
   const userProfileRef = useMemoFirebase(() => shouldFetch ? doc(db, 'users', user.uid) : null, [db, user, shouldFetch]);
   const { data: userProfileData, isLoading: isUserProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   const patientsQuery = useMemoFirebase(() => 
-    shouldFetch ? query(collection(db, 'users', user.uid, 'patients'), orderBy('createdAt', 'desc')) : null, 
+    shouldFetch ? query(collection(db, 'users', user.uid, 'patients'), orderBy('createdAt', 'desc'), limit(100)) : null, 
   [db, user, shouldFetch]);
   const { data: patientsData, isLoading: isPatientsLoading } = useCollection<Patient>(patientsQuery);
   const patients = patientsData || [];
@@ -66,7 +81,7 @@ export function useClinic() {
   const medications = medicationsData || [];
 
   const historyQuery = useMemoFirebase(() => 
-    shouldFetch ? query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid), orderBy('recordedAt', 'desc')) : null, 
+    shouldFetch ? query(collectionGroup(db, 'doseLogs'), where('userId', '==', user.uid), orderBy('recordedAt', 'desc'), limit(50)) : null, 
   [db, user, shouldFetch]);
   const { data: historyData, isLoading: isHistoryLoading } = useCollection<DoseLog>(historyQuery);
   const history = historyData || [];
@@ -94,7 +109,7 @@ export function useClinic() {
     };
   };
 
-  // --- Clinical Actions ---
+  // --- Clinical Actions (Offline-Safe Non-Blocking) ---
   const addPatient = executeSafe((patient: Omit<Patient, 'id' | 'clinicId' | 'createdAt'>) => {
     if (!shouldFetch) return;
     addDocumentNonBlocking(collection(db, 'users', user.uid, 'patients'), {
@@ -126,7 +141,6 @@ export function useClinic() {
     updateDocumentNonBlocking(doc(db, 'users', user.uid, 'appointments', id), { status });
   });
 
-  // --- Medication Actions ---
   const addMedication = executeSafe((med: Omit<Medication, 'id' | 'userId'>) => {
     if (!shouldFetch) return;
     addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicines'), {
@@ -170,6 +184,7 @@ export function useClinic() {
   return {
     user,
     isUserLoading,
+    isOnline,
     profile: userProfileData || { userId: user?.uid || '', name: 'طبيب', email: user?.email || '', language: 'ar', theme: 'light', notificationsEnabled: true, createdAt: new Date().toISOString() },
     patients,
     appointments,
@@ -179,7 +194,7 @@ export function useClinic() {
     t,
     addPatient,
     addPatientRecord,
-    getPatientRecordsQuery: (patientId: string) => shouldFetch ? query(collection(db, 'users', user.uid, 'patients', patientId, 'records'), orderBy('createdAt', 'desc')) : null,
+    getPatientRecordsQuery: (patientId: string) => shouldFetch ? query(collection(db, 'users', user.uid, 'patients', patientId, 'records'), orderBy('createdAt', 'desc'), limit(20)) : null,
     addAppointment,
     updateAppointmentStatus,
     getTodayAppointments: () => {

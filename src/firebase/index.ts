@@ -1,10 +1,9 @@
-
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { getFirestore, Firestore, enableIndexedDbPersistence } from 'firebase/firestore';
 
 export interface FirebaseServices {
   firebaseApp: FirebaseApp;
@@ -12,31 +11,39 @@ export interface FirebaseServices {
   firestore: Firestore;
 }
 
-// IMPORTANT: DO NOT MODIFY THIS FUNCTION
+/**
+ * Initializes Firebase services with offline persistence enabled for Firestore.
+ */
 export function initializeFirebase(): FirebaseServices {
-  // Check if we are in a browser environment
-  const isBrowser = typeof window !== 'undefined';
-
   if (!getApps().length) {
-    let firebaseApp: FirebaseApp;
-    try {
-      // Attempt to initialize via environment variables (handled by App Hosting)
-      firebaseApp = initializeApp();
-    } catch (e) {
-      // Fallback to static config object
-      firebaseApp = initializeApp(firebaseConfig);
+    const firebaseApp = initializeApp(firebaseConfig);
+    const db = getFirestore(firebaseApp);
+    
+    // Enable offline persistence for the browser
+    if (typeof window !== 'undefined') {
+      enableIndexedDbPersistence(db).catch((err) => {
+        if (err.code === 'failed-precondition') {
+          // Multiple tabs open, persistence can only be enabled in one tab at a time.
+          console.warn('Persistence failed: Multiple tabs open');
+        } else if (err.code === 'unimplemented') {
+          // The current browser doesn't support all of the features required to enable persistence
+          console.warn('Persistence failed: Browser not supported');
+        }
+      });
     }
-    return getSdks(firebaseApp);
+
+    return {
+      firebaseApp,
+      auth: getAuth(firebaseApp),
+      firestore: db
+    };
   }
 
-  return getSdks(getApp());
-}
-
-export function getSdks(firebaseApp: FirebaseApp): FirebaseServices {
+  const app = getApp();
   return {
-    firebaseApp,
-    auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp)
+    firebaseApp: app,
+    auth: getAuth(app),
+    firestore: getFirestore(app)
   };
 }
 

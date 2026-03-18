@@ -1,4 +1,3 @@
-
 export const translations = {
   ar: {
     appTitle: 'طبيب الأسنان الذكي',
@@ -150,7 +149,6 @@ export const translations = {
     medicationInFiveMinutes: 'لديك جرعة من {name} بعد 5 دقائق.',
     resendOTP: 'إعادة إرسال الرمز',
     waitOTP: 'يرجى الانتظار {seconds} ثانية لإعادة الإرسال',
-    tooManyAttempts: 'محاولات كثيرة جداً. تم حظر الحساب مؤقتاً.',
     tooManyRequests: 'طلبات كثيرة جداً. يرجى الانتظار بضع دقائق والمحاولة مرة أخرى.',
     operationNotAllowed: 'طريقة تسجيل الدخول هذه غير مفعلة حالياً. يرجى التواصل مع الإدارة.',
     seconds: 'ثانية',
@@ -178,7 +176,8 @@ export const translations = {
     welcome3_desc: "احفظ صور الأشعة والوصفات الطبية في مكان واحد آمن ومنظم يسهل الوصول إليه.",
     getStarted: "ابدأ الآن",
     next: "التالي",
-    skip: "تخطي"
+    skip: "تخطي",
+    offlineMode: 'أنت تعمل في وضع عدم الاتصال بالإنترنت'
   },
   en: {
     appTitle: 'Smart Dentist',
@@ -357,7 +356,8 @@ export const translations = {
     welcome3_desc: "Safely store X-rays and prescriptions in one organized, accessible place.",
     getStarted: "Start Now",
     next: "Next",
-    skip: "Skip"
+    skip: "Skip",
+    offlineMode: 'You are working offline'
   },
   fr: {
     appTitle: 'Dentiste Intelligent',
@@ -536,7 +536,8 @@ export const translations = {
     welcome3_desc: "Stockez vos radios et ordonnances en toute sécurité dans un espace organisé et accessible.",
     getStarted: "Commencer Maintenant",
     next: "Suivant",
-    skip: "Passer"
+    skip: "Passer",
+    offlineMode: 'Vous travaillez hors ligne'
   },
   es: {
     appTitle: 'Dentista Inteligente',
@@ -704,8 +705,7 @@ export const translations = {
     noRecords: 'No hay registros médicos para este paciente',
     forgotPassword: '¿Olvidaste tu contraseña?',
     resetPassword: 'Restablecer contraseña',
-    sendResetLink: 'Enviar enlace de restablecimiento',
-    resetLinkSent: 'Enlace de restablecimiento enviado a tu correo.',
+    sendResetLink: 'Enlace de restablecimiento enviado a tu correo.',
     backToLogin: 'Volver al inicio de sesión',
     welcome1_title: "Domina tu Clínica",
     welcome1_desc: "Un sistema integral para organizar citas y seguir casos de pacientes con facilidad.",
@@ -715,7 +715,8 @@ export const translations = {
     welcome3_desc: "Almacena radiografías y recetas de forma segura en un lugar accesible.",
     getStarted: "Empezar Ahora",
     next: "Siguiente",
-    skip: "Saltar"
+    skip: "Saltar",
+    offlineMode: 'Estás trabajando sin conexión'
   },
   de: {
     appTitle: 'Smarter Zahnarzt',
@@ -891,9 +892,10 @@ export const translations = {
     welcome2_title: "KI-Unterstützte Gesundheit",
     welcome2_desc: "Intelligente Nachfüllwarnungen und tiefe Analyse der Therapietreue durch Gemini.",
     welcome3_title: "Sichere Krankenakten",
-    welcome3_desc: "Speichern Sie Röntgenbilder und Rezepte sicher an einem organisierten Ort.",
+    welcome3_desc: "Speichern Sie Röntgenbilder und Rezepte sicher an einem organisierten ort.",
     getStarted: "Jetzt Starten",
     next: "Weiter",
-    skip: "Passer"
+    skip: "Passer",
+    offlineMode: 'Sie arbeiten offline'
   }
 };
