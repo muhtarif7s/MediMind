@@ -21,7 +21,8 @@ export function WelcomeView() {
   const { t, profile } = useMediMind();
   const router = useRouter();
 
-  const isRTL = profile.language === 'ar';
+  // Determine RTL based on current language
+  const isRTL = profile?.language === 'ar';
 
   const onSelect = useCallback(() => {
     if (!api) return;
