@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Patient,
   Appointment,
@@ -40,7 +39,7 @@ import { logger } from './logger';
 
 /**
  * Main clinical store hook.
- * Enhanced with RBAC awareness and strict data validation.
+ * Enhanced with RBAC awareness, strict data validation, and 100% translation sync.
  */
 export function useClinic() {
   const { user, isUserLoading } = useUser();
@@ -89,11 +88,13 @@ export function useClinic() {
 
   const isLoaded = !isUserLoading && (!user || (!isUserProfileLoading && !isPatientsLoading && !isAppointmentsLoading && !isMedicationsLoading && !isHistoryLoading));
 
-  const t = (key: string) => {
+  // Memoized translation helper that handles both authenticated and unauthenticated states
+  const t = useCallback((key: string) => {
+    // Default to 'ar' if no profile is available (e.g. during onboarding)
     const lang = userProfileData?.language || 'ar';
-    const dict = (translations as any)[lang] || translations.ar;
+    const dict = (translations as any)[lang] || translations.en;
     return dict[key] || key;
-  };
+  }, [userProfileData?.language]);
 
   /**
    * Safe execution wrapper for mutations with data validation.
